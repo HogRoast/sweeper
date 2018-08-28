@@ -1,12 +1,17 @@
 import urllib.request
 import csv, sys, os
-import FootyAnalysisTools
 import numpy
+import configparser
+import FootyAnalysisTools
 from scipy import stats
 from Logging import Logger
-from FootyBackTest import rangeMap
 
 log = Logger()
+config = configparser.ConfigParser()
+config.read('footy.ini')
+algoCfg = config['algo.cfg']
+rangeMap = eval(algoCfg['rangeMap'])
+seasons = eval(algoCfg['seasons'])
 if len(sys.argv) > 1:
     if '-d' in sys.argv: log.toggleMask(Logger.DEBUG | Logger.TIME | Logger.TYPE)
 
@@ -15,8 +20,6 @@ if len(sys.argv) > 1:
  Looks like if you go back too far with the historical data it starts to mess up the data, I suspect this is because the
  league composition has changed enough to mean that the newer and older season data don't play well together...
 '''
-years = ['1617', '1516', '1415', '1314', '1213', '1112', '1011', '0910', '0809', '0708', '0607', '0506', '0405', '0304', '0203', '0102', '0001']
-leagues = [ 'E0', 'E1', 'E2', 'E3', 'EC', 'SC0', 'SC1', 'SC2', 'SC3', 'D1', 'D2', 'I1', 'I2', 'SP1', 'SP2', 'F1', 'F2', 'N1', 'B1', 'P1', 'T1', 'G1'] 
 
 log.info(__name__ + ' : ' + FootyAnalysisTools.model.__class__.__name__)
 
@@ -32,8 +35,8 @@ for league in rangeMap.keys():
     historyWriter = csv.writer(historyFile)
     historyWriter.writerow(historyFieldNames)
 
-    for year in years:
-        resultsURL = resultsURLTmpl.format(year, league)
+    for season in seasons:
+        resultsURL = resultsURLTmpl.format(season, league)
         log.debug('Processing...{}'.format(resultsURL))
 
         try:
