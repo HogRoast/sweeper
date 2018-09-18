@@ -1,0 +1,717 @@
+---
+swagger: "2.0"
+info:
+  description: "An API that sits on top of the Footy analysis software, allows for\
+    \ presentation via HTML"
+  version: "1.0"
+  title: "Footy REST API specification"
+host: "myhost.com"
+basePath: "/footy/v1/"
+tags:
+- name: "Footy Bridge"
+  description: ""
+schemes:
+- "https"
+consumes:
+- "application/x-www-form-urlencoded"
+produces:
+- "application/json"
+paths:
+  /authorize:
+    post:
+      tags:
+      - "Footy Bridge"
+      description: "Oauth2 Password authorization."
+      operationId: "authorize_post"
+      parameters:
+      - name: "login"
+        in: "formData"
+        description: "User Login."
+        required: true
+        type: "string"
+      - name: "password"
+        in: "formData"
+        description: "User Password."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Access Token. Footy will set Authorization header to 'Bearer\
+            \ ' + access_token for all requests with authorization."
+          schema:
+            $ref: "#/definitions/inline_response_200"
+      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+  /accounts/{accountId}:
+    get:
+      tags:
+      - "Footy Bridge"
+      description: "Get account information."
+      operationId: "accounts_account_id_get"
+      parameters:
+      - name: "accountId"
+        in: "path"
+        description: "The account identifier."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/inline_response_200_1"
+      security:
+      - oauth: []
+      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+  /accounts/{accountId}/fixtures:
+    get:
+      tags:
+      - "Footy Bridge"
+      description: "Get next fixture lists available to this account"
+      operationId: "accounts_account_id_fixtures_get"
+      parameters:
+      - name: "accountId"
+        in: "path"
+        description: "The account identifier."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "List of fixtures available to this account."
+          schema:
+            $ref: "#/definitions/inline_response_200_2"
+      security:
+      - oauth: []
+      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+  /accounts/{accountId}/fixtureHistory:
+    get:
+      tags:
+      - "Footy Bridge"
+      description: "Get fixture history available to this account."
+      operationId: "accounts_account_id_fixture_history_get"
+      parameters:
+      - name: "accountId"
+        in: "path"
+        description: "The account identifier."
+        required: true
+        type: "string"
+      - name: "maxCount"
+        in: "query"
+        description: "Maximum amount of fixtures to return."
+        required: false
+        type: "number"
+      responses:
+        200:
+          description: "List of fixtures."
+          schema:
+            $ref: "#/definitions/inline_response_200_2"
+      security:
+      - oauth: []
+      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+  /accounts/{accountId}/algos:
+    get:
+      tags:
+      - "Footy Bridge"
+      description: "Get available algos for this account"
+      operationId: "accounts_account_id_algos_get"
+      parameters:
+      - name: "accountId"
+        in: "path"
+        description: "The account identifier."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "List of algos."
+          schema:
+            $ref: "#/definitions/inline_response_200_3"
+      security:
+      - oauth: []
+      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+  /accounts/{accountId}/statistics/{leagueId}/{algoId}:
+    get:
+      tags:
+      - "Footy Bridge"
+      description: "Get the statistics for the specified league and algo"
+      operationId: "accounts_account_id_statistics_league_id_algo_id_get"
+      parameters:
+      - name: "accountId"
+        in: "path"
+        description: "The account identifier."
+        required: true
+        type: "string"
+      - name: "leagueId"
+        in: "path"
+        description: "The league identifier."
+        required: true
+        type: "string"
+      - name: "algoId"
+        in: "path"
+        description: "The algo identifier."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "A list of statistics objects"
+          schema:
+            $ref: "#/definitions/inline_response_200_4"
+      security:
+      - oauth: []
+      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+  /accounts/{accountId}/statistics/{algoId}:
+    get:
+      tags:
+      - "Footy Bridge"
+      description: "Get the statistics for the specified algo across all the leagues\
+        \ available to this account"
+      operationId: "accounts_account_id_statistics_algo_id_get"
+      parameters:
+      - name: "accountId"
+        in: "path"
+        description: "The account identifier."
+        required: true
+        type: "string"
+      - name: "algoId"
+        in: "path"
+        description: "The algo identifier."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "A map of leagues vs statistics objects."
+          schema:
+            $ref: "#/definitions/inline_response_200_5"
+      security:
+      - oauth: []
+      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+  /accounts/{accountId}/analysis/{algoId}:
+    get:
+      tags:
+      - "Footy Bridge"
+      description: "Run the analysis for the specified algo across all fixtures available\
+        \ to this account"
+      operationId: "accounts_account_id_analysis_algo_id_get"
+      parameters:
+      - name: "accountId"
+        in: "path"
+        description: "The account identifier."
+        required: true
+        type: "string"
+      - name: "algoId"
+        in: "path"
+        description: "The algo identifier."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "List of Analysis objects."
+          schema:
+            $ref: "#/definitions/inline_response_200_6"
+      security:
+      - oauth: []
+      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+  /accounts/{accountId}/leagues:
+    get:
+      tags:
+      - "Footy Bridge"
+      description: "Get a list of leagues available to this account."
+      operationId: "accounts_account_id_leagues_get"
+      parameters:
+      - name: "accountId"
+        in: "path"
+        description: "The account identifier."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "List of leagues."
+          schema:
+            $ref: "#/definitions/inline_response_200_7"
+      security:
+      - oauth: []
+      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+  /leagues:
+    get:
+      tags:
+      - "Footy Bridge"
+      description: "Get a list of all available leagues."
+      operationId: "leagues_get"
+      parameters: []
+      responses:
+        200:
+          description: "List of leagues."
+          schema:
+            $ref: "#/definitions/inline_response_200_7"
+      security:
+      - oauth: []
+      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+securityDefinitions:
+  oauth:
+    description: "Look for more request details in /authorize request. Footy  will\
+      \ set Authorization header to 'Bearer ' + access_token for all requests with\
+      \ authorization."
+    type: "oauth2"
+    tokenUrl: "http://localhost:9363/authorise"
+    flow: "password"
+    scopes:
+      general: "permission to perform all requests"
+definitions:
+  Status:
+    type: "string"
+    enum:
+    - "ok"
+    - "error"
+  Result:
+    type: "string"
+    enum:
+    - "H"
+    - "A"
+    - "D"
+  AuthorizationResponse:
+    type: "object"
+    required:
+    - "access_token"
+    - "expiration"
+    properties:
+      access_token:
+        type: "string"
+        description: "Access token acts as a session ID that the application uses\
+          \ for making requests. This token should be protected as if it were user\
+          \ credentials."
+      expiration:
+        type: "number"
+        description: "The time when the token is expired is represented as the number\
+          \ of seconds since the Unix epoch (00:00:00 UTC on 1 January 1970)."
+    description: "Authorization Response."
+    example:
+      access_token: "access_token"
+      expiration: 0.80082819046101150206595775671303272247314453125
+  Account:
+    type: "object"
+    required:
+    - "expiry"
+    - "id"
+    - "name"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+        description: "Account title that is displayed to a user."
+      expiry:
+        type: "string"
+        description: "Account expiry date as integer YYYYMMDD"
+    example:
+      name: "name"
+      expiry: "20191002"
+      id: "id"
+  Fixture:
+    type: "object"
+    required:
+    - "awayTeam"
+    - "date"
+    - "homeTeam"
+    - "leagueId"
+    properties:
+      homeTeam:
+        type: "string"
+        description: "Name of the home team"
+      awayTeam:
+        type: "string"
+        description: "Name of the away team"
+      date:
+        type: "string"
+        description: "Date of the fixture YYYYMMDD"
+      leagueId:
+        type: "string"
+        description: "The league identifier"
+      result:
+        $ref: "#/definitions/Result"
+    example:
+      homeTeam: "Arsenal"
+      awayTeam: "Man City"
+      date: "20180203"
+      leagueId: "E0"
+  League:
+    type: "object"
+    required:
+    - "id"
+    - "name"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+        description: "The full name of the league in question."
+    example:
+      id: "E0"
+      name: "The English Premier league"
+  Algo:
+    type: "object"
+    required:
+    - "description"
+    - "id"
+    - "name"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+        description: "The full name of the algo."
+      description:
+        type: "string"
+        description: "A brief description of what the algo does."
+    example:
+      id: "A0"
+      name: "Goals Scored Supremacy"
+      description: "Rank fixtures by goals scored (home team - away team)  over previous\
+        \ matches"
+  Statistics:
+    type: "object"
+    required:
+    - "err"
+    - "intercept"
+    - "p"
+    - "r"
+    - "result"
+    - "rsq"
+    - "slope"
+    properties:
+      result:
+        $ref: "#/definitions/Result"
+      slope:
+        type: "number"
+        description: "The slope (m) of the linear regression y = mx + c."
+      intercept:
+        type: "number"
+        description: "The intercept (c) of the linear regression y = mx + c."
+      p:
+        type: "number"
+        description: "The ??? of the linear regression."
+      r:
+        type: "number"
+        description: "The ??? of the linear regression."
+      rsq:
+        type: "number"
+        description: "The ??? of the linear regression."
+      err:
+        type: "number"
+        description: "The probability of error in the linear regression."
+    example:
+      result: "H"
+      slope: 1.729999999999999982236431605997495353221893310546875
+      intercept: 43.56000000000000227373675443232059478759765625
+      p: 0
+      r: 0.83999999999999996891375531049561686813831329345703125
+      rsq: 0.729999999999999982236431605997495353221893310546875
+      err: 0.2099999999999999922284388276239042170345783233642578125
+  Analysis:
+    type: "object"
+    required:
+    - "fixture"
+    - "mark"
+    properties:
+      fixture:
+        $ref: "#/definitions/Fixture"
+      mark:
+        type: "integer"
+        description: "The ranking of this match according to the algo used  for analysis"
+    example:
+      fixture:
+        homeTeam: "Arsenal"
+        awayTeam: "Man City"
+        date: "20180203"
+        leagueId: "E0"
+      mark: -5
+  inline_response_200:
+    required:
+    - "s"
+    properties:
+      s:
+        $ref: "#/definitions/Status"
+      errmsg:
+        type: "string"
+      d:
+        $ref: "#/definitions/AuthorizationResponse"
+    example:
+      s: {}
+      d:
+        access_token: "access_token"
+        expiration: 0.80082819046101150206595775671303272247314453125
+      errmsg: "errmsg"
+  inline_response_200_1:
+    required:
+    - "s"
+    properties:
+      s:
+        $ref: "#/definitions/Status"
+      errmsg:
+        type: "string"
+      d:
+        $ref: "#/definitions/Account"
+    example:
+      s: {}
+      d:
+        name: "name"
+        expiry: "20191002"
+        id: "id"
+      errmsg: "errmsg"
+  inline_response_200_2:
+    required:
+    - "s"
+    properties:
+      s:
+        $ref: "#/definitions/Status"
+      errmsg:
+        type: "string"
+      d:
+        type: "array"
+        items:
+          $ref: "#/definitions/Fixture"
+    example:
+      s: {}
+      d:
+      - homeTeam: "Arsenal"
+        awayTeam: "Man City"
+        date: "20180203"
+        leagueId: "E0"
+      - homeTeam: "Spurs"
+        awayTeam: "Burnley"
+        date: "20180203"
+        leagueId: "E0"
+      errmsg: "errmsg"
+  inline_response_200_3:
+    required:
+    - "s"
+    properties:
+      s:
+        $ref: "#/definitions/Status"
+      errmsg:
+        type: "string"
+      d:
+        type: "array"
+        items:
+          $ref: "#/definitions/Algo"
+    example:
+      s: {}
+      d:
+      - homeTeam: "Arsenal"
+        awayTeam: "Man City"
+        date: "20180203"
+        leagueId: "E0"
+        result: "A"
+      - homeTeam: "Spurs"
+        awayTeam: "Burnley"
+        date: "20180203"
+        leagueId: "E0"
+        result: "H"
+      errmsg: "errmsg"
+  inline_response_200_4_d:
+    properties:
+      stats:
+        type: "array"
+        items:
+          $ref: "#/definitions/Statistics"
+        maxItems: 3
+        minItems: 3
+    example:
+      stats:
+      - result: "H"
+        slope: 1.729999999999999982236431605997495353221893310546875
+        intercept: 43.56000000000000227373675443232059478759765625
+        p: 0
+        r: 0.83999999999999996891375531049561686813831329345703125
+        rsq: 0.729999999999999982236431605997495353221893310546875
+        err: 0.2099999999999999922284388276239042170345783233642578125
+      - result: "A"
+        slope: 1.729999999999999982236431605997495353221893310546875
+        intercept: 43.56000000000000227373675443232059478759765625
+        p: 0
+        r: 0.83999999999999996891375531049561686813831329345703125
+        rsq: 0.729999999999999982236431605997495353221893310546875
+        err: 0.2099999999999999922284388276239042170345783233642578125
+      - result: "D"
+        slope: 1.729999999999999982236431605997495353221893310546875
+        intercept: 43.56000000000000227373675443232059478759765625
+        p: 0
+        r: 0.83999999999999996891375531049561686813831329345703125
+        rsq: 0.729999999999999982236431605997495353221893310546875
+        err: 0.2099999999999999922284388276239042170345783233642578125
+  inline_response_200_4:
+    required:
+    - "s"
+    properties:
+      s:
+        $ref: "#/definitions/Status"
+      errmsg:
+        type: "string"
+      d:
+        type: "array"
+        items:
+          $ref: "#/definitions/Statistics"
+        maxItems: 3
+        minItems: 3
+    example:
+      s: {}
+      d:
+        stats:
+        - result: "H"
+          slope: 1.729999999999999982236431605997495353221893310546875
+          intercept: 43.56000000000000227373675443232059478759765625
+          p: 0
+          r: 0.83999999999999996891375531049561686813831329345703125
+          rsq: 0.729999999999999982236431605997495353221893310546875
+          err: 0.2099999999999999922284388276239042170345783233642578125
+        - result: "A"
+          slope: 1.729999999999999982236431605997495353221893310546875
+          intercept: 43.56000000000000227373675443232059478759765625
+          p: 0
+          r: 0.83999999999999996891375531049561686813831329345703125
+          rsq: 0.729999999999999982236431605997495353221893310546875
+          err: 0.2099999999999999922284388276239042170345783233642578125
+        - result: "D"
+          slope: 1.729999999999999982236431605997495353221893310546875
+          intercept: 43.56000000000000227373675443232059478759765625
+          p: 0
+          r: 0.83999999999999996891375531049561686813831329345703125
+          rsq: 0.729999999999999982236431605997495353221893310546875
+          err: 0.2099999999999999922284388276239042170345783233642578125
+      errmsg: "errmsg"
+  inline_response_200_5_d:
+    properties:
+      leagueId:
+        type: "string"
+      stats:
+        $ref: "#/definitions/inline_response_200_4_d"
+    example:
+      leagueId: "E0"
+      stats:
+      - result: "H"
+        slope: 1.729999999999999982236431605997495353221893310546875
+        intercept: 43.56000000000000227373675443232059478759765625
+        p: 0
+        r: 0.83999999999999996891375531049561686813831329345703125
+        rsq: 0.729999999999999982236431605997495353221893310546875
+        err: 0.2099999999999999922284388276239042170345783233642578125
+      - result: "A"
+        slope: 1.729999999999999982236431605997495353221893310546875
+        intercept: 43.56000000000000227373675443232059478759765625
+        p: 0
+        r: 0.83999999999999996891375531049561686813831329345703125
+        rsq: 0.729999999999999982236431605997495353221893310546875
+        err: 0.2099999999999999922284388276239042170345783233642578125
+      - result: "D"
+        slope: 1.729999999999999982236431605997495353221893310546875
+        intercept: 43.56000000000000227373675443232059478759765625
+        p: 0
+        r: 0.83999999999999996891375531049561686813831329345703125
+        rsq: 0.729999999999999982236431605997495353221893310546875
+        err: 0.2099999999999999922284388276239042170345783233642578125
+  inline_response_200_5:
+    required:
+    - "s"
+    properties:
+      s:
+        $ref: "#/definitions/Status"
+      errmsg:
+        type: "string"
+      d:
+        type: "array"
+        items:
+          $ref: "#/definitions/inline_response_200_5_d"
+    example:
+      s: {}
+      d:
+      - leagueId: "E0"
+        stats:
+        - result: "H"
+          slope: 1.729999999999999982236431605997495353221893310546875
+          intercept: 43.56000000000000227373675443232059478759765625
+          p: 0
+          r: 0.83999999999999996891375531049561686813831329345703125
+          rsq: 0.729999999999999982236431605997495353221893310546875
+          err: 0.2099999999999999922284388276239042170345783233642578125
+        - result: "A"
+          slope: 1.729999999999999982236431605997495353221893310546875
+          intercept: 43.56000000000000227373675443232059478759765625
+          p: 0
+          r: 0.83999999999999996891375531049561686813831329345703125
+          rsq: 0.729999999999999982236431605997495353221893310546875
+          err: 0.2099999999999999922284388276239042170345783233642578125
+        - result: "D"
+          slope: 1.729999999999999982236431605997495353221893310546875
+          intercept: 43.56000000000000227373675443232059478759765625
+          p: 0
+          r: 0.83999999999999996891375531049561686813831329345703125
+          rsq: 0.729999999999999982236431605997495353221893310546875
+          err: 0.2099999999999999922284388276239042170345783233642578125
+      - leagueId: "E1"
+        stats:
+        - result: "H"
+          slope: 1.54000000000000003552713678800500929355621337890625
+          intercept: 44.42999999999999971578290569595992565155029296875
+          p: 0
+          r: 0.79000000000000003552713678800500929355621337890625
+          rsq: 0.70999999999999996447286321199499070644378662109375
+          err: 0.2300000000000000099920072216264088638126850128173828125
+        - result: "A"
+          slope: 1.5500000000000000444089209850062616169452667236328125
+          intercept: 33.56000000000000227373675443232059478759765625
+          p: 0
+          r: 0.67000000000000003996802888650563545525074005126953125
+          rsq: 0.560000000000000053290705182007513940334320068359375
+          err: 0.40000000000000002220446049250313080847263336181640625
+        - result: "D"
+          slope: 1.770000000000000017763568394002504646778106689453125
+          intercept: 22.42999999999999971578290569595992565155029296875
+          p: 0
+          r: 0.2200000000000000011102230246251565404236316680908203125
+          rsq: 0.2099999999999999922284388276239042170345783233642578125
+          err: 0.5500000000000000444089209850062616169452667236328125
+      errmsg: "errmsg"
+  inline_response_200_6:
+    required:
+    - "s"
+    properties:
+      s:
+        $ref: "#/definitions/Status"
+      errmsg:
+        type: "string"
+      d:
+        type: "array"
+        items:
+          $ref: "#/definitions/Analysis"
+    example:
+      s: {}
+      d:
+      - fixture:
+          homeTeam: "Arsenal"
+          awayTeam: "Man City"
+          date: "20180203"
+          leagueId: "E0"
+        mark: -4
+      - fixture:
+          homeTeam: "Spurs"
+          awayTeam: "Burnley"
+          date: "20180203"
+          leagueId: "E0"
+        mark: 3
+      errmsg: "errmsg"
+  inline_response_200_7:
+    required:
+    - "s"
+    properties:
+      s:
+        $ref: "#/definitions/Status"
+      d:
+        type: "array"
+        items:
+          $ref: "#/definitions/League"
+      errmsg:
+        type: "string"
+    example:
+      s: {}
+      d:
+      - id: "E0"
+        name: "The English Premier league"
+      - id: "E1"
+        name: "The English Championship"
+      errmsg: "errmsg"

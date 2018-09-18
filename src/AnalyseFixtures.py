@@ -7,7 +7,7 @@ from Logging import Logger
 
 log = Logger()
 config = configparser.ConfigParser()
-config.read('footy.ini')
+config.read('../config/footy.ini')
 algoCfg = config['algo.cfg']
 season = algoCfg['season']
 rangeMap = eval(algoCfg['rangeMap'])

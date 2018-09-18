@@ -1,0 +1,1095 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Footy REST API specification</title>
+    <style type="text/css">
+      body {
+	font-family: Trebuchet MS, sans-serif;
+	font-size: 15px;
+	color: #444;
+	margin-right: 24px;
+}
+
+h1	{
+	font-size: 25px;
+}
+h2	{
+	font-size: 20px;
+}
+h3	{
+	font-size: 16px;
+	font-weight: bold;
+}
+hr	{
+	height: 1px;
+	border: 0;
+	color: #ddd;
+	background-color: #ddd;
+}
+
+.app-desc {
+  clear: both;
+  margin-left: 20px;
+}
+.param-name {
+  width: 100%;
+}
+.license-info {
+  margin-left: 20px;
+}
+
+.license-url {
+  margin-left: 20px;
+}
+
+.model {
+  margin: 0 0 0px 20px;
+}
+
+.method {
+  margin-left: 20px;
+}
+
+.method-notes	{
+	margin: 10px 0 20px 0;
+	font-size: 90%;
+	color: #555;
+}
+
+pre {
+  padding: 10px;
+  margin-bottom: 2px;
+}
+
+.http-method {
+ text-transform: uppercase;
+}
+
+pre.get {
+  background-color: #0f6ab4;
+}
+
+pre.post {
+  background-color: #10a54a;
+}
+
+pre.put {
+  background-color: #c5862b;
+}
+
+pre.delete {
+  background-color: #a41e22;
+}
+
+.huge	{
+	color: #fff;
+}
+
+pre.example {
+  background-color: #f3f3f3;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+code {
+  white-space: pre;
+}
+
+.nickname {
+  font-weight: bold;
+}
+
+.method-path {
+  font-size: 1.5em;
+  background-color: #0f6ab4;
+}
+
+.up {
+  float:right;
+}
+
+.parameter {
+  width: 500px;
+}
+
+.param {
+  width: 500px;
+  padding: 10px 0 0 20px;
+  font-weight: bold;
+}
+
+.param-desc {
+  width: 700px;
+  padding: 0 0 0 20px;
+  color: #777;
+}
+
+.param-type {
+  font-style: italic;
+}
+
+.param-enum-header {
+width: 700px;
+padding: 0 0 0 60px;
+color: #777;
+font-weight: bold;
+}
+
+.param-enum {
+width: 700px;
+padding: 0 0 0 80px;
+color: #777;
+font-style: italic;
+}
+
+.field-label {
+  padding: 0;
+  margin: 0;
+  clear: both;
+}
+
+.field-items	{
+	padding: 0 0 15px 0;
+	margin-bottom: 15px;
+}
+
+.return-type {
+  clear: both;
+  padding-bottom: 10px;
+}
+
+.param-header {
+  font-weight: bold;
+}
+
+.method-tags {
+  text-align: right;
+}
+
+.method-tag {
+  background: none repeat scroll 0% 0% #24A600;
+  border-radius: 3px;
+  padding: 2px 10px;
+  margin: 2px;
+  color: #FFF;
+  display: inline-block;
+  text-decoration: none;
+}
+
+    </style>
+  </head>
+  <body>
+  <h1>Footy REST API specification</h1>
+    <div class="app-desc">An API that sits on top of the Footy analysis software, allows for presentation via HTML</div>
+    <div class="app-desc">More information: <a href="https://helloreverb.com">https://helloreverb.com</a></div>
+    <div class="app-desc">Contact Info: <a href="hello@helloreverb.com">hello@helloreverb.com</a></div>
+    <div class="app-desc">Version: 1.0</div>
+    <div class="app-desc">BasePath:/footy/v1/</div>
+    <div class="license-info">All rights reserved</div>
+    <div class="license-url">http://apache.org/licenses/LICENSE-2.0.html</div>
+  <h2>Access</h2>
+    <ol>
+      <li>OAuth AuthorizationUrl:TokenUrl:http://localhost:9363/authorise</li>
+    </ol>
+
+  <h2><a name="__Methods">Methods</a></h2>
+  [ Jump to <a href="#__Models">Models</a> ]
+
+  <h3>Table of Contents </h3>
+  <div class="method-summary"></div>
+  <h4><a href="#FootyBridge">FootyBridge</a></h4>
+  <ul>
+  <li><a href="#accountsAccountIdAlgosGet"><code><span class="http-method">get</span> /accounts/{accountId}/algos</code></a></li>
+  <li><a href="#accountsAccountIdAnalysisAlgoIdGet"><code><span class="http-method">get</span> /accounts/{accountId}/analysis/{algoId}</code></a></li>
+  <li><a href="#accountsAccountIdFixtureHistoryGet"><code><span class="http-method">get</span> /accounts/{accountId}/fixtureHistory</code></a></li>
+  <li><a href="#accountsAccountIdFixturesGet"><code><span class="http-method">get</span> /accounts/{accountId}/fixtures</code></a></li>
+  <li><a href="#accountsAccountIdGet"><code><span class="http-method">get</span> /accounts/{accountId}</code></a></li>
+  <li><a href="#accountsAccountIdLeaguesGet"><code><span class="http-method">get</span> /accounts/{accountId}/leagues</code></a></li>
+  <li><a href="#accountsAccountIdStatisticsAlgoIdGet"><code><span class="http-method">get</span> /accounts/{accountId}/statistics/{algoId}</code></a></li>
+  <li><a href="#accountsAccountIdStatisticsLeagueIdAlgoIdGet"><code><span class="http-method">get</span> /accounts/{accountId}/statistics/{leagueId}/{algoId}</code></a></li>
+  <li><a href="#authorizePost"><code><span class="http-method">post</span> /authorize</code></a></li>
+  <li><a href="#leaguesGet"><code><span class="http-method">get</span> /leagues</code></a></li>
+  </ul>
+
+  <h1><a name="FootyBridge">FootyBridge</a></h1>
+  <div class="method"><a name="accountsAccountIdAlgosGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /accounts/{accountId}/algos</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">accountsAccountIdAlgosGet</span>)</div>
+    <div class="method-notes">Get available algos for this account</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">accountId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The account identifier. </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-www-form-urlencoded</code></li>
+    </ul>
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_3">inline_response_200_3</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "s" : { },
+  "d" : [ {
+    "homeTeam" : "Arsenal",
+    "awayTeam" : "Man City",
+    "date" : "20180203",
+    "leagueId" : "E0",
+    "result" : "A"
+  }, {
+    "homeTeam" : "Spurs",
+    "awayTeam" : "Burnley",
+    "date" : "20180203",
+    "leagueId" : "E0",
+    "result" : "H"
+  } ],
+  "errmsg" : "errmsg"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    List of algos.
+        <a href="#inline_response_200_3">inline_response_200_3</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="accountsAccountIdAnalysisAlgoIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /accounts/{accountId}/analysis/{algoId}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">accountsAccountIdAnalysisAlgoIdGet</span>)</div>
+    <div class="method-notes">Run the analysis for the specified algo across all fixtures available to this account</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">accountId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The account identifier. </div><div class="param">algoId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The algo identifier. </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-www-form-urlencoded</code></li>
+    </ul>
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_6">inline_response_200_6</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "s" : { },
+  "d" : [ {
+    "fixture" : {
+      "homeTeam" : "Arsenal",
+      "awayTeam" : "Man City",
+      "date" : "20180203",
+      "leagueId" : "E0"
+    },
+    "mark" : -4
+  }, {
+    "fixture" : {
+      "homeTeam" : "Spurs",
+      "awayTeam" : "Burnley",
+      "date" : "20180203",
+      "leagueId" : "E0"
+    },
+    "mark" : 3
+  } ],
+  "errmsg" : "errmsg"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    List of Analysis objects.
+        <a href="#inline_response_200_6">inline_response_200_6</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="accountsAccountIdFixtureHistoryGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /accounts/{accountId}/fixtureHistory</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">accountsAccountIdFixtureHistoryGet</span>)</div>
+    <div class="method-notes">Get fixture history available to this account.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">accountId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The account identifier. </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-www-form-urlencoded</code></li>
+    </ul>
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">maxCount (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Maximum amount of fixtures to return. </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_2">inline_response_200_2</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "s" : { },
+  "d" : [ {
+    "homeTeam" : "Arsenal",
+    "awayTeam" : "Man City",
+    "date" : "20180203",
+    "leagueId" : "E0"
+  }, {
+    "homeTeam" : "Spurs",
+    "awayTeam" : "Burnley",
+    "date" : "20180203",
+    "leagueId" : "E0"
+  } ],
+  "errmsg" : "errmsg"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    List of fixtures.
+        <a href="#inline_response_200_2">inline_response_200_2</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="accountsAccountIdFixturesGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /accounts/{accountId}/fixtures</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">accountsAccountIdFixturesGet</span>)</div>
+    <div class="method-notes">Get next fixture lists available to this account</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">accountId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The account identifier. </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-www-form-urlencoded</code></li>
+    </ul>
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_2">inline_response_200_2</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "s" : { },
+  "d" : [ {
+    "homeTeam" : "Arsenal",
+    "awayTeam" : "Man City",
+    "date" : "20180203",
+    "leagueId" : "E0"
+  }, {
+    "homeTeam" : "Spurs",
+    "awayTeam" : "Burnley",
+    "date" : "20180203",
+    "leagueId" : "E0"
+  } ],
+  "errmsg" : "errmsg"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    List of fixtures available to this account.
+        <a href="#inline_response_200_2">inline_response_200_2</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="accountsAccountIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /accounts/{accountId}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">accountsAccountIdGet</span>)</div>
+    <div class="method-notes">Get account information.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">accountId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The account identifier. </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-www-form-urlencoded</code></li>
+    </ul>
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_1">inline_response_200_1</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "s" : { },
+  "d" : {
+    "name" : "name",
+    "expiry" : "20191002",
+    "id" : "id"
+  },
+  "errmsg" : "errmsg"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    OK
+        <a href="#inline_response_200_1">inline_response_200_1</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="accountsAccountIdLeaguesGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /accounts/{accountId}/leagues</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">accountsAccountIdLeaguesGet</span>)</div>
+    <div class="method-notes">Get a list of leagues available to this account.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">accountId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The account identifier. </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-www-form-urlencoded</code></li>
+    </ul>
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_7">inline_response_200_7</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "s" : { },
+  "d" : [ {
+    "id" : "E0",
+    "name" : "The English Premier league"
+  }, {
+    "id" : "E1",
+    "name" : "The English Championship"
+  } ],
+  "errmsg" : "errmsg"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    List of leagues.
+        <a href="#inline_response_200_7">inline_response_200_7</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="accountsAccountIdStatisticsAlgoIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /accounts/{accountId}/statistics/{algoId}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">accountsAccountIdStatisticsAlgoIdGet</span>)</div>
+    <div class="method-notes">Get the statistics for the specified algo across all the leagues available to this account</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">accountId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The account identifier. </div><div class="param">algoId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The algo identifier. </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-www-form-urlencoded</code></li>
+    </ul>
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_5">inline_response_200_5</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "s" : { },
+  "d" : [ {
+    "leagueId" : "E0",
+    "stats" : [ {
+      "result" : "H",
+      "slope" : 1.73,
+      "intercept" : 43.56,
+      "p" : 0,
+      "r" : 0.84,
+      "rsq" : 0.73,
+      "err" : 0.21
+    }, {
+      "result" : "A",
+      "slope" : 1.73,
+      "intercept" : 43.56,
+      "p" : 0,
+      "r" : 0.84,
+      "rsq" : 0.73,
+      "err" : 0.21
+    }, {
+      "result" : "D",
+      "slope" : 1.73,
+      "intercept" : 43.56,
+      "p" : 0,
+      "r" : 0.84,
+      "rsq" : 0.73,
+      "err" : 0.21
+    } ]
+  }, {
+    "leagueId" : "E1",
+    "stats" : [ {
+      "result" : "H",
+      "slope" : 1.54,
+      "intercept" : 44.43,
+      "p" : 0,
+      "r" : 0.79,
+      "rsq" : 0.71,
+      "err" : 0.23
+    }, {
+      "result" : "A",
+      "slope" : 1.55,
+      "intercept" : 33.56,
+      "p" : 0,
+      "r" : 0.67,
+      "rsq" : 0.56,
+      "err" : 0.4
+    }, {
+      "result" : "D",
+      "slope" : 1.77,
+      "intercept" : 22.43,
+      "p" : 0,
+      "r" : 0.22,
+      "rsq" : 0.21,
+      "err" : 0.55
+    } ]
+  } ],
+  "errmsg" : "errmsg"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    A map of leagues vs statistics objects.
+        <a href="#inline_response_200_5">inline_response_200_5</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="accountsAccountIdStatisticsLeagueIdAlgoIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /accounts/{accountId}/statistics/{leagueId}/{algoId}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">accountsAccountIdStatisticsLeagueIdAlgoIdGet</span>)</div>
+    <div class="method-notes">Get the statistics for the specified league and algo</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">accountId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The account identifier. </div><div class="param">leagueId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The league identifier. </div><div class="param">algoId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The algo identifier. </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-www-form-urlencoded</code></li>
+    </ul>
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_4">inline_response_200_4</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "s" : { },
+  "d" : {
+    "stats" : [ {
+      "result" : "H",
+      "slope" : 1.73,
+      "intercept" : 43.56,
+      "p" : 0,
+      "r" : 0.84,
+      "rsq" : 0.73,
+      "err" : 0.21
+    }, {
+      "result" : "A",
+      "slope" : 1.73,
+      "intercept" : 43.56,
+      "p" : 0,
+      "r" : 0.84,
+      "rsq" : 0.73,
+      "err" : 0.21
+    }, {
+      "result" : "D",
+      "slope" : 1.73,
+      "intercept" : 43.56,
+      "p" : 0,
+      "r" : 0.84,
+      "rsq" : 0.73,
+      "err" : 0.21
+    } ]
+  },
+  "errmsg" : "errmsg"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    A list of statistics objects
+        <a href="#inline_response_200_4">inline_response_200_4</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="authorizePost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /authorize</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">authorizePost</span>)</div>
+    <div class="method-notes">Oauth2 Password authorization.</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-www-form-urlencoded</code></li>
+    </ul>
+
+
+
+
+    <h3 class="field-label">Form parameters</h3>
+    <div class="field-items">
+      <div class="param">login (required)</div>
+
+      <div class="param-desc"><span class="param-type">Form Parameter</span> &mdash; User Login. </div><div class="param">password (required)</div>
+
+      <div class="param-desc"><span class="param-type">Form Parameter</span> &mdash; User Password. </div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200">inline_response_200</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "s" : { },
+  "d" : {
+    "access_token" : "access_token",
+    "expiration" : 0.8008281904610115
+  },
+  "errmsg" : "errmsg"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Access Token. Footy will set Authorization header to 'Bearer ' + access_token for all requests with authorization.
+        <a href="#inline_response_200">inline_response_200</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="leaguesGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /leagues</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">leaguesGet</span>)</div>
+    <div class="method-notes">Get a list of all available leagues.</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-www-form-urlencoded</code></li>
+    </ul>
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_7">inline_response_200_7</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "s" : { },
+  "d" : [ {
+    "id" : "E0",
+    "name" : "The English Premier league"
+  }, {
+    "id" : "E1",
+    "name" : "The English Championship"
+  } ],
+  "errmsg" : "errmsg"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    List of leagues.
+        <a href="#inline_response_200_7">inline_response_200_7</a>
+  </div> <!-- method -->
+  <hr/>
+
+  <h2><a name="__Models">Models</a></h2>
+  [ Jump to <a href="#__Methods">Methods</a> ]
+
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#Account"><code>Account</code> - </a></li>
+    <li><a href="#Algo"><code>Algo</code> - </a></li>
+    <li><a href="#Analysis"><code>Analysis</code> - </a></li>
+    <li><a href="#AuthorizationResponse"><code>AuthorizationResponse</code> - </a></li>
+    <li><a href="#Fixture"><code>Fixture</code> - </a></li>
+    <li><a href="#League"><code>League</code> - </a></li>
+    <li><a href="#Result"><code>Result</code> - </a></li>
+    <li><a href="#Statistics"><code>Statistics</code> - </a></li>
+    <li><a href="#Status"><code>Status</code> - </a></li>
+    <li><a href="#inline_response_200"><code>inline_response_200</code> - </a></li>
+    <li><a href="#inline_response_200_1"><code>inline_response_200_1</code> - </a></li>
+    <li><a href="#inline_response_200_2"><code>inline_response_200_2</code> - </a></li>
+    <li><a href="#inline_response_200_3"><code>inline_response_200_3</code> - </a></li>
+    <li><a href="#inline_response_200_4"><code>inline_response_200_4</code> - </a></li>
+    <li><a href="#inline_response_200_4_d"><code>inline_response_200_4_d</code> - </a></li>
+    <li><a href="#inline_response_200_5"><code>inline_response_200_5</code> - </a></li>
+    <li><a href="#inline_response_200_5_d"><code>inline_response_200_5_d</code> - </a></li>
+    <li><a href="#inline_response_200_6"><code>inline_response_200_6</code> - </a></li>
+    <li><a href="#inline_response_200_7"><code>inline_response_200_7</code> - </a></li>
+  </ol>
+
+  <div class="model">
+    <h3><a name="Account"><code>Account</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Account title that is displayed to a user. </div>
+<div class="param">expiry </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Account expiry date as integer YYYYMMDD </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Algo"><code>Algo</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The full name of the algo. </div>
+<div class="param">description </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A brief description of what the algo does. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Analysis"><code>Analysis</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">fixture </div><div class="param-desc"><span class="param-type"><a href="#Fixture">Fixture</a></span>  </div>
+<div class="param">mark </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> The ranking of this match according to the algo used  for analysis </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AuthorizationResponse"><code>AuthorizationResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>Authorization Response.</div>
+    <div class="field-items">
+      <div class="param">access_token </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Access token acts as a session ID that the application uses for making requests. This token should be protected as if it were user credentials. </div>
+<div class="param">expiration </div><div class="param-desc"><span class="param-type"><a href="#number">BigDecimal</a></span> The time when the token is expired is represented as the number of seconds since the Unix epoch (00:00:00 UTC on 1 January 1970). </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Fixture"><code>Fixture</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">homeTeam </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Name of the home team </div>
+<div class="param">awayTeam </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Name of the away team </div>
+<div class="param">date </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Date of the fixture YYYYMMDD </div>
+<div class="param">leagueId </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The league identifier </div>
+<div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#Result">Result</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="League"><code>League</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The full name of the league in question. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Result"><code>Result</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Statistics"><code>Statistics</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">result </div><div class="param-desc"><span class="param-type"><a href="#Result">Result</a></span>  </div>
+<div class="param">slope </div><div class="param-desc"><span class="param-type"><a href="#number">BigDecimal</a></span> The slope (m) of the linear regression y = mx + c. </div>
+<div class="param">intercept </div><div class="param-desc"><span class="param-type"><a href="#number">BigDecimal</a></span> The intercept (c) of the linear regression y = mx + c. </div>
+<div class="param">p </div><div class="param-desc"><span class="param-type"><a href="#number">BigDecimal</a></span> The ??? of the linear regression. </div>
+<div class="param">r </div><div class="param-desc"><span class="param-type"><a href="#number">BigDecimal</a></span> The ??? of the linear regression. </div>
+<div class="param">rsq </div><div class="param-desc"><span class="param-type"><a href="#number">BigDecimal</a></span> The ??? of the linear regression. </div>
+<div class="param">err </div><div class="param-desc"><span class="param-type"><a href="#number">BigDecimal</a></span> The probability of error in the linear regression. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Status"><code>Status</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200"><code>inline_response_200</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">s </div><div class="param-desc"><span class="param-type"><a href="#Status">Status</a></span>  </div>
+<div class="param">errmsg (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">d (optional)</div><div class="param-desc"><span class="param-type"><a href="#AuthorizationResponse">AuthorizationResponse</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200_1"><code>inline_response_200_1</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">s </div><div class="param-desc"><span class="param-type"><a href="#Status">Status</a></span>  </div>
+<div class="param">errmsg (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">d (optional)</div><div class="param-desc"><span class="param-type"><a href="#Account">Account</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200_2"><code>inline_response_200_2</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">s </div><div class="param-desc"><span class="param-type"><a href="#Status">Status</a></span>  </div>
+<div class="param">errmsg (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">d (optional)</div><div class="param-desc"><span class="param-type"><a href="#Fixture">array[Fixture]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200_3"><code>inline_response_200_3</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">s </div><div class="param-desc"><span class="param-type"><a href="#Status">Status</a></span>  </div>
+<div class="param">errmsg (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">d (optional)</div><div class="param-desc"><span class="param-type"><a href="#Algo">array[Algo]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200_4"><code>inline_response_200_4</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">s </div><div class="param-desc"><span class="param-type"><a href="#Status">Status</a></span>  </div>
+<div class="param">errmsg (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">d (optional)</div><div class="param-desc"><span class="param-type"><a href="#Statistics">array[Statistics]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200_4_d"><code>inline_response_200_4_d</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">stats (optional)</div><div class="param-desc"><span class="param-type"><a href="#Statistics">array[Statistics]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200_5"><code>inline_response_200_5</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">s </div><div class="param-desc"><span class="param-type"><a href="#Status">Status</a></span>  </div>
+<div class="param">errmsg (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">d (optional)</div><div class="param-desc"><span class="param-type"><a href="#inline_response_200_5_d">array[inline_response_200_5_d]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200_5_d"><code>inline_response_200_5_d</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">leagueId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">stats (optional)</div><div class="param-desc"><span class="param-type"><a href="#inline_response_200_4_d">inline_response_200_4_d</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200_6"><code>inline_response_200_6</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">s </div><div class="param-desc"><span class="param-type"><a href="#Status">Status</a></span>  </div>
+<div class="param">errmsg (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">d (optional)</div><div class="param-desc"><span class="param-type"><a href="#Analysis">array[Analysis]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200_7"><code>inline_response_200_7</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">s </div><div class="param-desc"><span class="param-type"><a href="#Status">Status</a></span>  </div>
+<div class="param">d (optional)</div><div class="param-desc"><span class="param-type"><a href="#League">array[League]</a></span>  </div>
+<div class="param">errmsg (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  </body>
+</html>

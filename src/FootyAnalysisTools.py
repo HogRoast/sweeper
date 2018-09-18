@@ -169,7 +169,7 @@ class GoalDifferenceSupremacy(BaseModel):
         return matchData
 
 # The league that we are targetting analysis on (from football-data.co.uk), E0 is the english premier league, E1 the championship and so on
-analysisDir = 'Analysis'
+analysisDir = '../Analysis'
 league = 'SP1'
 #model = GoalDifferenceSupremacy()
 model = GoalsScoredSupremacy()
