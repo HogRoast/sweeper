@@ -25,7 +25,7 @@ class TestFootyBridgeController(BaseTestCase):
         
         """
         response = self.client.open(
-            '/footy/v1//accounts/{accountId}/algos'.format(accountId='accountId_example'),
+            '/footy/v1/accounts/{accountId}/algos'.format(accountId='accountId_example'),
             method='GET',
             content_type='application/x-www-form-urlencoded')
         self.assert200(response,
@@ -37,7 +37,7 @@ class TestFootyBridgeController(BaseTestCase):
         
         """
         response = self.client.open(
-            '/footy/v1//accounts/{accountId}/analysis/{algoId}'.format(accountId='accountId_example', algoId='algoId_example'),
+            '/footy/v1/accounts/{accountId}/analysis/{algoId}'.format(accountId='accountId_example', algoId='algoId_example'),
             method='GET',
             content_type='application/x-www-form-urlencoded')
         self.assert200(response,
@@ -50,7 +50,7 @@ class TestFootyBridgeController(BaseTestCase):
         """
         query_string = [('maxCount', 8.14)]
         response = self.client.open(
-            '/footy/v1//accounts/{accountId}/fixtureHistory'.format(accountId='accountId_example'),
+            '/footy/v1/accounts/{accountId}/fixtureHistory'.format(accountId='accountId_example'),
             method='GET',
             content_type='application/x-www-form-urlencoded',
             query_string=query_string)
@@ -63,7 +63,7 @@ class TestFootyBridgeController(BaseTestCase):
         
         """
         response = self.client.open(
-            '/footy/v1//accounts/{accountId}/fixtures'.format(accountId='accountId_example'),
+            '/footy/v1/accounts/{accountId}/fixtures'.format(accountId='accountId_example'),
             method='GET',
             content_type='application/x-www-form-urlencoded')
         self.assert200(response,
@@ -75,7 +75,7 @@ class TestFootyBridgeController(BaseTestCase):
         
         """
         response = self.client.open(
-            '/footy/v1//accounts/{accountId}'.format(accountId='accountId_example'),
+            '/footy/v1/accounts/{accountId}'.format(accountId='accountId_example'),
             method='GET',
             content_type='application/x-www-form-urlencoded')
         self.assert200(response,
@@ -87,7 +87,7 @@ class TestFootyBridgeController(BaseTestCase):
         
         """
         response = self.client.open(
-            '/footy/v1//accounts/{accountId}/leagues'.format(accountId='accountId_example'),
+            '/footy/v1/accounts/{accountId}/leagues'.format(accountId='accountId_example'),
             method='GET',
             content_type='application/x-www-form-urlencoded')
         self.assert200(response,
@@ -99,7 +99,7 @@ class TestFootyBridgeController(BaseTestCase):
         
         """
         response = self.client.open(
-            '/footy/v1//accounts/{accountId}/statistics/{algoId}'.format(accountId='accountId_example', algoId='algoId_example'),
+            '/footy/v1/accounts/{accountId}/statistics/{algoId}'.format(accountId='accountId_example', algoId='algoId_example'),
             method='GET',
             content_type='application/x-www-form-urlencoded')
         self.assert200(response,
@@ -111,7 +111,7 @@ class TestFootyBridgeController(BaseTestCase):
         
         """
         response = self.client.open(
-            '/footy/v1//accounts/{accountId}/statistics/{leagueId}/{algoId}'.format(accountId='accountId_example', leagueId='leagueId_example', algoId='algoId_example'),
+            '/footy/v1/accounts/{accountId}/statistics/{leagueId}/{algoId}'.format(accountId='accountId_example', leagueId='leagueId_example', algoId='algoId_example'),
             method='GET',
             content_type='application/x-www-form-urlencoded')
         self.assert200(response,
@@ -125,7 +125,7 @@ class TestFootyBridgeController(BaseTestCase):
         data = dict(login='login_example',
                     password='password_example')
         response = self.client.open(
-            '/footy/v1//authorize',
+            '/footy/v1/authorize',
             method='POST',
             data=data,
             content_type='application/x-www-form-urlencoded')
@@ -138,7 +138,7 @@ class TestFootyBridgeController(BaseTestCase):
         
         """
         response = self.client.open(
-            '/footy/v1//leagues',
+            '/footy/v1/leagues',
             method='GET',
             content_type='application/x-www-form-urlencoded')
         self.assert200(response,
