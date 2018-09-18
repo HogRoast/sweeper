@@ -1,10 +1,10 @@
 # Footy prediction algorithm.
 
 ## Overview
-This software consists of a number of python modules that can be used to analyse historic football resuls and betting history and predict key futures matches to bet on.
+This software consists of a number of python modules that can be used to analyse historic football results and betting history and predict key futures matches to bet on.
 
 ## Usage
-Currently the file described in the Source Modules section below can be run interactively as individual python scripts, eventually the aim is to cover them with a REST API and be able to call them from a HTML client.
+Currently the files described in the Source Modules section below can be run interactively as individual python scripts, eventually the aim is to cover them with a REST API and be able to call them from a HTML client.
  
 ## Requirements
 Python 3.5.2+
