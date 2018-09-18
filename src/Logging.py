@@ -16,7 +16,7 @@ class Logger:
     def setLogger(self, l):
         self.log = l
 
-    def getlogger(self):
+    def getLogger(self):
         return self.log
 
     def setMask(self, m):
