@@ -1,22 +1,19 @@
 import urllib.request
 import csv, sys
 from Logging import Logger
-import configparser
+from configparser import ConfigParser
 
-baseURL = 'http://www.football-data.co.uk/mmz4281/{}/{}.csv'
-baseOutputFilename = '../Data/{}_{}.csv'
-
-def main():
+def downloadData(baseURL, baseOutputFilename):
     log = Logger()
-    config = configparser.ConfigParser()
+    if len(sys.argv) > 1:
+        if '-d' in sys.argv: log.toggleMask(Logger.DEBUG | Logger.TIME | Logger.TYPE)
+
+    config = ConfigParser()
     config.read('../config/footy.ini')
     algoCfg = config['algo.cfg']
     seasons = eval(algoCfg['seasons'])
     rangeMap = eval(algoCfg['rangeMap'])
     leagues = rangeMap.keys()
-
-    if len(sys.argv) > 1:
-        if '-d' in sys.argv: log.toggleMask(Logger.DEBUG | Logger.TIME | Logger.TYPE)
 
     for l in leagues:
         for s in seasons:
@@ -40,4 +37,7 @@ def main():
                     outputWriter.writerow(row)
 
 if __name__ == '__main__':
-    main()
+    baseURL = 'http://www.football-data.co.uk/mmz4281/{}/{}.csv'
+    baseOutputFilename = '../Data/{}_{}.csv'
+
+    execute(baseURL, baseOutputFilename)
