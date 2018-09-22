@@ -5,7 +5,7 @@ info:
     \ presentation via HTML"
   version: "1.0"
   title: "Footy REST API specification"
-host: "myhost.com"
+host: "localhost:8080"
 basePath: "/footy/v1/"
 tags:
 - name: "Footy Bridge"
@@ -493,16 +493,14 @@ definitions:
     example:
       s: {}
       d:
-      - homeTeam: "Arsenal"
-        awayTeam: "Man City"
-        date: "20180203"
-        leagueId: "E0"
-        result: "A"
-      - homeTeam: "Spurs"
-        awayTeam: "Burnley"
-        date: "20180203"
-        leagueId: "E0"
-        result: "H"
+        - id: "A0"
+          name: "Goals Scored Supremacy"
+          description: "Rank fixtures by goals scored (home team - away team)\
+                        \ over previous matches"
+        - id: "A1"
+          name: "Goal Difference Supremacy"
+          description: "Rank fixtures by goal difference (home team - away team)\
+                        \ over previous matches"
       errmsg: "errmsg"
   inline_response_200_4_d:
     properties:
