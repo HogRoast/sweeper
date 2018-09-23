@@ -40,4 +40,4 @@ if __name__ == '__main__':
     baseURL = 'http://www.football-data.co.uk/mmz4281/{}/{}.csv'
     baseOutputFilename = '../Data/{}_{}.csv'
 
-    execute(baseURL, baseOutputFilename)
+    downloadData(baseURL, baseOutputFilename)

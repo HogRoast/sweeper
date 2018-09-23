@@ -4,6 +4,7 @@ import datetime
 numMatches = 6
 
 def strToDate(date):
+    # The assumption here is we either have YY or YYYY
     try:
         d = datetime.datetime.strptime(date, '%d/%m/%y').date()
     except ValueError:
@@ -30,21 +31,25 @@ class BaseModel:
         return matchData
 
     def markMatch(self, matchData, matchDate, homeTeam, awayTeam):
+        if isinstance(matchDate, str): matchDate = matchDate.strip()
+        if isinstance(homeTeam, str): homeTeam = homeTeam.strip()
+        if isinstance(awayTeam, str): awayTeam = awayTeam.strip()
+
         if matchDate == '' or matchData is None or matchDate is None or homeTeam is None or awayTeam is None:
             return (matchDate, homeTeam, awayTeam, None, None, None)
 
-        matchDate = matchDate.strip()
-        homeTeam = homeTeam.strip()
-        awayTeam = awayTeam.strip()
+        try:
+            homeTeamMatchData = matchData[homeTeam]
+            awayTeamMatchData = matchData[awayTeam]
+        except KeyError:
+            return (matchDate, homeTeam, awayTeam, None, None, None)
 
-        homeTeamMatchData = matchData[homeTeam]
-        awayTeamMatchData = matchData[awayTeam]
         ''' Find match date, assumes the matchData is sorted by date asc! '''
         homeTeamQ = collections.deque()
         for match in homeTeamMatchData:
             d1 = strToDate(match[0])
             d2 = strToDate(matchDate)
-            if d1 >= d2:
+            if d1 > d2:
                break 
             if len(homeTeamQ) >= numMatches:
                 homeTeamQ.popleft()
@@ -57,7 +62,7 @@ class BaseModel:
         for match in awayTeamMatchData:
             d1 = strToDate(match[0])
             d2 = strToDate(matchDate)
-            if d1 >= d2:
+            if d1 > d2:
                break 
             if len(awayTeamQ) >= numMatches:
                 awayTeamQ.popleft()
