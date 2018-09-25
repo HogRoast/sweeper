@@ -5,42 +5,13 @@ from unittest.mock import MagicMock, call
 import configparser, pprint, csv, datetime
 import urllib.request
 from Logging import Logger
-from src.FootyAnalysisTools import strToDate, BaseModel, GoalsScoredSupremacy
+from src.FootyAnalysisTools import strToDate, BaseModel, GoalsScoredSupremacy, MatchResultSupremacy, GoalDifferenceSupremacy
 
 class TestFootyAnalysisTools(TestCase):
     """FootyAnalysisTools tests"""
 
     def setUp(self):
-        """
-        self.mock_ConfigParser = MagicMock(spec=configparser.ConfigParser)
-        self.mock_ConfigParser().__getitem__ = MagicMock(return_value = { 
-            'seasons' : "['1718', '1617']",
-            'rangeMap' : '''{
-                'E0' : range(-1, 2),
-                'D1' : range(0, 4)
-            }'''
-        })
-        self.mock_Logger = MagicMock(spec=Logger)
-        self.mock_urlopen = MagicMock(spec=urllib.request.urlopen)
-        self.csv_data = 'Div_with_control_chars,Date,HomeTeam,AwayTeam\\r\\nB1,29/07/2011,Oud-Heverlee Leuven,Anderlecht'
-        self.mock_urlopen().read = MagicMock(return_value = self.csv_data)
-        self.csv_data_as_list = self.csv_data.split('\\r\\n')
-        i = 0
-        for s in self.csv_data_as_list:
-            self.csv_data_as_list[i] = s.split(',')
-            i += 1
-        self.mock_csv_reader = MagicMock(spec=csv.reader, return_value=self.csv_data_as_list)
-        self.mock_csv_writer = MagicMock(spec=csv.writer)
-        self.mock_open = MagicMock(spec=open, return_value='output file')
-
-        #pprint.pprint(downloadData.__globals__)
-        downloadData.__globals__['ConfigParser'] = self.mock_ConfigParser
-        downloadData.__globals__['Logger'] = self.mock_Logger
-        downloadData.__globals__['urllib'].request.urlopen = self.mock_urlopen
-        downloadData.__globals__['csv'].reader = self.mock_csv_reader
-        downloadData.__globals__['csv'].writer = self.mock_csv_writer
-        downloadData.__globals__['__builtins__']['open'] = self.mock_open
-        """
+        pass
 
     def test_strToDate(self):
         expected = datetime.date(year=2018, month=1, day=1)
@@ -155,15 +126,68 @@ class TestFootyAnalysisTools(TestCase):
         self.assertEqual(r, ('31/12/2017', 'Chelsea', 'Arsenal', None, None, None)) 
 
     def test_GoalsScoredSupremacy_calculateGoalsScored(self):
+        ''' Collate match goals scored per team '''
+
         row = {'FTHG' : '3', 'FTAG' : '2', 'FTR' : 'H'}
-        expected = {'Arsenal' : [('04/01/2018', 3, 'W:3v2')],
+        expected1 = {'Arsenal' : [('04/01/2018', 3, 'W:3v2')],
                     'Chelsea' : [('04/01/2018', 2, 'L:3v2')],
                    }
-        model = BaseModel()
-
         model = GoalsScoredSupremacy()
         r = model.calculateGoalsScored({}, row, '04/01/2018', 'Arsenal', 'Chelsea')
-        self.assertEqual(r, expected) 
+        self.assertEqual(r, expected1) 
+
+        expected2 = {'Arsenal' : [('04/01/2018', 3, 'W:3v2'),
+                                  ('06/01/2018', 0, 'L:6v0')],
+                    'Chelsea' : [('04/01/2018', 2, 'L:3v2'),
+                                 ('06/01/2018', 6, 'W:6v0')],
+                   }
+
+        row2 = {'FTHG' : '6', 'FTAG' : '0', 'FTR' : 'H'}
+        r = model.calculateGoalsScored(r, row2, '06/01/2018', 'Chelsea', 'Arsenal')
+        self.assertEqual(r, expected2)
+
+    def test_MatchResultSupremacy(self):
+        ''' Collate match results per team '''
+
+        row = {'FTR' : 'H'}
+        expected1 = {'Arsenal' : [('04/01/2018', 1)],
+                     'Chelsea' : [('04/01/2018', 0)],
+                   }
+        model = MatchResultSupremacy()
+        r = model.calculateMatchResult({}, row, '04/01/2018', 'Arsenal', 'Chelsea')
+        self.assertEqual(r, expected1) 
+        
+        row2 = {'FTR' : 'A'}
+        
+        expected2 = {'Arsenal' : [('04/01/2018', 1),
+                                  ('06/01/2018', 0)],
+                     'Chelsea' : [('04/01/2018', 0),
+                                  ('06/01/2018', 1)],
+                    }
+        model = MatchResultSupremacy()
+        r = model.calculateMatchResult(r, row2, '06/01/2018', 'Arsenal', 'Chelsea')
+        self.assertEqual(r, expected2) 
+        
+    def test_GoalDifferenceSupremacy(self):
+        ''' Collate match goal difference per team '''
+
+        row = {'FTHG' : '3', 'FTAG' : '2'}
+        expected1 = {'Arsenal' : [('04/01/2018', 1)],
+                     'Chelsea' : [('04/01/2018', -1)],
+                   }
+        model = GoalDifferenceSupremacy()
+        r = model.calculateGoalDifference({}, row, '04/01/2018', 'Arsenal', 'Chelsea')
+        self.assertEqual(r, expected1) 
+
+        row2 = {'FTHG' : '4', 'FTAG' : '8'}
+        expected2 = {'Arsenal' : [('04/01/2018', 1),
+                                  ('06/01/2018', -4)],
+                     'Chelsea' : [('04/01/2018', -1),
+                                  ('06/01/2018', 4)],
+                    }
+        model = GoalDifferenceSupremacy()
+        r = model.calculateGoalDifference(r, row2, '06/01/2018', 'Arsenal', 'Chelsea')
+        self.assertEqual(r, expected2) 
 
 if __name__ == '__main__':
     import unittest

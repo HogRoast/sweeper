@@ -146,12 +146,13 @@ class MatchResultSupremacy(BaseModel):
         else:
             if ftRes == 'H' : score = 1
             matchData[homeTeam] = [(matchDate, score)]
+        score = 0
         if awayTeam in matchData:
             if ftRes == 'A' : score = 1
-            matchData[homeTeam].append((matchDate, score))
+            matchData[awayTeam].append((matchDate, score))
         else:
             if ftRes == 'A' : score = 1
-            matchData[homeTeam] = [(matchDate, score)]
+            matchData[awayTeam] = [(matchDate, score)]
         return matchData
 
 class GoalDifferenceSupremacy(BaseModel):
