@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from unittest import TestCase
-from src.Logging import Logger
+from Footy.src.Logging import Logger
 
 class TestLogging(TestCase):
     """Logging test stubs"""

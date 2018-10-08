@@ -4,13 +4,15 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 import configparser, pprint, csv, datetime
 import urllib.request
-from Logging import Logger
-from src.FootyAnalysisTools import strToDate, BaseModel, GoalsScoredSupremacy, MatchResultSupremacy, GoalDifferenceSupremacy
+from Footy.src.FootyAnalysisTools import strToDate, BaseModel, GoalsScoredSupremacy, MatchResultSupremacy, GoalDifferenceSupremacy
 
 class TestFootyAnalysisTools(TestCase):
     """FootyAnalysisTools tests"""
 
     def setUp(self):
+        pass
+
+    def tearDown(self):
         pass
 
     def test_strToDate(self):
@@ -70,6 +72,8 @@ class TestFootyAnalysisTools(TestCase):
                                   ('02/01/2018', 2, 'D:2v2')],
                     }
         model = BaseModel()
+
+        orig_numMatches = model.markMatch.__globals__['numMatches']
         # working model
         model.markMatch.__globals__['numMatches'] = 2
         r = model.markMatch(matchData, ' 03/01/2018 ', 'Chelsea ', ' Arsenal')
@@ -124,6 +128,9 @@ class TestFootyAnalysisTools(TestCase):
         model.markMatch.__globals__['numMatches'] = 2
         r = model.markMatch(matchData, '31/12/2017', 'Chelsea ', ' Arsenal')
         self.assertEqual(r, ('31/12/2017', 'Chelsea', 'Arsenal', None, None, None)) 
+        # replace the model parameter that we have been fiddling with!
+        # MUST be last line in this test.
+        model.markMatch.__globals__['numMatches'] = orig_numMatches
 
     def test_GoalsScoredSupremacy_calculateGoalsScored(self):
         ''' Collate match goals scored per team '''

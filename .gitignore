@@ -1,6 +1,7 @@
 # Footy specific ignores
 Data/
 Analysis/
+excel/Gambling.*.xlsx
 footy.ini
 
 # gvim backup ignores
