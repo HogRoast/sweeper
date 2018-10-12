@@ -4,7 +4,6 @@ from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 import configparser, sys, csv
-import urllib.request
 from Footy.src.DownloadData import downloadData
 
 class TestDownloadData(TestCase):
@@ -24,36 +23,40 @@ class TestDownloadData(TestCase):
     def mockGlobals(self):
         self.orig_getFootyConfig = downloadData.__globals__['getFootyConfig']
         self.orig_Logger = downloadData.__globals__['Logger']
-        self.orig_urlopen = downloadData.__globals__['urllib'].request.urlopen
-        self.orig_csv_reader = downloadData.__globals__['csv'].reader
         self.orig_newCSVFile = downloadData.__globals__['newCSVFile']
+        self.orig_readCSVFileAsDict = \
+                downloadData.__globals__['readCSVFileAsDict']
 
         downloadData.__globals__['getFootyConfig'] = self.mock_getFootyConfig
         downloadData.__globals__['Logger'] = self.mock_Logger
-        downloadData.__globals__['urllib'].request.urlopen = self.mock_urlopen
-        downloadData.__globals__['csv'].reader = self.mock_csv_reader
         downloadData.__globals__['newCSVFile'] = self.mock_newCSVFile
+        downloadData.__globals__['readCSVFileAsDict'] = \
+                self.mock_readCSVFileAsDict
 
     def resetGlobals(self):
         downloadData.__globals__['getFootyConfig'] = self.orig_getFootyConfig
         downloadData.__globals__['Logger'] = self.orig_Logger
-        downloadData.__globals__['urllib'].request.urlopen = self.orig_urlopen
-        downloadData.__globals__['csv'].reader = self.orig_csv_reader
         downloadData.__globals__['newCSVFile'] = self.orig_newCSVFile
+        downloadData.__globals__['readCSVFileAsDict'] = \
+                self.orig_readCSVFileAsDict
+
+    def mock_csvData__iter__(self, other):
+        return self.csv_data.__iter__()
+
+    def mock_csvData__next__(self, other):
+        return self.csv_data.__next__()
 
     def setUp(self):
+        self.csv_data = [
+                ['Div_with_control_chars','Date','HomeTeam','AwayTeam'],
+                ['B1','29/07/2011','Oud-Heverlee Leuven','Anderlecht']]
         self.mock_Logger = MagicMock()
-        self.mock_urlopen = MagicMock(spec=urllib.request.urlopen)
-        self.csv_data = 'Div_with_control_chars,Date,HomeTeam,AwayTeam\\r\\nB1,29/07/2011,Oud-Heverlee Leuven,Anderlecht'
-        self.mock_urlopen().read = MagicMock(return_value = self.csv_data)
-        self.csv_data_as_list = self.csv_data.split('\\r\\n')
-        i = 0
-        for s in self.csv_data_as_list:
-            self.csv_data_as_list[i] = s.split(',')
-            i += 1
-        
-        self.mock_csv_reader = MagicMock(spec=csv.reader, return_value=self.csv_data_as_list)
         self.mock_newCSVFile = MagicMock()
+        self.mock_readCSVFileAsDict = MagicMock()
+        self.mock_readCSVFileAsDict().__enter__().__iter__ = \
+                self.mock_csvData__iter__
+        self.mock_readCSVFileAsDict().__enter__().__next__ = \
+                self.mock_csvData__next__
 
         self.mockGlobals()
 
@@ -84,13 +87,11 @@ class TestDownloadData(TestCase):
                     urlTmpl.format('1617', 'D1'),
                 )
         for a in args:
-            self.mock_urlopen.assert_any_call(a)
+            self.mock_readCSVFileAsDict.assert_any_call(a)
 
-        self.mock_csv_reader.assert_any_call(self.csv_data.split('\\r\\n'), delimiter=',')
-
-        line1 = self.csv_data_as_list[0]
+        line1 = self.csv_data[0]
         line1[0] = 'Div'
-        line2 = self.csv_data_as_list[1]
+        line2 = self.csv_data[1]
         calls = (
                     call(outFile.format('E0', '1718'), line1),
                     call().__enter__(),

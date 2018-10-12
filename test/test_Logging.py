@@ -185,22 +185,22 @@ class TestLogging(TestCase):
         l.critical('test_crit_1')
 
         l.toggleMask(Logger.TYPE | Logger.TIME)
-        dt = datetime.now()
+        dt2 = datetime.now()
         l.critical('test_crit_2')
 
         l.toggleMask(Logger.TYPE)
-        dt = datetime.now()
+        dt3 = datetime.now()
         l.critical('test_crit_3')
 
         l.toggleMask(Logger.CRITICAL)
-        dt = datetime.now()
+        dt4 = datetime.now()
         # this won't get logged
         l.critical('test_crit_4')
 
         self.assertEqual(self.mockLog[0], 'test_crit_0')
         self.assertEqual(self.mockLog[1], 'CRITICAL : test_crit_1')
-        self.assertEqual(self.mockLog[2], '{!s} : test_crit_2'.format(dt))
-        self.assertEqual(self.mockLog[3], '{!s} : CRITICAL : test_crit_3'.format(dt))
+        self.assertEqual(self.mockLog[2], '{!s} : test_crit_2'.format(dt2))
+        self.assertEqual(self.mockLog[3], '{!s} : CRITICAL : test_crit_3'.format(dt3))
         # length 4 only as last not logged
         self.assertEqual(len(self.mockLog), 4) 
 

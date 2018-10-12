@@ -1,4 +1,4 @@
-import csv
+import csv, urllib.request
 from Logging import Logger
 from configparser import ConfigParser
 
@@ -41,7 +41,8 @@ def getFootyConfig():
     algoCfg = dict(zip(config.options('algo.cfg'), [config.get('algo.cfg', o) for o in config.options('algo.cfg')]))
     algoCfg['rangeMap'] = eval(config.get('algo.cfg', 'rangeMap'))
     algoCfg['seasons'] = eval(config.get('algo.cfg', 'seasons'))
-    
+    algoCfg['teamErrorMap'] = eval(config.get('algo.cfg', 'teamErrorMap'))
+
     mailCfg = dict(zip(config.options('mail.cfg'), [config.get('mail.cfg', o) for o in config.options('mail.cfg')]))
     mailCfg['toAddrs'] = eval(config.get('mail.cfg', 'toAddrs'))
    
@@ -56,7 +57,10 @@ class FileManipulator:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        return self._fileHandle.__exit__(exc_type, exc_val, exc_tb)
+        if '__exit__' in dir(self._fileHandle):
+            return self._fileHandle.__exit__(exc_type, exc_val, exc_tb)
+        else:
+            return False
 
 class FileReader(FileManipulator):
     def __init__(self, fileHandle, reader):
@@ -88,11 +92,17 @@ def newCSVFile(fileName, fieldNames):
 def readCSVFileAsDict(filename):
     '''
     Open specified CSV file for reading in a dictionary form
+    If the file begins http then this is a URL, so open appropriately
     '''
-    _file = open(filename, 'r', newline='')
+    _file = None
+    if filename[:4] == 'http':
+        httpResp = urllib.request.urlopen(filename)
+        results = str(httpResp.read())
+        _file = results.split('\\r\\n')
+    else:
+        _file = open(filename, 'r', newline='')
     _reader = csv.DictReader(_file, delimiter=',')
-    
-    reader = FileReader(_file, _reader)
-    return reader
+
+    return FileReader(_file, _reader)
 
 

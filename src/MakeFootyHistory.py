@@ -1,12 +1,12 @@
-import urllib.request
-import csv, sys, os
+import sys, os
 import numpy
 from scipy import stats
 from Logging import Logger
-from FootyUtils import getFootyOptions, getFootyConfig, newCSVFile
+from FootyUtils import getFootyOptions, getFootyConfig, newCSVFile, \
+        readCSVFileAsDict
 from FootyAnalysisTools import model, analysisDir
 
-def makeFootyHistory(resultsURLTmpl, opts):
+def makeFootyHistory(resultsURLTmpl, opts=sys.argv):
     log = Logger()
     getFootyOptions(log, opts)
 
@@ -25,50 +25,48 @@ def makeFootyHistory(resultsURLTmpl, opts):
         log.info('League : {}...'.format(league))
         os.makedirs('{}/{}'.format(analysisDir, league), exist_ok = True)
         summaryData = {}
-        with newCSVFile(
-                '{}/{}/History.{}.csv'.format(analysisDir, league, 
-                    model.__class__.__name__),
-                ['Date', 'HomeTeam', 'AwayTeam', 'Mark', 'Result']) as historyWriter:
+        with newCSVFile('{}/{}/History.{}.csv'.format(analysisDir, league, 
+                    model.__class__.__name__), 
+                    ['Date', 'HomeTeam', 'AwayTeam', 'Mark', 'Result']) \
+                        as historyWriter:
             for season in seasons:
                 resultsURL = resultsURLTmpl.format(season, league)
                 log.debug('Processing...{}'.format(resultsURL))
-
                 try:
-                    httpResp = urllib.request.urlopen(resultsURL)
+                    with readCSVFileAsDict(resultsURL) as resultsReader:
+                        # Assembling as list so that the iterator can be reset
+                        res = list(resultsReader)
+                        data = model.processMatches(res)
+                        # Resetting iterator here...
+                        for row in iter(res):
+                            try:
+                                date, ht, at, mark, hForm, aForm = \
+                                        model.markMatch(data, 
+                                                row['Date'], 
+                                                row['HomeTeam'], 
+                                                row['AwayTeam'])
+                            except KeyError:
+                                continue
+                            if mark is None or row['FTR'] == '':
+                                continue
+                            mark = int(mark)
+                            matchResult = row['FTR'].strip()
+                            historyWriter.writerow(
+                                    [date, ht, at, mark, matchResult])
+
+                            if mark not in summaryData:
+                                summaryData[mark] = {'A' : 0, 'D' : 0, 'H': 0}
+                            summaryData[mark][matchResult] += 1
                 except BaseException:
                     log.error(sys.exc_info()[0:1])
                     continue
-                
-                results = str(httpResp.read())
-                csvFile = results.split('\\r\\n')
-                
-                resultsReader = csv.DictReader(csvFile, delimiter=',')
-               
-                data = model.processMatches(resultsReader)
-
-                resultsReader = csv.DictReader(csvFile, delimiter=',')
-                for row in resultsReader:
-                    try:
-                        date, ht, at, mark, hForm, aForm = model.markMatch(
-                                data, row['Date'], row['HomeTeam'], row['AwayTeam'])
-                    except KeyError:
-                        continue
-                    if mark is None or row['FTR'] == '':
-                        continue
-                    mark = int(mark)
-                    matchResult = row['FTR'].strip()
-                    historyWriter.writerow([date, ht, at, mark, matchResult])
-
-                    if mark not in summaryData:
-                        summaryData[mark] = {'A' : 0, 'D' : 0, 'H': 0}
-                    summaryData[mark][matchResult] += 1
 
         log.info('Writing summary data...')
 
-        with newCSVFile(
-                '{}/{}/Summary.{}.csv'.format(analysisDir, league, 
-                    model.__class__.__name__),
-                ['Mark', 'Frequency', '%H','HO', '%D', 'DO', '%A', 'AO']) as summaryWriter:
+        with newCSVFile('{}/{}/Summary.{}.csv'.format(analysisDir, league, 
+                    model.__class__.__name__), 
+                    ['Mark', 'Frequency', '%H','HO', '%D', 'DO', '%A', 'AO']) \
+                        as summaryWriter:
             x = []
             hY = []
             dY = []
@@ -106,10 +104,10 @@ def makeFootyHistory(resultsURLTmpl, opts):
             s += '{:d} ({:d} {:>5.2f}) '.format(h[0], h[1][0], h[1][1])
         log.info(s)
 
-        with newCSVFile(
-                '{}/{}/Stats.{}.csv'.format(analysisDir, league, 
-                    model.__class__.__name__), 
-                ['Result', 'Slope', 'Intercept', 'P', 'R', 'R^2', 'Err']) as statsWriter:
+        with newCSVFile('{}/{}/Stats.{}.csv'.format(analysisDir, league, 
+                    model.__class__.__name__),
+                    ['Result', 'Slope', 'Intercept', 'P', 'R', 'R^2', 'Err']) \
+                        as statsWriter:
             slope, intercept, r, p, stderr = stats.linregress(x, hY)
             r2 = r**2
             log.info('Home: {:>4.2f} {:>4.2f} {:>4.2} {:>4.2f} {:>4.2f} {:>4.2}'.format(slope, intercept, p, r, r2, stderr))

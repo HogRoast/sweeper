@@ -3,6 +3,7 @@
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, call
+from collections import OrderedDict
 import configparser, pprint, csv
 import urllib.request
 from Footy.src.FootyUtils import getFootyOptions, FootyArgsError, getFootyConfig, newCSVFile, readCSVFileAsDict
@@ -49,7 +50,10 @@ class TestFootyUtils(TestCase):
                        'rangeMap' : '''{
                                         'E0' : range(-1, 2),
                                         'D1' : range(0, 4)
-                                       }'''
+                                       }''',
+                       'teamErrorMap' : '''{
+                                            'bad team' : 'good team'
+                                           }''',
                       },
                 'mail.cfg' : { 'fromAddr' : 'my@email.com',
                        'toAddrs' : '''["your@email.com",
@@ -75,6 +79,8 @@ class TestFootyUtils(TestCase):
         self.assertTrue(len(algoCfg['rangeMap']), 2)
         self.assertEqual(algoCfg['seasons'][0], '1718')
         self.assertTrue(len(algoCfg['seasons']), 2)
+        self.assertTrue(len(algoCfg['teamErrorMap']), 1)
+        self.assertEqual(algoCfg['teamErrorMap']['bad team'], 'good team')
         self.assertTrue(len(mailCfg['toAddrs']), 2)
         self.assertEqual(mailCfg['pwd'], 'password')
 
@@ -99,6 +105,13 @@ class TestFootyUtils(TestCase):
                     self.assertEqual(r[fieldNames[i]], str(testData[j][i]))
                 j = j + 1
         self.assertTrue(reader._fileHandle.closed)
+
+    def test_ReadCSVFileAsDict_WithURL(self):
+        fileName = 'http://www.football-data.co.uk/fixtures.csv'
+        with readCSVFileAsDict(fileName) as reader:
+            for r in reader:
+                self.assertTrue(isinstance(r, OrderedDict))
+
 
 if __name__ == '__main__':
     import unittest

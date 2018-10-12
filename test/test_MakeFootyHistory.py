@@ -22,48 +22,48 @@ class TestMakeFootyHistory(TestCase):
         return (algoCfg, mailCfg)
 
     def mockGlobals(self):
-        self.orig_getFootyConfig = makeFootyHistory.__globals__['getFootyConfig']
+        self.orig_getFootyConfig = \
+                makeFootyHistory.__globals__['getFootyConfig']
         self.orig_newCSVFile = makeFootyHistory.__globals__['newCSVFile']
+        self.orig_readCSVFileAsDict = \
+                makeFootyHistory.__globals__['readCSVFileAsDict']
         self.orig_Logger = makeFootyHistory.__globals__['Logger']
-        self.orig_urlopen = makeFootyHistory.__globals__['urllib'].request.urlopen
-        self.orig_csv_reader = makeFootyHistory.__globals__['csv'].DictReader
         self.orig_model = makeFootyHistory.__globals__['model']
         self.orig_stats = makeFootyHistory.__globals__['stats']
 
-        makeFootyHistory.__globals__['getFootyConfig'] = self.mock_getFootyConfig
+        makeFootyHistory.__globals__['getFootyConfig'] = \
+                self.mock_getFootyConfig
         makeFootyHistory.__globals__['newCSVFile'] = self.mock_newCSVFile
+        makeFootyHistory.__globals__['readCSVFileAsDict'] = \
+                self.mock_readCSVFileAsDict
         makeFootyHistory.__globals__['Logger'] = self.mock_Logger
-        makeFootyHistory.__globals__['urllib'].request.urlopen = self.mock_urlopen
-        makeFootyHistory.__globals__['csv'].DictReader = self.mock_csv_reader
         makeFootyHistory.__globals__['model'] = self.mock_model
         makeFootyHistory.__globals__['stats'] = self.mock_stats
 
     def resetGlobals(self):
         makeFootyHistory.__globals__['getFootyConfig'] = self.orig_getFootyConfig
         makeFootyHistory.__globals__['newCSVFile'] = self.orig_newCSVFile
+        makeFootyHistory.__globals__['readCSVFileAsDict'] = \
+                self.orig_readCSVFileAsDict
         makeFootyHistory.__globals__['Logger'] = self.orig_Logger
-        makeFootyHistory.__globals__['urllib'].request.urlopen = self.orig_urlopen
-        makeFootyHistory.__globals__['csv'].DictReader = self.orig_csv_reader
         makeFootyHistory.__globals__['model'] = self.orig_model
         makeFootyHistory.__globals__['stats'] = self.orig_stats
+
+    def mock_csvData__iter__(self, other):
+        return self.csvData.__iter__()
 
     def setUp(self):
         self.mock_newCSVFile = MagicMock()
         self.mock_Logger = MagicMock()
-        self.mock_urlopen = MagicMock(spec=urllib.request.urlopen)
         
-        self.mock_open = MagicMock(
-                spec=open, return_Value = 'return from mock open')
-        self.mock_csv_reader = MagicMock(
-                spec=csv.DictReader, 
-                return_value = [{
+        self.csvData = [{
                     'Date' : '27/09/17', 
                     'HomeTeam' : 'Arsenal',
                     'AwayTeam' : 'Chelsea', 
-                    'FTR' : 'H'}])
-
-        self.mock_urlopen().read = MagicMock(
-                return_value = 'return from mock urlopen.read')
+                    'FTR' : 'H'}]
+        self.mock_readCSVFileAsDict = MagicMock()
+        self.mock_readCSVFileAsDict().__enter__().__iter__ = \
+                self.mock_csvData__iter__
 
         self.mock_model = MagicMock(spec=['processMatches', 'markMatch'])
         self.mock_model.processMatches = MagicMock(
@@ -97,16 +97,16 @@ class TestMakeFootyHistory(TestCase):
 
         tmp = urlTmpl.format('1718', 'E0')
         self.mock_Logger().debug.assert_any_call('Processing...' + tmp)
-        self.mock_urlopen.assert_any_call(tmp)
+        self.mock_readCSVFileAsDict.assert_any_call(tmp)
         tmp = urlTmpl.format('1617', 'E0')
         self.mock_Logger().debug.assert_any_call('Processing...' + tmp)
-        self.mock_urlopen.assert_any_call(tmp)
+        self.mock_readCSVFileAsDict.assert_any_call(tmp)
         tmp = urlTmpl.format('1718', 'D1')
         self.mock_Logger().debug.assert_any_call('Processing...' + tmp)
-        self.mock_urlopen.assert_any_call(tmp)
+        self.mock_readCSVFileAsDict.assert_any_call(tmp)
         tmp = urlTmpl.format('1617', 'D1')
         self.mock_Logger().debug.assert_any_call('Processing...' + tmp)
-        self.mock_urlopen.assert_any_call(tmp)
+        self.mock_readCSVFileAsDict.assert_any_call(tmp)
  
         self.mock_model.processMatches.assert_any_call(
                 [{'Date' : '27/09/17', 
