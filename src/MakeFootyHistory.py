@@ -34,11 +34,10 @@ def makeFootyHistory(resultsURLTmpl, opts=sys.argv):
                 log.debug('Processing...{}'.format(resultsURL))
                 try:
                     with readCSVFileAsDict(resultsURL) as resultsReader:
-                        # Assembling as list so that the iterator can be reset
+                        # Assembling as list so that the iterator can be reused
                         res = list(resultsReader)
                         data = model.processMatches(res)
-                        # Resetting iterator here...
-                        for row in iter(res):
+                        for row in res:
                             try:
                                 date, ht, at, mark, hForm, aForm = \
                                         model.markMatch(data, 

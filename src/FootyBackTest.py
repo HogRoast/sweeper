@@ -34,11 +34,10 @@ def footyBackTest(resultsURLTmpl, opts=sys.argv):
                 resultsURL = resultsURLTmpl.format(season, league)
                 log.debug('Processing...{}'.format(resultsURL))
                 with readCSVFileAsDict(resultsURL) as resultsReader:
-                    # Assemble results as list so that we can reset the iterator
+                    # Assemble results as list so that we can reuse the iterator
                     res = list(resultsReader)
                     data = model.processMatches(res)
-                    # Resetting the iterator here
-                    for row in iter(res):
+                    for row in res:
                         date, ht, at, mark, hForm, aForm = model.markMatch(
                                 data, row['Date'], row['HomeTeam'], 
                                 row['AwayTeam'])
