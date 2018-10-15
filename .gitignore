@@ -1,6 +1,7 @@
 # Footy specific ignores
 Data/
 Analysis/
+database/footy.db
 excel/Gambling.*.xlsx
 footy.ini
 
