@@ -23,7 +23,7 @@ class SQLite3Impl:
             for k, v in where.items():
                 s += '{}={},'.format(k, v) 
             # remove the extraneous comma
-            s = s[:len(s)-1]
+            s = s[:-1]
 
         curs = self._conn.cursor()
         curs.execute(s)
@@ -43,13 +43,13 @@ class SQLite3Impl:
         for k in inserts.keys():
             s += '{},'.format(k) 
         # remove the extraneous comma
-        s = s[:len(s)-1]
+        s = s[:-1]
 
         s += ') values ('
         for v in inserts.values():
             s += '{},'.format(v)
         # remove the extraneous comma
-        s = s[:len(s)-1]
+        s = s[:-1]
         s += ')'
 
         curs = self._conn.cursor()
@@ -67,14 +67,14 @@ class SQLite3Impl:
         for k, v in updates.items():
             s += '{}={},'.format(k, v) 
         # remove the extraneous comma
-        s = s[:len(s)-1]
+        s = s[:-1]
 
         if where and len(where) > 0:
             s += ' WHERE '
             for k, v in where.items():
                 s += '{}={},'.format(k, v) 
             # remove the extraneous comma
-            s = s[:len(s)-1]
+            s = s[:-1]
 
         curs = self._conn.cursor()
         curs.execute(s)
@@ -90,7 +90,7 @@ class SQLite3Impl:
             for k, v in where.items():
                 s += '{}={},'.format(k, v) 
             # remove the extraneous comma
-            s = s[:len(s)-1]
+            s = s[:-1]
 
         curs = self._conn.cursor()
         curs.execute(s)

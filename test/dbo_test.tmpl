@@ -1,0 +1,63 @@
+# coding: utf-8
+
+import os
+from datetime import datetime
+from unittest import TestCase
+from unittest.mock import MagicMock, call
+from dataclasses import FrozenInstanceError
+from Footy.src.database.{{TableName}} import {{CapTableName}}, {{CapTableName}}Keys, {{CapTableName}}Values
+from Footy.src.database.database import DatabaseKeys
+
+class Test{{CapTableName}}(TestCase):
+    """{{CapTableName}} object tests"""
+
+    @classmethod
+    def setUpClass(cls):
+        os.system('cat ../database/create_db.sql | sqlite3 ../database/footy.test.db')
+        os.system('cat ../database/*_test_data.sql | sqlite3 ../database/footy.test.db')
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_keys_Immutablility(self):
+        keys ={{CapTableName}}Keys({{PKTestDataList}})
+
+        with self.assertRaises(FrozenInstanceError) as cm:
+            {{PKTestDataAssign}}
+        self.assertIn('cannot assign to field', cm.exception.args[0])
+
+    def test_keys_adhoc(self):
+        l = {{CapTableName}}.createAdhoc(DatabaseKeys('{{TableName}}', None))
+        self.assertEqual(l.keys.table, '{{TableName}}')
+        self.assertTrue(l.keys.fields is None)
+
+    def test_createSingle(self):
+        obj = {{CapTableName}}.createSingle(({{AllTestDataList}}))
+
+        {{PKTestDataAssertEqual}} 
+        {{ValueTestDataAssertEqual}} 
+
+    def test_createMulti(self):
+        rows = [{{AllTestDataRows}}]
+        objs = {{CapTableName}}.createMulti(rows)
+        
+        self.assertEqual(len(objs), 2)
+        {{PKTestDataAssertEqualIdx0}}
+        {{ValueTestDataAssertEqualIdx0}}
+        {{PKTestDataAssertEqualIdx1}}
+        {{ValueTestDataAssertEqualIdx1}}
+
+    def test_repr(self):
+        obj = {{CapTableName}}({{AllTestDataList}})
+        self.assertEqual(str(obj), "{{TableName}} : Keys {{PKTestDataDict}} : Values {{ValueTestDataDict}}")
+
+if __name__ == '__main__':
+    import unittest
+    unittest.main()

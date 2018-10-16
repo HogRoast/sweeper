@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import os
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, call
@@ -7,6 +8,15 @@ from Footy.src.database.sqlite3_db import SQLite3Impl, SQLite3DataError
 
 class TestSQLite3Impl(TestCase):
     """SQLite3Impl tests"""
+
+    @classmethod
+    def setUpClass(cls):
+        os.system('cat ../database/create_db.sql | sqlite3 ../database/footy.test.db')
+        os.system('cat ../database/*_test_data.sql | sqlite3 ../database/footy.test.db')
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
 
     def setUp(self):
         self.db = SQLite3Impl()
@@ -19,21 +29,19 @@ class TestSQLite3Impl(TestCase):
         rows = self.db.select('league', {})    
 
         self.assertEqual(len(rows), 2)
-        self.assertEqual(
-                rows[0], ('English Prem', 'The English Premier League'))
-        self.assertEqual(rows[1], ('English Champ', 'The English Championship'))
+        self.assertEqual(rows[0], ('league name TD', 'league desc TD'))
+        self.assertEqual(rows[1], ('league name TD2', 'league desc TD2'))
 
-        rows = self.db.select('team', {'name' : '"Burnley"'})
+        rows = self.db.select('team', {'name' : '"team name TD2"'})
 
         self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0], ('Burnley', 'English Prem'))
+        self.assertEqual(rows[0], ('team name TD2', 'league name TD2'))
 
-        rows = self.db.select('team', {'league' : '"English Champ"'})
+        rows = self.db.select('team', {'league' : '"league name TD"'})
 
-        self.assertEqual(len(rows), 2)
+        self.assertEqual(len(rows), 1)
         self.assertEqual(
-                rows[0], ('Brentford', 'English Champ'))
-        self.assertEqual(rows[1], ('Leeds', 'English Champ'))
+                rows[0], ('team name TD', 'league name TD'))
 
     def test_select_NoRows(self):
         rows = self.db.select('team', {'name' : '"NoTeam"'})
@@ -45,8 +53,8 @@ class TestSQLite3Impl(TestCase):
 
         rows = self.db.select('team')
 
-        self.assertEqual(len(rows), 5)
-        self.assertEqual(rows[4], ('my_team', 'English Champ'))
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[2], ('my_team', 'English Champ'))
 
         self.db.rollback()
 
@@ -57,12 +65,12 @@ class TestSQLite3Impl(TestCase):
 
     def test_update(self):
         self.db.update('league', {'desc' : '"New description"'}, \
-                {'name' : '"English Prem"'})
+                {'name' : '"league name TD"'})
 
         rows = self.db.select('league')
 
         self.assertEqual(len(rows), 2)
-        self.assertEqual(rows[0], ('English Prem', 'New description'))
+        self.assertEqual(rows[0], ('league name TD', 'New description'))
 
         self.db.rollback()
 

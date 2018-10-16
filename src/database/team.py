@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from Footy.src.database.database import DatabaseKeys, DatabaseValues
 
 @dataclass(frozen=True)
-class LeagueKeys(DatabaseKeys):
+class TeamKeys(DatabaseKeys):
     name:str
     
 
@@ -11,26 +11,26 @@ class LeagueKeys(DatabaseKeys):
         object.__setattr__(self, 'name', name)
         
         fields = None if not (name) else {'name' : name}
-        super().__init__('league', fields)
+        super().__init__('team', fields)
 
-class LeagueValues(DatabaseValues):
-    def __init__(self, desc:str = None):
-        object.__setattr__(self, 'desc', desc)
+class TeamValues(DatabaseValues):
+    def __init__(self, league:str = None):
+        object.__setattr__(self, 'league', league)
         
-        fields = None if not (desc) else {'desc' : desc}
+        fields = None if not (league) else {'league' : league}
         super().__init__(fields)
 
-class League:
+class Team:
     @classmethod
     def createAdhoc(cls, keys:DatabaseKeys):
-        l = League()
+        l = Team()
         l.keys = keys
         return l
 
     @classmethod
     def createSingle(cls, row:tuple):
-        name, desc = row
-        return League(name, desc)
+        name, league = row
+        return Team(name, league)
 
     @classmethod
     def createMulti(cls, rows:tuple):
@@ -39,9 +39,9 @@ class League:
             l.append(cls.createSingle(r))
         return l
 
-    def __init__(self, name:str = None, desc:str = None):
-        self.keys = LeagueKeys(name)
-        self.vals = LeagueValues(desc)
+    def __init__(self, name:str = None, league:str = None):
+        self.keys = TeamKeys(name)
+        self.vals = TeamValues(league)
 
     def __repr__(self):
         return self.keys.table + ' : Keys ' + str(self.keys.fields) + \

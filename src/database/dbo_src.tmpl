@@ -1,0 +1,45 @@
+from dataclasses import dataclass
+from Footy.src.database.database import DatabaseKeys, DatabaseValues
+
+@dataclass(frozen=True)
+class {{CapTableName}}Keys(DatabaseKeys):
+    {{PKFieldsTyped}}
+
+    def __init__(self, {{PKFieldsListTyped}}):
+        # Need to use setattr as the class is Frozen (immutable)
+        {{PKFieldsAssign}}
+        fields = None if not ({{PKFieldsAnd}}) else {{PKFieldsDict}}
+        super().__init__('{{TableName}}', fields)
+
+class {{CapTableName}}Values(DatabaseValues):
+    def __init__(self, {{ValueFieldsListTypedAndDef}}):
+        {{ValueFieldsAssign}}
+        fields = None if not ({{ValueFieldsAnd}}) else {{ValueFieldsDict}}
+        super().__init__(fields)
+
+class {{CapTableName}}:
+    @classmethod
+    def createAdhoc(cls, keys:DatabaseKeys):
+        l = {{CapTableName}}()
+        l.keys = keys
+        return l
+
+    @classmethod
+    def createSingle(cls, row:tuple):
+        {{AllFieldsList}} = row
+        return {{CapTableName}}({{AllFieldsList}})
+
+    @classmethod
+    def createMulti(cls, rows:tuple):
+        l = []
+        for r in rows:
+            l.append(cls.createSingle(r))
+        return l
+
+    def __init__(self, {{AllFieldsListTypedAndDef}}):
+        self.keys = {{CapTableName}}Keys({{PKFieldsList}})
+        self.vals = {{CapTableName}}Values({{ValueFieldsList}})
+
+    def __repr__(self):
+        return self.keys.table + ' : Keys ' + str(self.keys.fields) + \
+                ' : Values ' + str(self.vals.fields)

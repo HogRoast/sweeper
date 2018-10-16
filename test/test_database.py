@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import os
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, call
@@ -11,6 +12,15 @@ from Footy.src.database.sqlite3_db import SQLite3Impl, SQLite3DataError
 class TestDatabase(TestCase):
     """Database tests"""
 
+    @classmethod
+    def setUpClass(cls):
+        os.system('cat ../database/create_db.sql | sqlite3 ../database/footy.test.db')
+        os.system('cat ../database/*_test_data.sql | sqlite3 ../database/footy.test.db')
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+    
     def setUp(self):
         self.db = Database('../database/footy.test.db', SQLite3Impl())
 
@@ -18,24 +28,24 @@ class TestDatabase(TestCase):
         self.db.close()
 
     def test_select(self):
-        leagues = self.db.select(League.asAdhoc(DatabaseKeys('league', None)))
+        leagues = self.db.select(League())
 
         self.assertEqual(len(leagues), 2)
         self.assertEqual(
-                str(leagues[0]), "league : Keys {'name': 'English Prem'} : Values {'desc': 'The English Premier League'}")
+                str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'league desc TD'}")
         self.assertEqual(
-                str(leagues[1]), "league : Keys {'name': 'English Champ'} : Values {'desc': 'The English Championship'}")
+                str(leagues[1]), "league : Keys {'name': 'league name TD2'} : Values {'desc': 'league desc TD2'}")
 
-        leagues = self.db.select(League('"English Prem"'))
+        leagues = self.db.select(League('"league name TD"'))
         self.assertEqual(len(leagues), 1)
         self.assertEqual(
-                str(leagues[0]), "league : Keys {'name': 'English Prem'} : Values {'desc': 'The English Premier League'}")
+                str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'league desc TD'}")
 
-        leagues = self.db.select(League.asAdhoc(DatabaseKeys('league', \
-                {'desc': '"The English Championship"'})))
+        leagues = self.db.select(League.createAdhoc(DatabaseKeys('league', \
+                {'desc': '"league desc TD2"'})))
         self.assertEqual(len(leagues), 1)
         self.assertEqual(
-                str(leagues[0]), "league : Keys {'name': 'English Champ'} : Values {'desc': 'The English Championship'}")
+                str(leagues[0]), "league : Keys {'name': 'league name TD2'} : Values {'desc': 'league desc TD2'}")
 
     def test_select_NoRows(self):
         leagues = self.db.select(League('"Bundesliga"'))
@@ -52,13 +62,13 @@ class TestDatabase(TestCase):
 
         self.db.rollback()
 
-        self.db.upsert(League('"English Prem"', '"Based right here"'))
+        self.db.upsert(League('"league name TD"', '"Based right here"'))
 
-        leagues = self.db.select(League.asAdhoc(DatabaseKeys('league', None)))
+        leagues = self.db.select(League())
 
         self.assertEqual(len(leagues), 2)
         self.assertEqual(
-                str(leagues[0]), "league : Keys {'name': 'English Prem'} : Values {'desc': 'Based right here'}")
+                str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'Based right here'}")
 
         self.db.rollback()
 

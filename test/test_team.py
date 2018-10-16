@@ -5,11 +5,11 @@ from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
-from Footy.src.database.league import League, LeagueKeys, LeagueValues
+from Footy.src.database.team import Team, TeamKeys, TeamValues
 from Footy.src.database.database import DatabaseKeys
 
-class TestLeague(TestCase):
-    """League object tests"""
+class TestTeam(TestCase):
+    """Team object tests"""
 
     @classmethod
     def setUpClass(cls):
@@ -27,7 +27,7 @@ class TestLeague(TestCase):
         pass
 
     def test_keys_Immutablility(self):
-        keys =LeagueKeys('league name TD')
+        keys =TeamKeys('team name TD')
 
         with self.assertRaises(FrozenInstanceError) as cm:
             keys.name = 'Something New'
@@ -35,36 +35,36 @@ class TestLeague(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = League.createAdhoc(DatabaseKeys('league', None))
-        self.assertEqual(l.keys.table, 'league')
+        l = Team.createAdhoc(DatabaseKeys('team', None))
+        self.assertEqual(l.keys.table, 'team')
         self.assertTrue(l.keys.fields is None)
 
     def test_createSingle(self):
-        obj = League.createSingle(('league name TD', 'league desc TD'))
+        obj = Team.createSingle(('team name TD', 'league name TD'))
 
-        self.assertEqual(obj.keys.name, 'league name TD')
+        self.assertEqual(obj.keys.name, 'team name TD')
          
-        self.assertEqual(obj.vals.desc, 'league desc TD')
+        self.assertEqual(obj.vals.league, 'league name TD')
          
 
     def test_createMulti(self):
-        rows = [('league name TD', 'league desc TD'),
-                ('league name TD2', 'league desc TD2')]
-        objs = League.createMulti(rows)
+        rows = [('team name TD', 'league name TD'),
+                ('team name TD2', 'league name TD2')]
+        objs = Team.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].keys.name, 'league name TD')
+        self.assertEqual(objs[0].keys.name, 'team name TD')
         
-        self.assertEqual(objs[0].vals.desc, 'league desc TD')
+        self.assertEqual(objs[0].vals.league, 'league name TD')
         
-        self.assertEqual(objs[1].keys.name, 'league name TD2')
+        self.assertEqual(objs[1].keys.name, 'team name TD2')
         
-        self.assertEqual(objs[1].vals.desc, 'league desc TD2')
+        self.assertEqual(objs[1].vals.league, 'league name TD2')
         
 
     def test_repr(self):
-        obj = League('league name TD', 'league desc TD')
-        self.assertEqual(str(obj), "league : Keys {'name': 'league name TD'} : Values {'desc': 'league desc TD'}")
+        obj = Team('team name TD', 'league name TD')
+        self.assertEqual(str(obj), "team : Keys {'name': 'team name TD'} : Values {'league': 'league name TD'}")
 
 if __name__ == '__main__':
     import unittest
