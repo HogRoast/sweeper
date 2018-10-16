@@ -7,7 +7,16 @@ This software consists of a number of python modules that can be used to analyse
 Currently the files described in the Source Modules section below can be run interactively as individual python scripts, eventually the aim is to cover them with a REST API and be able to call them from a HTML client.
  
 ## Requirements
-Python 3.5.2+
+Python 3.7+
+
+## Database - database direcory
+The following SQLite3 database file is the template for the real footy.db database file that will be used by the production system. There is an included schema.jpg which describes the database layout and constraints. 
+
+```
+footy.test.db
+```
+
+The Footy application interacts with the database via generated database objects used in conjuction with an instance of the Database class. The Database class uses an aggregated impl object to abstract the actual database away and currently SQLite3 is the only provided implementation.
 
 ## Config Files - config directory
 The following config file is a template for the footy.ini file that is required by the AnalyseFixtures module to email results to interested parties, it contains mail addresses and algo config parameters.
@@ -37,3 +46,11 @@ Can be used to download the raw historical data from [Football-Data](www.footbal
 ### Logging 
 This module defines a simple log functionality that can be switched on and off via command line args.
 
+### database - src/database directory
+This module contains the Database class, the SQLite3 implementation class and a gen_db.py application that will generate the required database objects and their associated tests from the create_db.sql schema provided in the ../../database directory. To generate the DB object simply execute the following...
+
+```
+python gen_dbo.py
+```
+
+This will create the DB objects in the src/database directory and associated test under the ../../test directory.
