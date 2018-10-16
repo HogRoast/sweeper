@@ -47,7 +47,7 @@ Can be used to download the raw historical data from [Football-Data](www.footbal
 This module defines a simple log functionality that can be switched on and off via command line args.
 
 ### database - src/database directory
-This module contains the Database class, the SQLite3 implementation class and a gen_db.py application that will generate the required database objects and their associated tests from the create_db.sql schema provided in the ../../database directory. To generate the DB objects simply execute the following...
+This module contains the Database class, the SQLite3 implementation class and a gen_db.py application that will generate the required database objects and their associated tests from the create_db.sql schema provided in the ../../database directory. To generate the DB objects simply execute the following in the src/database directory...
 
 ```
 python gen_dbo.py
