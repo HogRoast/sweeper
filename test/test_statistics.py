@@ -6,19 +6,26 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.statistics import Statistics, StatisticsKeys, StatisticsValues
-from Footy.src.database.database import DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestStatistics(TestCase):
     """Statistics object tests"""
+    db = None
 
     @classmethod
     def setUpClass(cls):
-        os.system('cat ../database/create_db.sql | sqlite3 ../database/footy.test.db')
-        os.system('cat ../database/*_test_data.sql | sqlite3 ../database/footy.test.db')
+        createName = '../database/create_db.sql' 
+        testDataName = '../database/*_test_data.sql' 
+        dbName = '../database/footy.test.db'
+        os.system('cat {} | sqlite3 {}'.format(createName, dbName))
+        os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
+        cls.db = Database(dbName, SQLite3Impl())
+        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        cls.db.close()
 
     def setUp(self):
         pass
@@ -27,7 +34,7 @@ class TestStatistics(TestCase):
         pass
 
     def test_keys_Immutablility(self):
-        keys =StatisticsKeys('statistics generation_date TD', 99, 'league name TD')
+        keys =StatisticsKeys('statistics generation_date TD', 98, 'league name TD')
 
         with self.assertRaises(FrozenInstanceError) as cm:
             keys.generation_date = 'Something New'
@@ -42,49 +49,99 @@ class TestStatistics(TestCase):
         self.assertTrue(l.keys.fields is None)
 
     def test_createSingle(self):
-        obj = Statistics.createSingle(('statistics generation_date TD', 99, 'league name TD', 99, 99, 99, 99, 99))
+        obj = Statistics.createSingle(('statistics generation_date TD', 98, 'league name TD', 98, 98, 98, 98, 98))
 
         self.assertEqual(obj.keys.generation_date, 'statistics generation_date TD')
-        self.assertEqual(obj.keys.algo_id, 99)
+        self.assertEqual(obj.keys.algo_id, 98)
         self.assertEqual(obj.keys.league, 'league name TD')
          
-        self.assertEqual(obj.vals.mark, 99)
-        self.assertEqual(obj.vals.mark_freq, 99)
-        self.assertEqual(obj.vals.home_freq, 99)
-        self.assertEqual(obj.vals.away_freq, 99)
-        self.assertEqual(obj.vals.draw_freq, 99)
+        self.assertEqual(obj.vals.mark, 98)
+        self.assertEqual(obj.vals.mark_freq, 98)
+        self.assertEqual(obj.vals.home_freq, 98)
+        self.assertEqual(obj.vals.away_freq, 98)
+        self.assertEqual(obj.vals.draw_freq, 98)
          
 
     def test_createMulti(self):
-        rows = [('statistics generation_date TD', 99, 'league name TD', 99, 99, 99, 99, 99),
-                ('statistics generation_date TD2', 98, 'league name TD2', 98, 98, 98, 98, 98)]
+        rows = [('statistics generation_date TD', 98, 'league name TD', 98, 98, 98, 98, 98),
+                ('statistics generation_date TD2', 99, 'league name TD2', 99, 99, 99, 99, 99)]
         objs = Statistics.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
         self.assertEqual(objs[0].keys.generation_date, 'statistics generation_date TD')
-        self.assertEqual(objs[0].keys.algo_id, 99)
+        self.assertEqual(objs[0].keys.algo_id, 98)
         self.assertEqual(objs[0].keys.league, 'league name TD')
         
-        self.assertEqual(objs[0].vals.mark, 99)
-        self.assertEqual(objs[0].vals.mark_freq, 99)
-        self.assertEqual(objs[0].vals.home_freq, 99)
-        self.assertEqual(objs[0].vals.away_freq, 99)
-        self.assertEqual(objs[0].vals.draw_freq, 99)
+        self.assertEqual(objs[0].vals.mark, 98)
+        self.assertEqual(objs[0].vals.mark_freq, 98)
+        self.assertEqual(objs[0].vals.home_freq, 98)
+        self.assertEqual(objs[0].vals.away_freq, 98)
+        self.assertEqual(objs[0].vals.draw_freq, 98)
         
         self.assertEqual(objs[1].keys.generation_date, 'statistics generation_date TD2')
-        self.assertEqual(objs[1].keys.algo_id, 98)
+        self.assertEqual(objs[1].keys.algo_id, 99)
         self.assertEqual(objs[1].keys.league, 'league name TD2')
         
-        self.assertEqual(objs[1].vals.mark, 98)
-        self.assertEqual(objs[1].vals.mark_freq, 98)
-        self.assertEqual(objs[1].vals.home_freq, 98)
-        self.assertEqual(objs[1].vals.away_freq, 98)
-        self.assertEqual(objs[1].vals.draw_freq, 98)
+        self.assertEqual(objs[1].vals.mark, 99)
+        self.assertEqual(objs[1].vals.mark_freq, 99)
+        self.assertEqual(objs[1].vals.home_freq, 99)
+        self.assertEqual(objs[1].vals.away_freq, 99)
+        self.assertEqual(objs[1].vals.draw_freq, 99)
         
 
     def test_repr(self):
-        obj = Statistics('statistics generation_date TD', 99, 'league name TD', 99, 99, 99, 99, 99)
-        self.assertEqual(str(obj), "statistics : Keys {'generation_date': 'statistics generation_date TD', 'algo_id': 99, 'league': 'league name TD'} : Values {'mark': 99, 'mark_freq': 99, 'home_freq': 99, 'away_freq': 99, 'draw_freq': 99}")
+        obj = Statistics('statistics generation_date TD', 98, 'league name TD', 98, 98, 98, 98, 98)
+        self.assertEqual(str(obj), "statistics : Keys {'generation_date': 'statistics generation_date TD', 'algo_id': 98, 'league': 'league name TD'} : Values {'mark': 98, 'mark_freq': 98, 'home_freq': 98, 'away_freq': 98, 'draw_freq': 98}")
+
+    def test_select(self):
+        objs = TestStatistics.db.select(Statistics())
+        self.assertEqual(len(objs), 2)
+        self.assertEqual(objs[0].keys.generation_date, 'statistics generation_date TD')
+        self.assertEqual(objs[0].keys.algo_id, 98)
+        self.assertEqual(objs[0].keys.league, 'league name TD')
+        
+        self.assertEqual(objs[0].vals.mark, 98)
+        self.assertEqual(objs[0].vals.mark_freq, 98)
+        self.assertEqual(objs[0].vals.home_freq, 98)
+        self.assertEqual(objs[0].vals.away_freq, 98)
+        self.assertEqual(objs[0].vals.draw_freq, 98)
+        
+        self.assertEqual(objs[1].keys.generation_date, 'statistics generation_date TD2')
+        self.assertEqual(objs[1].keys.algo_id, 99)
+        self.assertEqual(objs[1].keys.league, 'league name TD2')
+        
+        self.assertEqual(objs[1].vals.mark, 99)
+        self.assertEqual(objs[1].vals.mark_freq, 99)
+        self.assertEqual(objs[1].vals.home_freq, 99)
+        self.assertEqual(objs[1].vals.away_freq, 99)
+        self.assertEqual(objs[1].vals.draw_freq, 99)
+        
+        
+        objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league name TD'))
+        self.assertEqual(len(objs), 1)
+        self.assertEqual(objs[0].keys.generation_date, 'statistics generation_date TD')
+        self.assertEqual(objs[0].keys.algo_id, 98)
+        self.assertEqual(objs[0].keys.league, 'league name TD')
+        
+        self.assertEqual(objs[0].vals.mark, 98)
+        self.assertEqual(objs[0].vals.mark_freq, 98)
+        self.assertEqual(objs[0].vals.home_freq, 98)
+        self.assertEqual(objs[0].vals.away_freq, 98)
+        self.assertEqual(objs[0].vals.draw_freq, 98)
+        
+
+        objs = TestStatistics.db.select(Statistics.createAdhoc(DatabaseKeys('statistics', {'mark': 98, 'mark_freq': 98, 'home_freq': 98, 'away_freq': 98, 'draw_freq': 98})))
+        self.assertEqual(len(objs), 1)
+        self.assertEqual(objs[0].keys.generation_date, 'statistics generation_date TD')
+        self.assertEqual(objs[0].keys.algo_id, 98)
+        self.assertEqual(objs[0].keys.league, 'league name TD')
+        
+        self.assertEqual(objs[0].vals.mark, 98)
+        self.assertEqual(objs[0].vals.mark_freq, 98)
+        self.assertEqual(objs[0].vals.home_freq, 98)
+        self.assertEqual(objs[0].vals.away_freq, 98)
+        self.assertEqual(objs[0].vals.draw_freq, 98)
+        
 
 if __name__ == '__main__':
     import unittest

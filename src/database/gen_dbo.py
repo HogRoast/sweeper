@@ -71,11 +71,11 @@ def createReplacements(table, fields):
                 pkTestDataAssign += "'Something New'\n            "
                 tmp2 = tmp.replace('TD', 'TD2')
             elif v[0] == 'int':
-                pkTestDataList += '99, '
+                pkTestDataList += '98, '
                 pkTestDataAssign += '75\n            ' 
-                pkTestDataDict += '99, '
-                tmp = k + ', 99)\n        '
-                tmp2 = tmp.replace('99', '98')
+                pkTestDataDict += '98, '
+                tmp = k + ', 98)\n        '
+                tmp2 = tmp.replace('98', '99')
             elif v[0] == 'float':
                 pkTestDataList += '2.3, '
                 pkTestDataAssign += '1.6\n            ' 
@@ -110,9 +110,9 @@ def createReplacements(table, fields):
                 tmp2 = tmp.replace('TD', 'TD2')
                 valueTestDataDict += tmp3
             elif v[0] == 'int':
-                tmp = k + ', 99)\n        '
-                tmp2 = tmp.replace('99', '98')
-                valueTestDataDict += '99, '
+                tmp = k + ', 98)\n        '
+                tmp2 = tmp.replace('98', '99')
+                valueTestDataDict += '98, '
             elif v[0] == 'float':
                 tmp = k + ', 2.3)\n        '
                 tmp2 = tmp.replace('2.3', '2.4')
@@ -134,8 +134,8 @@ def createReplacements(table, fields):
             allTestDataList += tmp
             allTestDataList2 += tmp.replace('TD', 'TD2')
         elif v[0] == 'int':
-            allTestDataList += '99, '
-            allTestDataList2 += '98, '
+            allTestDataList += '98, '
+            allTestDataList2 += '99, '
         elif v[0] == 'float':
             allTestDataList += '2.3, '
             allTestDataList2 += '2.4, '

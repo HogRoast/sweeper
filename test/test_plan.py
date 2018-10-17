@@ -6,19 +6,26 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.plan import Plan, PlanKeys, PlanValues
-from Footy.src.database.database import DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestPlan(TestCase):
     """Plan object tests"""
+    db = None
 
     @classmethod
     def setUpClass(cls):
-        os.system('cat ../database/create_db.sql | sqlite3 ../database/footy.test.db')
-        os.system('cat ../database/*_test_data.sql | sqlite3 ../database/footy.test.db')
+        createName = '../database/create_db.sql' 
+        testDataName = '../database/*_test_data.sql' 
+        dbName = '../database/footy.test.db'
+        os.system('cat {} | sqlite3 {}'.format(createName, dbName))
+        os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
+        cls.db = Database(dbName, SQLite3Impl())
+        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        cls.db.close()
 
     def setUp(self):
         pass
@@ -27,7 +34,7 @@ class TestPlan(TestCase):
         pass
 
     def test_keys_Immutablility(self):
-        keys =PlanKeys(99)
+        keys =PlanKeys(98)
 
         with self.assertRaises(FrozenInstanceError) as cm:
             keys.id = 75
@@ -40,9 +47,9 @@ class TestPlan(TestCase):
         self.assertTrue(l.keys.fields is None)
 
     def test_createSingle(self):
-        obj = Plan.createSingle((99, 'plan name TD', 'plan desc TD', 2.3))
+        obj = Plan.createSingle((98, 'plan name TD', 'plan desc TD', 2.3))
 
-        self.assertEqual(obj.keys.id, 99)
+        self.assertEqual(obj.keys.id, 98)
          
         self.assertEqual(obj.vals.name, 'plan name TD')
         self.assertEqual(obj.vals.desc, 'plan desc TD')
@@ -50,18 +57,18 @@ class TestPlan(TestCase):
          
 
     def test_createMulti(self):
-        rows = [(99, 'plan name TD', 'plan desc TD', 2.3),
-                (98, 'plan name TD2', 'plan desc TD2', 2.4)]
+        rows = [(98, 'plan name TD', 'plan desc TD', 2.3),
+                (99, 'plan name TD2', 'plan desc TD2', 2.4)]
         objs = Plan.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].keys.id, 99)
+        self.assertEqual(objs[0].keys.id, 98)
         
         self.assertEqual(objs[0].vals.name, 'plan name TD')
         self.assertEqual(objs[0].vals.desc, 'plan desc TD')
         self.assertEqual(objs[0].vals.cost, 2.3)
         
-        self.assertEqual(objs[1].keys.id, 98)
+        self.assertEqual(objs[1].keys.id, 99)
         
         self.assertEqual(objs[1].vals.name, 'plan name TD2')
         self.assertEqual(objs[1].vals.desc, 'plan desc TD2')
@@ -69,8 +76,42 @@ class TestPlan(TestCase):
         
 
     def test_repr(self):
-        obj = Plan(99, 'plan name TD', 'plan desc TD', 2.3)
-        self.assertEqual(str(obj), "plan : Keys {'id': 99} : Values {'name': 'plan name TD', 'desc': 'plan desc TD', 'cost': 2.3}")
+        obj = Plan(98, 'plan name TD', 'plan desc TD', 2.3)
+        self.assertEqual(str(obj), "plan : Keys {'id': 98} : Values {'name': 'plan name TD', 'desc': 'plan desc TD', 'cost': 2.3}")
+
+    def test_select(self):
+        objs = TestPlan.db.select(Plan())
+        self.assertEqual(len(objs), 2)
+        self.assertEqual(objs[0].keys.id, 98)
+        
+        self.assertEqual(objs[0].vals.name, 'plan name TD')
+        self.assertEqual(objs[0].vals.desc, 'plan desc TD')
+        self.assertEqual(objs[0].vals.cost, 2.3)
+        
+        self.assertEqual(objs[1].keys.id, 99)
+        
+        self.assertEqual(objs[1].vals.name, 'plan name TD2')
+        self.assertEqual(objs[1].vals.desc, 'plan desc TD2')
+        self.assertEqual(objs[1].vals.cost, 2.4)
+        
+        
+        objs = TestPlan.db.select(Plan(98))
+        self.assertEqual(len(objs), 1)
+        self.assertEqual(objs[0].keys.id, 98)
+        
+        self.assertEqual(objs[0].vals.name, 'plan name TD')
+        self.assertEqual(objs[0].vals.desc, 'plan desc TD')
+        self.assertEqual(objs[0].vals.cost, 2.3)
+        
+
+        objs = TestPlan.db.select(Plan.createAdhoc(DatabaseKeys('plan', {'name': 'plan name TD', 'desc': 'plan desc TD', 'cost': 2.3})))
+        self.assertEqual(len(objs), 1)
+        self.assertEqual(objs[0].keys.id, 98)
+        
+        self.assertEqual(objs[0].vals.name, 'plan name TD')
+        self.assertEqual(objs[0].vals.desc, 'plan desc TD')
+        self.assertEqual(objs[0].vals.cost, 2.3)
+        
 
 if __name__ == '__main__':
     import unittest

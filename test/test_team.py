@@ -6,19 +6,26 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.team import Team, TeamKeys, TeamValues
-from Footy.src.database.database import DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestTeam(TestCase):
     """Team object tests"""
+    db = None
 
     @classmethod
     def setUpClass(cls):
-        os.system('cat ../database/create_db.sql | sqlite3 ../database/footy.test.db')
-        os.system('cat ../database/*_test_data.sql | sqlite3 ../database/footy.test.db')
+        createName = '../database/create_db.sql' 
+        testDataName = '../database/*_test_data.sql' 
+        dbName = '../database/footy.test.db'
+        os.system('cat {} | sqlite3 {}'.format(createName, dbName))
+        os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
+        cls.db = Database(dbName, SQLite3Impl())
+        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        cls.db.close()
 
     def setUp(self):
         pass
@@ -65,6 +72,32 @@ class TestTeam(TestCase):
     def test_repr(self):
         obj = Team('team name TD', 'league name TD')
         self.assertEqual(str(obj), "team : Keys {'name': 'team name TD'} : Values {'league': 'league name TD'}")
+
+    def test_select(self):
+        objs = TestTeam.db.select(Team())
+        self.assertEqual(len(objs), 2)
+        self.assertEqual(objs[0].keys.name, 'team name TD')
+        
+        self.assertEqual(objs[0].vals.league, 'league name TD')
+        
+        self.assertEqual(objs[1].keys.name, 'team name TD2')
+        
+        self.assertEqual(objs[1].vals.league, 'league name TD2')
+        
+        
+        objs = TestTeam.db.select(Team('team name TD'))
+        self.assertEqual(len(objs), 1)
+        self.assertEqual(objs[0].keys.name, 'team name TD')
+        
+        self.assertEqual(objs[0].vals.league, 'league name TD')
+        
+
+        objs = TestTeam.db.select(Team.createAdhoc(DatabaseKeys('team', {'league': 'league name TD'})))
+        self.assertEqual(len(objs), 1)
+        self.assertEqual(objs[0].keys.name, 'team name TD')
+        
+        self.assertEqual(objs[0].vals.league, 'league name TD')
+        
 
 if __name__ == '__main__':
     import unittest

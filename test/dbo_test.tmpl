@@ -6,19 +6,26 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.{{TableName}} import {{CapTableName}}, {{CapTableName}}Keys, {{CapTableName}}Values
-from Footy.src.database.database import DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class Test{{CapTableName}}(TestCase):
     """{{CapTableName}} object tests"""
+    db = None
 
     @classmethod
     def setUpClass(cls):
-        os.system('cat ../database/create_db.sql | sqlite3 ../database/footy.test.db')
-        os.system('cat ../database/*_test_data.sql | sqlite3 ../database/footy.test.db')
+        createName = '../database/create_db.sql' 
+        testDataName = '../database/*_test_data.sql' 
+        dbName = '../database/footy.test.db'
+        os.system('cat {} | sqlite3 {}'.format(createName, dbName))
+        os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
+        cls.db = Database(dbName, SQLite3Impl())
+        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        cls.db.close()
 
     def setUp(self):
         pass
@@ -57,6 +64,24 @@ class Test{{CapTableName}}(TestCase):
     def test_repr(self):
         obj = {{CapTableName}}({{AllTestDataList}})
         self.assertEqual(str(obj), "{{TableName}} : Keys {{PKTestDataDict}} : Values {{ValueTestDataDict}}")
+
+    def test_select(self):
+        objs = Test{{CapTableName}}.db.select({{CapTableName}}())
+        self.assertEqual(len(objs), 2)
+        {{PKTestDataAssertEqualIdx0}}
+        {{ValueTestDataAssertEqualIdx0}}
+        {{PKTestDataAssertEqualIdx1}}
+        {{ValueTestDataAssertEqualIdx1}}
+        
+        objs = Test{{CapTableName}}.db.select({{CapTableName}}({{PKTestDataList}}))
+        self.assertEqual(len(objs), 1)
+        {{PKTestDataAssertEqualIdx0}}
+        {{ValueTestDataAssertEqualIdx0}}
+
+        objs = Test{{CapTableName}}.db.select({{CapTableName}}.createAdhoc(DatabaseKeys('{{TableName}}', {{ValueTestDataDict}})))
+        self.assertEqual(len(objs), 1)
+        {{PKTestDataAssertEqualIdx0}}
+        {{ValueTestDataAssertEqualIdx0}}
 
 if __name__ == '__main__':
     import unittest

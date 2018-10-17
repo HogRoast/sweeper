@@ -6,19 +6,26 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.match import Match, MatchKeys, MatchValues
-from Footy.src.database.database import DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestMatch(TestCase):
     """Match object tests"""
+    db = None
 
     @classmethod
     def setUpClass(cls):
-        os.system('cat ../database/create_db.sql | sqlite3 ../database/footy.test.db')
-        os.system('cat ../database/*_test_data.sql | sqlite3 ../database/footy.test.db')
+        createName = '../database/create_db.sql' 
+        testDataName = '../database/*_test_data.sql' 
+        dbName = '../database/footy.test.db'
+        os.system('cat {} | sqlite3 {}'.format(createName, dbName))
+        os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
+        cls.db = Database(dbName, SQLite3Impl())
+        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        cls.db.close()
 
     def setUp(self):
         pass
@@ -80,6 +87,48 @@ class TestMatch(TestCase):
     def test_repr(self):
         obj = Match('match date TD', 'league name TD', 'team name TD', 'team name TD', 'X', 2.3)
         self.assertEqual(str(obj), "match : Keys {'date': 'match date TD', 'league': 'league name TD', 'home_team': 'team name TD', 'away_team': 'team name TD'} : Values {'result': 'X', 'best_odds': 2.3}")
+
+    def test_select(self):
+        objs = TestMatch.db.select(Match())
+        self.assertEqual(len(objs), 2)
+        self.assertEqual(objs[0].keys.date, 'match date TD')
+        self.assertEqual(objs[0].keys.league, 'league name TD')
+        self.assertEqual(objs[0].keys.home_team, 'team name TD')
+        self.assertEqual(objs[0].keys.away_team, 'team name TD')
+        
+        self.assertEqual(objs[0].vals.result, 'X')
+        self.assertEqual(objs[0].vals.best_odds, 2.3)
+        
+        self.assertEqual(objs[1].keys.date, 'match date TD2')
+        self.assertEqual(objs[1].keys.league, 'league name TD2')
+        self.assertEqual(objs[1].keys.home_team, 'team name TD2')
+        self.assertEqual(objs[1].keys.away_team, 'team name TD2')
+        
+        self.assertEqual(objs[1].vals.result, 'Z')
+        self.assertEqual(objs[1].vals.best_odds, 2.4)
+        
+        
+        objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
+        self.assertEqual(len(objs), 1)
+        self.assertEqual(objs[0].keys.date, 'match date TD')
+        self.assertEqual(objs[0].keys.league, 'league name TD')
+        self.assertEqual(objs[0].keys.home_team, 'team name TD')
+        self.assertEqual(objs[0].keys.away_team, 'team name TD')
+        
+        self.assertEqual(objs[0].vals.result, 'X')
+        self.assertEqual(objs[0].vals.best_odds, 2.3)
+        
+
+        objs = TestMatch.db.select(Match.createAdhoc(DatabaseKeys('match', {'result': 'X', 'best_odds': 2.3})))
+        self.assertEqual(len(objs), 1)
+        self.assertEqual(objs[0].keys.date, 'match date TD')
+        self.assertEqual(objs[0].keys.league, 'league name TD')
+        self.assertEqual(objs[0].keys.home_team, 'team name TD')
+        self.assertEqual(objs[0].keys.away_team, 'team name TD')
+        
+        self.assertEqual(objs[0].vals.result, 'X')
+        self.assertEqual(objs[0].vals.best_odds, 2.3)
+        
 
 if __name__ == '__main__':
     import unittest

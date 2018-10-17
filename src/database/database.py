@@ -84,6 +84,15 @@ class Database:
         '''
         self._impl.delete(obj.keys.table, obj.keys.fields)
 
+    def enableForeignKeys(self):
+        self._impl.execute('pragma foreign_keys=1')
+
+    def disableForeignKeys(self):
+        self._impl.execute('pragma foreign_keys=0')
+
+    def execute(self, s):
+        return self._impl.execute(s)
+
     def commit(self):
         self._impl.commit()
 

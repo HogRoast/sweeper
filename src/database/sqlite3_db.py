@@ -21,16 +21,14 @@ class SQLite3Impl:
         if where and len(where) > 0:
             s += 'WHERE '
             for k, v in where.items():
-                s += '{}={},'.format(k, v) 
-            # remove the extraneous comma
-            s = s[:-1]
-
-        curs = self._conn.cursor()
-        curs.execute(s)
-        rows = curs.fetchall() 
-        curs.close()
-
-        return rows 
+                if isinstance(v, str):
+                    s += '{}="{}" and '.format(k, v) 
+                else:
+                    s += '{}={} and '.format(k, v) 
+            # remove the extraneous ' and '
+            s = s[:-5]
+        print(s) 
+        return self.execute(s)
 
     def insert(self, table:str, inserts:dict):
         '''
@@ -47,14 +45,15 @@ class SQLite3Impl:
 
         s += ') values ('
         for v in inserts.values():
-            s += '{},'.format(v)
+            if isinstance(v, str):
+                s += '"{}",'.format(v)
+            else:
+                s += '{},'.format(v)
         # remove the extraneous comma
         s = s[:-1]
         s += ')'
 
-        curs = self._conn.cursor()
-        curs.execute(s)
-        curs.close()
+        self.execute(s)
 
     def update(self, table:str, updates:dict, where:dict = None):
         '''
@@ -65,20 +64,24 @@ class SQLite3Impl:
         
         s = 'UPDATE {} SET '.format(table)
         for k, v in updates.items():
-            s += '{}={},'.format(k, v) 
+            if isinstance(v, str):
+                s += '{}="{}",'.format(k, v) 
+            else:
+                s += '{}={},'.format(k, v) 
         # remove the extraneous comma
         s = s[:-1]
 
         if where and len(where) > 0:
             s += ' WHERE '
             for k, v in where.items():
-                s += '{}={},'.format(k, v) 
-            # remove the extraneous comma
-            s = s[:-1]
+                if isinstance(v, str):
+                    s += '{}="{}" and '.format(k, v) 
+                else:
+                    s += '{}={} and '.format(k, v) 
+            # remove the extraneous ' and '
+            s = s[:-5]
 
-        curs = self._conn.cursor()
-        curs.execute(s)
-        curs.close()
+        self.execute(s)
 
     def delete(self, table:str, where:dict = None):
         '''
@@ -88,13 +91,22 @@ class SQLite3Impl:
         if where and len(where) > 0:
             s += 'WHERE '
             for k, v in where.items():
-                s += '{}={},'.format(k, v) 
-            # remove the extraneous comma
-            s = s[:-1]
+                if isinstance(v, str):
+                    s += '{}="{}" and '.format(k, v) 
+                else:
+                    s += '{}={} and '.format(k, v) 
+            # remove the extraneous ' and '
+            s = s[:-5]
 
+        self.execute(s)
+
+    def execute(self, s):
         curs = self._conn.cursor()
         curs.execute(s)
+        rows = curs.fetchall() 
         curs.close()
+
+        return rows
 
     def commit(self):
         self._conn.commit()

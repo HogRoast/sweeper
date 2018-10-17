@@ -60,22 +60,24 @@ class TestLogging(TestCase):
         l.info('test_info_1')
 
         l.toggleMask(Logger.TYPE | Logger.TIME)
-        dt = datetime.now()
         l.info('test_info_2')
+        dt2 = datetime.now()
 
         l.toggleMask(Logger.TYPE)
-        dt = datetime.now()
         l.info('test_info_3')
+        dt3 = datetime.now()
 
         l.toggleMask(Logger.INFO)
-        dt = datetime.now()
         # this won't get logged
         l.info('test_info_4')
+        dt4 = datetime.now()
 
         self.assertEqual(self.mockLog[0], 'test_info_0')
         self.assertEqual(self.mockLog[1], 'INFO     : test_info_1')
-        self.assertEqual(self.mockLog[2], '{!s} : test_info_2'.format(dt))
-        self.assertEqual(self.mockLog[3], '{!s} : INFO     : test_info_3'.format(dt))
+        self.assertIn('test_info_2', self.mockLog[2])
+        self.assertIn(str(dt2)[:-5], self.mockLog[2])
+        self.assertIn('test_info_3', self.mockLog[3])
+        self.assertIn(str(dt3)[:-5], self.mockLog[3])
         # length 4 only as last not logged
         self.assertEqual(len(self.mockLog), 4) 
 
