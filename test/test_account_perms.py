@@ -113,6 +113,47 @@ class TestAccount_perms(TestCase):
         self.assertEqual(objs[0].vals.algo_id, 98)
         
 
+    def test_update(self):
+        # Disable Foreign Keys checks for this test
+        TestAccount_perms.db.disableForeignKeys()
+
+        TestAccount_perms.db.upsert(
+                Account_perms(98, 'account name TD UPD', 'league name TD UPD', 100))
+        objs = TestAccount_perms.db.select(Account_perms(98))
+        self.assertEqual(len(objs), 1)
+
+        d = eval("{'account': 'account name TD UPD', 'league': 'league name TD UPD', 'algo_id': 100}")
+        for k, v in d.items():
+            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+        TestAccount_perms.db.rollback()
+
+    def test_insert(self):
+        # Disable Foreign Keys checks for this test
+        TestAccount_perms.db.disableForeignKeys()
+
+        TestAccount_perms.db.upsert(
+                Account_perms(100, 'account name TD UPD', 'league name TD UPD', 100))
+        objs = TestAccount_perms.db.select(Account_perms())
+        self.assertEqual(len(objs), 3)
+
+        d = eval("{'account': 'account name TD UPD', 'league': 'league name TD UPD', 'algo_id': 100}")
+        for k, v in d.items():
+            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+        TestAccount_perms.db.rollback()
+
+    def test_delete(self):
+        # Disable Foreign Keys checks for this test
+        TestAccount_perms.db.disableForeignKeys()
+
+        TestAccount_perms.db.delete(Account_perms(98))
+
+        objs = TestAccount_perms.db.select(Account_perms())
+        self.assertEqual(len(objs), 1)
+
+        TestAccount_perms.db.rollback()
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

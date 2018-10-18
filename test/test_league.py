@@ -99,6 +99,47 @@ class TestLeague(TestCase):
         self.assertEqual(objs[0].vals.desc, 'league desc TD')
         
 
+    def test_update(self):
+        # Disable Foreign Keys checks for this test
+        TestLeague.db.disableForeignKeys()
+
+        TestLeague.db.upsert(
+                League('league name TD', 'league desc TD UPD'))
+        objs = TestLeague.db.select(League('league name TD'))
+        self.assertEqual(len(objs), 1)
+
+        d = eval("{'desc': 'league desc TD UPD'}")
+        for k, v in d.items():
+            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+        TestLeague.db.rollback()
+
+    def test_insert(self):
+        # Disable Foreign Keys checks for this test
+        TestLeague.db.disableForeignKeys()
+
+        TestLeague.db.upsert(
+                League('league name TD INS', 'league desc TD UPD'))
+        objs = TestLeague.db.select(League())
+        self.assertEqual(len(objs), 3)
+
+        d = eval("{'desc': 'league desc TD UPD'}")
+        for k, v in d.items():
+            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+        TestLeague.db.rollback()
+
+    def test_delete(self):
+        # Disable Foreign Keys checks for this test
+        TestLeague.db.disableForeignKeys()
+
+        TestLeague.db.delete(League('league name TD'))
+
+        objs = TestLeague.db.select(League())
+        self.assertEqual(len(objs), 1)
+
+        TestLeague.db.rollback()
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

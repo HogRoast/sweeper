@@ -99,6 +99,47 @@ class TestTeam(TestCase):
         self.assertEqual(objs[0].vals.league, 'league name TD')
         
 
+    def test_update(self):
+        # Disable Foreign Keys checks for this test
+        TestTeam.db.disableForeignKeys()
+
+        TestTeam.db.upsert(
+                Team('team name TD', 'league name TD UPD'))
+        objs = TestTeam.db.select(Team('team name TD'))
+        self.assertEqual(len(objs), 1)
+
+        d = eval("{'league': 'league name TD UPD'}")
+        for k, v in d.items():
+            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+        TestTeam.db.rollback()
+
+    def test_insert(self):
+        # Disable Foreign Keys checks for this test
+        TestTeam.db.disableForeignKeys()
+
+        TestTeam.db.upsert(
+                Team('team name TD INS', 'league name TD UPD'))
+        objs = TestTeam.db.select(Team())
+        self.assertEqual(len(objs), 3)
+
+        d = eval("{'league': 'league name TD UPD'}")
+        for k, v in d.items():
+            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+        TestTeam.db.rollback()
+
+    def test_delete(self):
+        # Disable Foreign Keys checks for this test
+        TestTeam.db.disableForeignKeys()
+
+        TestTeam.db.delete(Team('team name TD'))
+
+        objs = TestTeam.db.select(Team())
+        self.assertEqual(len(objs), 1)
+
+        TestTeam.db.rollback()
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

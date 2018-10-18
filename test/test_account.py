@@ -113,6 +113,47 @@ class TestAccount(TestCase):
         self.assertEqual(objs[0].vals.plan_id, 98)
         
 
+    def test_update(self):
+        # Disable Foreign Keys checks for this test
+        TestAccount.db.disableForeignKeys()
+
+        TestAccount.db.upsert(
+                Account('account name TD', 'account expiry_date TD UPD', 'account joined_date TD UPD', 100))
+        objs = TestAccount.db.select(Account('account name TD'))
+        self.assertEqual(len(objs), 1)
+
+        d = eval("{'expiry_date': 'account expiry_date TD UPD', 'joined_date': 'account joined_date TD UPD', 'plan_id': 100}")
+        for k, v in d.items():
+            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+        TestAccount.db.rollback()
+
+    def test_insert(self):
+        # Disable Foreign Keys checks for this test
+        TestAccount.db.disableForeignKeys()
+
+        TestAccount.db.upsert(
+                Account('account name TD INS', 'account expiry_date TD UPD', 'account joined_date TD UPD', 100))
+        objs = TestAccount.db.select(Account())
+        self.assertEqual(len(objs), 3)
+
+        d = eval("{'expiry_date': 'account expiry_date TD UPD', 'joined_date': 'account joined_date TD UPD', 'plan_id': 100}")
+        for k, v in d.items():
+            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+        TestAccount.db.rollback()
+
+    def test_delete(self):
+        # Disable Foreign Keys checks for this test
+        TestAccount.db.disableForeignKeys()
+
+        TestAccount.db.delete(Account('account name TD'))
+
+        objs = TestAccount.db.select(Account())
+        self.assertEqual(len(objs), 1)
+
+        TestAccount.db.rollback()
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

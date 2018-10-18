@@ -37,6 +37,7 @@ def createReplacements(table, fields):
     valueFieldsAssign = ''
     valueFieldsAnd = ''
     valueFieldsDict = '{'
+    valueTestDataList = ''
     valueTestDataAssertEqual = ''
     valueTestDataAssertEqual2 = ''
     valueTestDataDict = '{'
@@ -108,19 +109,23 @@ def createReplacements(table, fields):
                     tmp = k + ", '" + table + ' ' + k + " TD')\n        "
                     tmp3 = "'" + table + ' ' + k + " TD', "
                 tmp2 = tmp.replace('TD', 'TD2')
+                valueTestDataList += tmp3
                 valueTestDataDict += tmp3
             elif v[0] == 'int':
                 tmp = k + ', 98)\n        '
                 tmp2 = tmp.replace('98', '99')
                 valueTestDataDict += '98, '
+                valueTestDataList += '98, '
             elif v[0] == 'float':
                 tmp = k + ', 2.3)\n        '
                 tmp2 = tmp.replace('2.3', '2.4')
                 valueTestDataDict += '2.3, '
+                valueTestDataList += '2.3, '
             elif v[0] == 'char':
                 tmp = k + ", 'X')\n        "
                 tmp2 = tmp.replace('X', 'Z')
                 valueTestDataDict += "'X', "
+                valueTestDataList += "'X', "
             valueTestDataAssertEqual += tmp
             valueTestDataAssertEqual2 += tmp2
 
@@ -149,6 +154,7 @@ def createReplacements(table, fields):
     pkFieldsAnd = pkFieldsAnd[:-5]
     pkTestDataList = pkTestDataList[:-2]
     pkTestDataDict = pkTestDataDict[:-2] + '}'
+    valueTestDataList = valueTestDataList[:-2]
     valueFieldsListTypedAndDef = valueFieldsListTypedAndDef[:-2]
     valueFieldsDict = valueFieldsDict[:-2] + '}'
     valueFieldsAnd = valueFieldsAnd[:-5]
@@ -158,6 +164,15 @@ def createReplacements(table, fields):
     allTestDataList = allTestDataList[:-2]
     allTestDataList2 = allTestDataList2[:-2]
     allTestDataRows = '(' + allTestDataList + '),\n' + '                (' + allTestDataList2 + ')'
+    newPKTestDataList = pkTestDataList.replace( \
+                'TD', 'TD INS').replace('98', '100').replace( \
+                '2.3', '5.6').replace('X', 'A')
+    newValueTestDataList = valueTestDataList.replace( \
+                'TD', 'TD UPD').replace('98', '100').replace( \
+                '2.3', '5.6').replace('X', 'A')
+    newValueTestDataDict = valueTestDataDict.replace( \
+                'TD', 'TD UPD').replace('98', '100').replace( \
+                '2.3', '5.6').replace('X', 'A')
 
     replacements['{{PKFieldsTyped}}'] = pkFieldsTyped
     replacements['{{PKFieldsListTyped}}'] = pkFieldsListTyped
@@ -173,6 +188,7 @@ def createReplacements(table, fields):
     replacements['{{PKTestDataAssertEqualIdx1}}'] = \
             pkTestDataAssertEqual2.replace('obj.', 'objs[1].')
     replacements['{{PKTestDataDict}}'] = pkTestDataDict
+    replacements['{{ValueTestDataList}}'] = valueTestDataList
     replacements['{{ValueFieldsListTypedAndDef}}'] = valueFieldsListTypedAndDef
     replacements['{{ValueFieldsAssign}}'] = valueFieldsAssign
     replacements['{{ValueFieldsAnd}}'] = valueFieldsAnd
@@ -188,6 +204,9 @@ def createReplacements(table, fields):
     replacements['{{AllFieldsListTypedAndDef}}'] = allFieldsListTypedAndDef
     replacements['{{AllTestDataList}}'] = allTestDataList
     replacements['{{AllTestDataRows}}'] = allTestDataRows
+    replacements['{{NewValueTestDataList}}'] = newValueTestDataList
+    replacements['{{NewValueTestDataDict}}'] = newValueTestDataDict
+    replacements['{{NewPKTestDataList}}'] = newPKTestDataList
 
     return replacements
 

@@ -143,6 +143,47 @@ class TestStatistics(TestCase):
         self.assertEqual(objs[0].vals.draw_freq, 98)
         
 
+    def test_update(self):
+        # Disable Foreign Keys checks for this test
+        TestStatistics.db.disableForeignKeys()
+
+        TestStatistics.db.upsert(
+                Statistics('statistics generation_date TD', 98, 'league name TD', 100, 100, 100, 100, 100))
+        objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league name TD'))
+        self.assertEqual(len(objs), 1)
+
+        d = eval("{'mark': 100, 'mark_freq': 100, 'home_freq': 100, 'away_freq': 100, 'draw_freq': 100}")
+        for k, v in d.items():
+            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+        TestStatistics.db.rollback()
+
+    def test_insert(self):
+        # Disable Foreign Keys checks for this test
+        TestStatistics.db.disableForeignKeys()
+
+        TestStatistics.db.upsert(
+                Statistics('statistics generation_date TD INS', 100, 'league name TD INS', 100, 100, 100, 100, 100))
+        objs = TestStatistics.db.select(Statistics())
+        self.assertEqual(len(objs), 3)
+
+        d = eval("{'mark': 100, 'mark_freq': 100, 'home_freq': 100, 'away_freq': 100, 'draw_freq': 100}")
+        for k, v in d.items():
+            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+        TestStatistics.db.rollback()
+
+    def test_delete(self):
+        # Disable Foreign Keys checks for this test
+        TestStatistics.db.disableForeignKeys()
+
+        TestStatistics.db.delete(Statistics('statistics generation_date TD', 98, 'league name TD'))
+
+        objs = TestStatistics.db.select(Statistics())
+        self.assertEqual(len(objs), 1)
+
+        TestStatistics.db.rollback()
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

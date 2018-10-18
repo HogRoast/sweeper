@@ -4,12 +4,12 @@ import os
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, call
-from sqlite3 import IntegrityError
 from Footy.src.database.database import Database, DatabaseInvObjError, \
-         DatabaseKeys
+         DatabaseKeys, DatabaseDataError, DatabaseIntegrityError, \
+         DatabaseInvObjError
 from Footy.src.database.league import League
 from Footy.src.database.team import Team
-from Footy.src.database.sqlite3_db import SQLite3Impl, SQLite3DataError
+from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestDatabase(TestCase):
     """Database tests"""
@@ -55,7 +55,7 @@ class TestDatabase(TestCase):
                 str(leagues[0]), "league : Keys {'name': 'league name TD2'} : Values {'desc': 'league desc TD2'}")
 
     def test_foreign_key(self):
-        with self.assertRaises(IntegrityError) as cm:
+        with self.assertRaises(DatabaseIntegrityError) as cm:
             TestDatabase.db.upsert(Team('My Team', 'no such league'))
         TestDatabase.db.rollback()
         self.assertEqual('FOREIGN KEY constraint failed', cm.exception.args[0])
@@ -92,7 +92,7 @@ class TestDatabase(TestCase):
                 cm.exception.msg, 'Not a valid DB object : ' + str(object()))
 
     def test_upsert_Error(self):
-        with self.assertRaises(SQLite3DataError) as cm:
+        with self.assertRaises(DatabaseDataError) as cm:
             TestDatabase.db.upsert(League())
         self.assertEqual(cm.exception.msg, 'No values provided for UPDATE')
 

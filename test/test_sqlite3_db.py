@@ -4,8 +4,9 @@ import os
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, call
-from Footy.src.database.sqlite3_db import SQLite3Impl, SQLite3DataError
-from sqlite3 import IntegrityError
+from Footy.src.database.sqlite3_db import SQLite3Impl
+from Footy.src.database.database import DatabaseDataError, \
+        DatabaseIntegrityError
 
 class TestSQLite3Impl(TestCase):
     """SQLite3Impl tests"""
@@ -52,11 +53,11 @@ class TestSQLite3Impl(TestCase):
   
     def test_foreign_key(self):
         TestSQLite3Impl.db.execute('pragma foreign_keys=1')
-        with self.assertRaises(IntegrityError) as cm:
+        with self.assertRaises(DatabaseIntegrityError) as cm:
             TestSQLite3Impl.db.insert('team', 
                     {'name' : 'new team', 'league' : 'no such league'})
         TestSQLite3Impl.db.rollback()
-        self.assertEqual(cm.exception.args[0], 'FOREIGN KEY constraint failed')
+        self.assertEqual(cm.exception.msg, 'FOREIGN KEY constraint failed')
  
     def test_select_NoRows(self):
         rows = TestSQLite3Impl.db.select('team', {'name' : 'NoTeam'})
@@ -74,7 +75,7 @@ class TestSQLite3Impl(TestCase):
         TestSQLite3Impl.db.rollback()
 
     def test_insert_Error(self):
-        with self.assertRaises(SQLite3DataError) as cm:
+        with self.assertRaises(DatabaseDataError) as cm:
             TestSQLite3Impl.db.insert('team', {})
         self.assertEqual(cm.exception.msg, 'No values provided for INSERT')
 
@@ -90,7 +91,7 @@ class TestSQLite3Impl(TestCase):
         TestSQLite3Impl.db.rollback()
 
     def test_update_Error(self):
-        with self.assertRaises(SQLite3DataError) as cm:
+        with self.assertRaises(DatabaseDataError) as cm:
             TestSQLite3Impl.db.update('team', {})
         self.assertEqual(cm.exception.msg, 'No values provided for UPDATE')
 

@@ -83,6 +83,47 @@ class Test{{CapTableName}}(TestCase):
         {{PKTestDataAssertEqualIdx0}}
         {{ValueTestDataAssertEqualIdx0}}
 
+    def test_update(self):
+        # Disable Foreign Keys checks for this test
+        Test{{CapTableName}}.db.disableForeignKeys()
+
+        Test{{CapTableName}}.db.upsert(
+                {{CapTableName}}({{PKTestDataList}}, {{NewValueTestDataList}}))
+        objs = Test{{CapTableName}}.db.select({{CapTableName}}({{PKTestDataList}}))
+        self.assertEqual(len(objs), 1)
+
+        d = eval("{{NewValueTestDataDict}}")
+        for k, v in d.items():
+            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+        Test{{CapTableName}}.db.rollback()
+
+    def test_insert(self):
+        # Disable Foreign Keys checks for this test
+        Test{{CapTableName}}.db.disableForeignKeys()
+
+        Test{{CapTableName}}.db.upsert(
+                {{CapTableName}}({{NewPKTestDataList}}, {{NewValueTestDataList}}))
+        objs = Test{{CapTableName}}.db.select({{CapTableName}}())
+        self.assertEqual(len(objs), 3)
+
+        d = eval("{{NewValueTestDataDict}}")
+        for k, v in d.items():
+            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+        Test{{CapTableName}}.db.rollback()
+
+    def test_delete(self):
+        # Disable Foreign Keys checks for this test
+        Test{{CapTableName}}.db.disableForeignKeys()
+
+        Test{{CapTableName}}.db.delete({{CapTableName}}({{PKTestDataList}}))
+
+        objs = Test{{CapTableName}}.db.select({{CapTableName}}())
+        self.assertEqual(len(objs), 1)
+
+        Test{{CapTableName}}.db.rollback()
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

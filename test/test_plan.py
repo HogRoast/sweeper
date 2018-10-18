@@ -113,6 +113,47 @@ class TestPlan(TestCase):
         self.assertEqual(objs[0].vals.cost, 2.3)
         
 
+    def test_update(self):
+        # Disable Foreign Keys checks for this test
+        TestPlan.db.disableForeignKeys()
+
+        TestPlan.db.upsert(
+                Plan(98, 'plan name TD UPD', 'plan desc TD UPD', 5.6))
+        objs = TestPlan.db.select(Plan(98))
+        self.assertEqual(len(objs), 1)
+
+        d = eval("{'name': 'plan name TD UPD', 'desc': 'plan desc TD UPD', 'cost': 5.6}")
+        for k, v in d.items():
+            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+        TestPlan.db.rollback()
+
+    def test_insert(self):
+        # Disable Foreign Keys checks for this test
+        TestPlan.db.disableForeignKeys()
+
+        TestPlan.db.upsert(
+                Plan(100, 'plan name TD UPD', 'plan desc TD UPD', 5.6))
+        objs = TestPlan.db.select(Plan())
+        self.assertEqual(len(objs), 3)
+
+        d = eval("{'name': 'plan name TD UPD', 'desc': 'plan desc TD UPD', 'cost': 5.6}")
+        for k, v in d.items():
+            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+        TestPlan.db.rollback()
+
+    def test_delete(self):
+        # Disable Foreign Keys checks for this test
+        TestPlan.db.disableForeignKeys()
+
+        TestPlan.db.delete(Plan(98))
+
+        objs = TestPlan.db.select(Plan())
+        self.assertEqual(len(objs), 1)
+
+        TestPlan.db.rollback()
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

@@ -130,6 +130,47 @@ class TestMatch(TestCase):
         self.assertEqual(objs[0].vals.best_odds, 2.3)
         
 
+    def test_update(self):
+        # Disable Foreign Keys checks for this test
+        TestMatch.db.disableForeignKeys()
+
+        TestMatch.db.upsert(
+                Match('match date TD', 'league name TD', 'team name TD', 'team name TD', 'A', 5.6))
+        objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
+        self.assertEqual(len(objs), 1)
+
+        d = eval("{'result': 'A', 'best_odds': 5.6}")
+        for k, v in d.items():
+            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+        TestMatch.db.rollback()
+
+    def test_insert(self):
+        # Disable Foreign Keys checks for this test
+        TestMatch.db.disableForeignKeys()
+
+        TestMatch.db.upsert(
+                Match('match date TD INS', 'league name TD INS', 'team name TD INS', 'team name TD INS', 'A', 5.6))
+        objs = TestMatch.db.select(Match())
+        self.assertEqual(len(objs), 3)
+
+        d = eval("{'result': 'A', 'best_odds': 5.6}")
+        for k, v in d.items():
+            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+        TestMatch.db.rollback()
+
+    def test_delete(self):
+        # Disable Foreign Keys checks for this test
+        TestMatch.db.disableForeignKeys()
+
+        TestMatch.db.delete(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
+
+        objs = TestMatch.db.select(Match())
+        self.assertEqual(len(objs), 1)
+
+        TestMatch.db.rollback()
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

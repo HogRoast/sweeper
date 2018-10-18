@@ -106,6 +106,47 @@ class TestAlgo(TestCase):
         self.assertEqual(objs[0].vals.desc, 'algo desc TD')
         
 
+    def test_update(self):
+        # Disable Foreign Keys checks for this test
+        TestAlgo.db.disableForeignKeys()
+
+        TestAlgo.db.upsert(
+                Algo(98, 'algo name TD UPD', 'algo desc TD UPD'))
+        objs = TestAlgo.db.select(Algo(98))
+        self.assertEqual(len(objs), 1)
+
+        d = eval("{'name': 'algo name TD UPD', 'desc': 'algo desc TD UPD'}")
+        for k, v in d.items():
+            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+        TestAlgo.db.rollback()
+
+    def test_insert(self):
+        # Disable Foreign Keys checks for this test
+        TestAlgo.db.disableForeignKeys()
+
+        TestAlgo.db.upsert(
+                Algo(100, 'algo name TD UPD', 'algo desc TD UPD'))
+        objs = TestAlgo.db.select(Algo())
+        self.assertEqual(len(objs), 3)
+
+        d = eval("{'name': 'algo name TD UPD', 'desc': 'algo desc TD UPD'}")
+        for k, v in d.items():
+            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+        TestAlgo.db.rollback()
+
+    def test_delete(self):
+        # Disable Foreign Keys checks for this test
+        TestAlgo.db.disableForeignKeys()
+
+        TestAlgo.db.delete(Algo(98))
+
+        objs = TestAlgo.db.select(Algo())
+        self.assertEqual(len(objs), 1)
+
+        TestAlgo.db.rollback()
+
 if __name__ == '__main__':
     import unittest
     unittest.main()
