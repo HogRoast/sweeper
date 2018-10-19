@@ -36,6 +36,8 @@ def getFootyOptions(log, opts):
 
 def getFootyConfig():
     config = ConfigParser()
+    # maintain case of ini file keys
+    config.optionxform = lambda option: option
     config.read('../config/footy.ini')
 
     algoCfg = dict(zip(config.options('algo.cfg'), [config.get('algo.cfg', o) for o in config.options('algo.cfg')]))

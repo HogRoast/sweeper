@@ -83,6 +83,7 @@ class TestFootyUtils(TestCase):
         self.assertEqual(algoCfg['teamErrorMap']['bad team'], 'good team')
         self.assertTrue(len(mailCfg['toAddrs']), 2)
         self.assertEqual(mailCfg['pwd'], 'password')
+        self.assertEqual(mailCfg['fromAddr'], 'my@email.com')
 
         # replace the globals that we have been fiddling with
         # MUST be the last line in this test
