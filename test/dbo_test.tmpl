@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.{{TableName}} import {{CapTableName}}, {{CapTableName}}Keys, {{CapTableName}}Values
-from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
+from Footy.src.database.database import Database, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class Test{{CapTableName}}(TestCase):
@@ -40,9 +40,9 @@ class Test{{CapTableName}}(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = {{CapTableName}}.createAdhoc(AdhocKeys('{{TableName}}', None))
-        self.assertEqual(l.keys.table, '{{TableName}}')
-        self.assertTrue(l.keys.getFields() is None)
+        l = {{CapTableName}}.createAdhoc(AdhocKeys(None))
+        self.assertEqual(l.getTable(), '{{TableName}}')
+        self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
         obj = {{CapTableName}}.createSingle(({{AllTestDataList}}))
@@ -77,7 +77,7 @@ class Test{{CapTableName}}(TestCase):
         {{PKTestDataAssertEqualIdx0}}
         {{ValueTestDataAssertEqualIdx0}}
 
-        objs = Test{{CapTableName}}.db.select({{CapTableName}}.createAdhoc(AdhocKeys('{{TableName}}', {{ValueTestDataDict}})))
+        objs = Test{{CapTableName}}.db.select({{CapTableName}}.createAdhoc(AdhocKeys({{ValueTestDataDict}})))
         self.assertEqual(len(objs), 1)
         {{PKTestDataAssertEqualIdx0}}
         {{ValueTestDataAssertEqualIdx0}}
@@ -96,7 +96,8 @@ class Test{{CapTableName}}(TestCase):
 
             d = eval("{{NewValueTestDataDict}}")
             for k, v in d.items():
-                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[0].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -104,7 +105,7 @@ class Test{{CapTableName}}(TestCase):
         with Test{{CapTableName}}.db.transaction() as t:
             {{TableName}} = Test{{CapTableName}}.db.select({{CapTableName}}({{PKTestDataList}}))[0]
             for k, v in d.items():
-                object.__setattr__({{TableName}}.vals, k, v)
+                {{TableName}}.__getattribute__('set' + k.title())(v)
 
             Test{{CapTableName}}.db.upsert({{TableName}})
 
@@ -113,7 +114,8 @@ class Test{{CapTableName}}(TestCase):
             {{PKTestDataAssertEqualIdx0}}
 
             for k, v in d.items():
-                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[0].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -131,11 +133,13 @@ class Test{{CapTableName}}(TestCase):
 
             d = eval("{{NewPKTestDataDict}}")
             for k, v in d.items():
-                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[2].__getattribute__('get' + k.title())(), v)
 
             d = eval("{{NewValueTestDataDict}}")
             for k, v in d.items():
-                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[2].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -149,6 +153,7 @@ class Test{{CapTableName}}(TestCase):
 
             objs = Test{{CapTableName}}.db.select({{CapTableName}}())
             self.assertEqual(len(objs), 1)
+
             # force a rollback
             t.fail()
 

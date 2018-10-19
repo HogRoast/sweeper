@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.match import Match, MatchKeys, MatchValues
-from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
+from Footy.src.database.database import Database, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestMatch(TestCase):
@@ -44,20 +44,20 @@ class TestMatch(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = Match.createAdhoc(AdhocKeys('match', None))
-        self.assertEqual(l.keys.table, 'match')
-        self.assertTrue(l.keys.getFields() is None)
+        l = Match.createAdhoc(AdhocKeys(None))
+        self.assertEqual(l.getTable(), 'match')
+        self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
         obj = Match.createSingle(('match date TD', 'league name TD', 'team name TD', 'team name TD', 'X', 2.3))
 
-        self.assertEqual(obj.keys.date, 'match date TD')
-        self.assertEqual(obj.keys.league, 'league name TD')
-        self.assertEqual(obj.keys.home_team, 'team name TD')
-        self.assertEqual(obj.keys.away_team, 'team name TD')
+        self.assertEqual(obj.getDate(), 'match date TD')
+        self.assertEqual(obj.getLeague(), 'league name TD')
+        self.assertEqual(obj.getHome_Team(), 'team name TD')
+        self.assertEqual(obj.getAway_Team(), 'team name TD')
          
-        self.assertEqual(obj.vals.result, 'X')
-        self.assertEqual(obj.vals.best_odds, 2.3)
+        self.assertEqual(obj.getResult(), 'X')
+        self.assertEqual(obj.getBest_Odds(), 2.3)
          
 
     def test_createMulti(self):
@@ -66,21 +66,21 @@ class TestMatch(TestCase):
         objs = Match.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].keys.date, 'match date TD')
-        self.assertEqual(objs[0].keys.league, 'league name TD')
-        self.assertEqual(objs[0].keys.home_team, 'team name TD')
-        self.assertEqual(objs[0].keys.away_team, 'team name TD')
+        self.assertEqual(objs[0].getDate(), 'match date TD')
+        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+        self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         
-        self.assertEqual(objs[0].vals.result, 'X')
-        self.assertEqual(objs[0].vals.best_odds, 2.3)
+        self.assertEqual(objs[0].getResult(), 'X')
+        self.assertEqual(objs[0].getBest_Odds(), 2.3)
         
-        self.assertEqual(objs[1].keys.date, 'match date TD2')
-        self.assertEqual(objs[1].keys.league, 'league name TD2')
-        self.assertEqual(objs[1].keys.home_team, 'team name TD2')
-        self.assertEqual(objs[1].keys.away_team, 'team name TD2')
+        self.assertEqual(objs[1].getDate(), 'match date TD2')
+        self.assertEqual(objs[1].getLeague(), 'league name TD2')
+        self.assertEqual(objs[1].getHome_Team(), 'team name TD2')
+        self.assertEqual(objs[1].getAway_Team(), 'team name TD2')
         
-        self.assertEqual(objs[1].vals.result, 'Z')
-        self.assertEqual(objs[1].vals.best_odds, 2.4)
+        self.assertEqual(objs[1].getResult(), 'Z')
+        self.assertEqual(objs[1].getBest_Odds(), 2.4)
         
 
     def test_repr(self):
@@ -90,43 +90,43 @@ class TestMatch(TestCase):
     def test_select(self):
         objs = TestMatch.db.select(Match())
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].keys.date, 'match date TD')
-        self.assertEqual(objs[0].keys.league, 'league name TD')
-        self.assertEqual(objs[0].keys.home_team, 'team name TD')
-        self.assertEqual(objs[0].keys.away_team, 'team name TD')
+        self.assertEqual(objs[0].getDate(), 'match date TD')
+        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+        self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         
-        self.assertEqual(objs[0].vals.result, 'X')
-        self.assertEqual(objs[0].vals.best_odds, 2.3)
+        self.assertEqual(objs[0].getResult(), 'X')
+        self.assertEqual(objs[0].getBest_Odds(), 2.3)
         
-        self.assertEqual(objs[1].keys.date, 'match date TD2')
-        self.assertEqual(objs[1].keys.league, 'league name TD2')
-        self.assertEqual(objs[1].keys.home_team, 'team name TD2')
-        self.assertEqual(objs[1].keys.away_team, 'team name TD2')
+        self.assertEqual(objs[1].getDate(), 'match date TD2')
+        self.assertEqual(objs[1].getLeague(), 'league name TD2')
+        self.assertEqual(objs[1].getHome_Team(), 'team name TD2')
+        self.assertEqual(objs[1].getAway_Team(), 'team name TD2')
         
-        self.assertEqual(objs[1].vals.result, 'Z')
-        self.assertEqual(objs[1].vals.best_odds, 2.4)
+        self.assertEqual(objs[1].getResult(), 'Z')
+        self.assertEqual(objs[1].getBest_Odds(), 2.4)
         
         
         objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
         self.assertEqual(len(objs), 1)
-        self.assertEqual(objs[0].keys.date, 'match date TD')
-        self.assertEqual(objs[0].keys.league, 'league name TD')
-        self.assertEqual(objs[0].keys.home_team, 'team name TD')
-        self.assertEqual(objs[0].keys.away_team, 'team name TD')
+        self.assertEqual(objs[0].getDate(), 'match date TD')
+        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+        self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         
-        self.assertEqual(objs[0].vals.result, 'X')
-        self.assertEqual(objs[0].vals.best_odds, 2.3)
+        self.assertEqual(objs[0].getResult(), 'X')
+        self.assertEqual(objs[0].getBest_Odds(), 2.3)
         
 
-        objs = TestMatch.db.select(Match.createAdhoc(AdhocKeys('match', {'result': 'X', 'best_odds': 2.3})))
+        objs = TestMatch.db.select(Match.createAdhoc(AdhocKeys({'result': 'X', 'best_odds': 2.3})))
         self.assertEqual(len(objs), 1)
-        self.assertEqual(objs[0].keys.date, 'match date TD')
-        self.assertEqual(objs[0].keys.league, 'league name TD')
-        self.assertEqual(objs[0].keys.home_team, 'team name TD')
-        self.assertEqual(objs[0].keys.away_team, 'team name TD')
+        self.assertEqual(objs[0].getDate(), 'match date TD')
+        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+        self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         
-        self.assertEqual(objs[0].vals.result, 'X')
-        self.assertEqual(objs[0].vals.best_odds, 2.3)
+        self.assertEqual(objs[0].getResult(), 'X')
+        self.assertEqual(objs[0].getBest_Odds(), 2.3)
         
 
     def test_update(self):
@@ -139,15 +139,16 @@ class TestMatch(TestCase):
             objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
 
             self.assertEqual(len(objs), 1)
-            self.assertEqual(objs[0].keys.date, 'match date TD')
-            self.assertEqual(objs[0].keys.league, 'league name TD')
-            self.assertEqual(objs[0].keys.home_team, 'team name TD')
-            self.assertEqual(objs[0].keys.away_team, 'team name TD')
+            self.assertEqual(objs[0].getDate(), 'match date TD')
+            self.assertEqual(objs[0].getLeague(), 'league name TD')
+            self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+            self.assertEqual(objs[0].getAway_Team(), 'team name TD')
             
 
             d = eval("{'result': 'A', 'best_odds': 5.6}")
             for k, v in d.items():
-                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[0].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -155,20 +156,21 @@ class TestMatch(TestCase):
         with TestMatch.db.transaction() as t:
             match = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))[0]
             for k, v in d.items():
-                object.__setattr__(match.vals, k, v)
+                match.__getattribute__('set' + k.title())(v)
 
             TestMatch.db.upsert(match)
 
             objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
             self.assertEqual(len(objs), 1)
-            self.assertEqual(objs[0].keys.date, 'match date TD')
-            self.assertEqual(objs[0].keys.league, 'league name TD')
-            self.assertEqual(objs[0].keys.home_team, 'team name TD')
-            self.assertEqual(objs[0].keys.away_team, 'team name TD')
+            self.assertEqual(objs[0].getDate(), 'match date TD')
+            self.assertEqual(objs[0].getLeague(), 'league name TD')
+            self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+            self.assertEqual(objs[0].getAway_Team(), 'team name TD')
             
 
             for k, v in d.items():
-                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[0].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -186,11 +188,13 @@ class TestMatch(TestCase):
 
             d = eval("{'date': 'match date TD INS', 'league': 'league name TD INS', 'home_team': 'team name TD INS', 'away_team': 'team name TD INS'}")
             for k, v in d.items():
-                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[2].__getattribute__('get' + k.title())(), v)
 
             d = eval("{'result': 'A', 'best_odds': 5.6}")
             for k, v in d.items():
-                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[2].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -204,6 +208,7 @@ class TestMatch(TestCase):
 
             objs = TestMatch.db.select(Match())
             self.assertEqual(len(objs), 1)
+
             # force a rollback
             t.fail()
 

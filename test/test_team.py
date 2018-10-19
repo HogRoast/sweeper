@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.team import Team, TeamKeys, TeamValues
-from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
+from Footy.src.database.database import Database, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestTeam(TestCase):
@@ -41,16 +41,16 @@ class TestTeam(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = Team.createAdhoc(AdhocKeys('team', None))
-        self.assertEqual(l.keys.table, 'team')
-        self.assertTrue(l.keys.getFields() is None)
+        l = Team.createAdhoc(AdhocKeys(None))
+        self.assertEqual(l.getTable(), 'team')
+        self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
         obj = Team.createSingle(('team name TD', 'league name TD'))
 
-        self.assertEqual(obj.keys.name, 'team name TD')
+        self.assertEqual(obj.getName(), 'team name TD')
          
-        self.assertEqual(obj.vals.league, 'league name TD')
+        self.assertEqual(obj.getLeague(), 'league name TD')
          
 
     def test_createMulti(self):
@@ -59,13 +59,13 @@ class TestTeam(TestCase):
         objs = Team.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].keys.name, 'team name TD')
+        self.assertEqual(objs[0].getName(), 'team name TD')
         
-        self.assertEqual(objs[0].vals.league, 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league name TD')
         
-        self.assertEqual(objs[1].keys.name, 'team name TD2')
+        self.assertEqual(objs[1].getName(), 'team name TD2')
         
-        self.assertEqual(objs[1].vals.league, 'league name TD2')
+        self.assertEqual(objs[1].getLeague(), 'league name TD2')
         
 
     def test_repr(self):
@@ -75,27 +75,27 @@ class TestTeam(TestCase):
     def test_select(self):
         objs = TestTeam.db.select(Team())
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].keys.name, 'team name TD')
+        self.assertEqual(objs[0].getName(), 'team name TD')
         
-        self.assertEqual(objs[0].vals.league, 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league name TD')
         
-        self.assertEqual(objs[1].keys.name, 'team name TD2')
+        self.assertEqual(objs[1].getName(), 'team name TD2')
         
-        self.assertEqual(objs[1].vals.league, 'league name TD2')
+        self.assertEqual(objs[1].getLeague(), 'league name TD2')
         
         
         objs = TestTeam.db.select(Team('team name TD'))
         self.assertEqual(len(objs), 1)
-        self.assertEqual(objs[0].keys.name, 'team name TD')
+        self.assertEqual(objs[0].getName(), 'team name TD')
         
-        self.assertEqual(objs[0].vals.league, 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league name TD')
         
 
-        objs = TestTeam.db.select(Team.createAdhoc(AdhocKeys('team', {'league': 'league name TD'})))
+        objs = TestTeam.db.select(Team.createAdhoc(AdhocKeys({'league': 'league name TD'})))
         self.assertEqual(len(objs), 1)
-        self.assertEqual(objs[0].keys.name, 'team name TD')
+        self.assertEqual(objs[0].getName(), 'team name TD')
         
-        self.assertEqual(objs[0].vals.league, 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league name TD')
         
 
     def test_update(self):
@@ -108,12 +108,13 @@ class TestTeam(TestCase):
             objs = TestTeam.db.select(Team('team name TD'))
 
             self.assertEqual(len(objs), 1)
-            self.assertEqual(objs[0].keys.name, 'team name TD')
+            self.assertEqual(objs[0].getName(), 'team name TD')
             
 
             d = eval("{'league': 'league name TD UPD'}")
             for k, v in d.items():
-                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[0].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -121,17 +122,18 @@ class TestTeam(TestCase):
         with TestTeam.db.transaction() as t:
             team = TestTeam.db.select(Team('team name TD'))[0]
             for k, v in d.items():
-                object.__setattr__(team.vals, k, v)
+                team.__getattribute__('set' + k.title())(v)
 
             TestTeam.db.upsert(team)
 
             objs = TestTeam.db.select(Team('team name TD'))
             self.assertEqual(len(objs), 1)
-            self.assertEqual(objs[0].keys.name, 'team name TD')
+            self.assertEqual(objs[0].getName(), 'team name TD')
             
 
             for k, v in d.items():
-                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[0].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -149,11 +151,13 @@ class TestTeam(TestCase):
 
             d = eval("{'name': 'team name TD INS'}")
             for k, v in d.items():
-                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[2].__getattribute__('get' + k.title())(), v)
 
             d = eval("{'league': 'league name TD UPD'}")
             for k, v in d.items():
-                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[2].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -167,6 +171,7 @@ class TestTeam(TestCase):
 
             objs = TestTeam.db.select(Team())
             self.assertEqual(len(objs), 1)
+
             # force a rollback
             t.fail()
 

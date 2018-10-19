@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.algo import Algo, AlgoKeys, AlgoValues
-from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
+from Footy.src.database.database import Database, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestAlgo(TestCase):
@@ -41,17 +41,17 @@ class TestAlgo(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = Algo.createAdhoc(AdhocKeys('algo', None))
-        self.assertEqual(l.keys.table, 'algo')
-        self.assertTrue(l.keys.getFields() is None)
+        l = Algo.createAdhoc(AdhocKeys(None))
+        self.assertEqual(l.getTable(), 'algo')
+        self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
         obj = Algo.createSingle((98, 'algo name TD', 'algo desc TD'))
 
-        self.assertEqual(obj.keys.id, 98)
+        self.assertEqual(obj.getId(), 98)
          
-        self.assertEqual(obj.vals.name, 'algo name TD')
-        self.assertEqual(obj.vals.desc, 'algo desc TD')
+        self.assertEqual(obj.getName(), 'algo name TD')
+        self.assertEqual(obj.getDesc(), 'algo desc TD')
          
 
     def test_createMulti(self):
@@ -60,15 +60,15 @@ class TestAlgo(TestCase):
         objs = Algo.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].keys.id, 98)
+        self.assertEqual(objs[0].getId(), 98)
         
-        self.assertEqual(objs[0].vals.name, 'algo name TD')
-        self.assertEqual(objs[0].vals.desc, 'algo desc TD')
+        self.assertEqual(objs[0].getName(), 'algo name TD')
+        self.assertEqual(objs[0].getDesc(), 'algo desc TD')
         
-        self.assertEqual(objs[1].keys.id, 99)
+        self.assertEqual(objs[1].getId(), 99)
         
-        self.assertEqual(objs[1].vals.name, 'algo name TD2')
-        self.assertEqual(objs[1].vals.desc, 'algo desc TD2')
+        self.assertEqual(objs[1].getName(), 'algo name TD2')
+        self.assertEqual(objs[1].getDesc(), 'algo desc TD2')
         
 
     def test_repr(self):
@@ -78,31 +78,31 @@ class TestAlgo(TestCase):
     def test_select(self):
         objs = TestAlgo.db.select(Algo())
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].keys.id, 98)
+        self.assertEqual(objs[0].getId(), 98)
         
-        self.assertEqual(objs[0].vals.name, 'algo name TD')
-        self.assertEqual(objs[0].vals.desc, 'algo desc TD')
+        self.assertEqual(objs[0].getName(), 'algo name TD')
+        self.assertEqual(objs[0].getDesc(), 'algo desc TD')
         
-        self.assertEqual(objs[1].keys.id, 99)
+        self.assertEqual(objs[1].getId(), 99)
         
-        self.assertEqual(objs[1].vals.name, 'algo name TD2')
-        self.assertEqual(objs[1].vals.desc, 'algo desc TD2')
+        self.assertEqual(objs[1].getName(), 'algo name TD2')
+        self.assertEqual(objs[1].getDesc(), 'algo desc TD2')
         
         
         objs = TestAlgo.db.select(Algo(98))
         self.assertEqual(len(objs), 1)
-        self.assertEqual(objs[0].keys.id, 98)
+        self.assertEqual(objs[0].getId(), 98)
         
-        self.assertEqual(objs[0].vals.name, 'algo name TD')
-        self.assertEqual(objs[0].vals.desc, 'algo desc TD')
+        self.assertEqual(objs[0].getName(), 'algo name TD')
+        self.assertEqual(objs[0].getDesc(), 'algo desc TD')
         
 
-        objs = TestAlgo.db.select(Algo.createAdhoc(AdhocKeys('algo', {'name': 'algo name TD', 'desc': 'algo desc TD'})))
+        objs = TestAlgo.db.select(Algo.createAdhoc(AdhocKeys({'name': 'algo name TD', 'desc': 'algo desc TD'})))
         self.assertEqual(len(objs), 1)
-        self.assertEqual(objs[0].keys.id, 98)
+        self.assertEqual(objs[0].getId(), 98)
         
-        self.assertEqual(objs[0].vals.name, 'algo name TD')
-        self.assertEqual(objs[0].vals.desc, 'algo desc TD')
+        self.assertEqual(objs[0].getName(), 'algo name TD')
+        self.assertEqual(objs[0].getDesc(), 'algo desc TD')
         
 
     def test_update(self):
@@ -115,12 +115,13 @@ class TestAlgo(TestCase):
             objs = TestAlgo.db.select(Algo(98))
 
             self.assertEqual(len(objs), 1)
-            self.assertEqual(objs[0].keys.id, 98)
+            self.assertEqual(objs[0].getId(), 98)
             
 
             d = eval("{'name': 'algo name TD UPD', 'desc': 'algo desc TD UPD'}")
             for k, v in d.items():
-                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[0].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -128,17 +129,18 @@ class TestAlgo(TestCase):
         with TestAlgo.db.transaction() as t:
             algo = TestAlgo.db.select(Algo(98))[0]
             for k, v in d.items():
-                object.__setattr__(algo.vals, k, v)
+                algo.__getattribute__('set' + k.title())(v)
 
             TestAlgo.db.upsert(algo)
 
             objs = TestAlgo.db.select(Algo(98))
             self.assertEqual(len(objs), 1)
-            self.assertEqual(objs[0].keys.id, 98)
+            self.assertEqual(objs[0].getId(), 98)
             
 
             for k, v in d.items():
-                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[0].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -156,11 +158,13 @@ class TestAlgo(TestCase):
 
             d = eval("{'id': 100}")
             for k, v in d.items():
-                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[2].__getattribute__('get' + k.title())(), v)
 
             d = eval("{'name': 'algo name TD UPD', 'desc': 'algo desc TD UPD'}")
             for k, v in d.items():
-                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+                self.assertEqual(
+                        objs[2].__getattribute__('get' + k.title())(), v)
 
             # force a rollback
             t.fail()
@@ -174,6 +178,7 @@ class TestAlgo(TestCase):
 
             objs = TestAlgo.db.select(Algo())
             self.assertEqual(len(objs), 1)
+
             # force a rollback
             t.fail()
 

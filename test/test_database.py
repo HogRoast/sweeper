@@ -4,8 +4,8 @@ import os
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, call
-from Footy.src.database.database import Database, DatabaseInvObjError, \
-        DatabaseKeys, AdhocKeys
+from Footy.src.database.database import Database, DatabaseObject, \
+        DatabaseInvObjError, AdhocKeys
 from Footy.src.database.database_impl import DatabaseDataError, \
         DatabaseIntegrityError
 from Footy.src.database.league import League
@@ -41,16 +41,17 @@ class TestDatabase(TestCase):
         self.assertEqual(len(leagues), 2)
         self.assertEqual(
                 str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'league desc TD'}")
-        self.assertEqual(
-                str(leagues[1]), "league : Keys {'name': 'league name TD2'} : Values {'desc': 'league desc TD2'}")
+        self.assertEqual(leagues[1].getTable(), 'league')
+        self.assertEqual(leagues[1].getName(), 'league name TD2')
+        self.assertEqual(leagues[1].getDesc(), 'league desc TD2')
 
         leagues = TestDatabase.db.select(League('league name TD'))
         self.assertEqual(len(leagues), 1)
         self.assertEqual(
                 str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'league desc TD'}")
 
-        leagues = TestDatabase.db.select(League.createAdhoc(AdhocKeys(\
-                'league', {'desc': 'league desc TD2'})))
+        leagues = TestDatabase.db.select(
+                League.createAdhoc(AdhocKeys({'desc': 'league desc TD2'})))
         self.assertEqual(len(leagues), 1)
         self.assertEqual(
                 str(leagues[0]), "league : Keys {'name': 'league name TD2'} : Values {'desc': 'league desc TD2'}")

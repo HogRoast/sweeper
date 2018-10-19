@@ -1,5 +1,9 @@
 import pprint
 
+PK_GETTER_TMPL = 'def get{}(self):\n    return self._keys.{}\n\n'
+VALS_GETTER_TMPL = 'def get{}(self):\n    return self._vals.{}\n\n'
+VALS_SETTER_TMPL = 'def set{}(self, {}:{}):\n   self._vals.{} = {}\n\n'
+
 def createFile(tmplFilename, outFilename, replacements):
     print('Creating file...', tmplFilename, ' as ', outFilename)
     pprint.pprint(replacements, indent=4)
@@ -17,9 +21,7 @@ def createFile(tmplFilename, outFilename, replacements):
                     # must ensure the indent is correct
                     if '\n' in s: 
                         spaces = str().join([' '] * i)
-                        print('**** SHM **** ' + s)
                         s = s.replace('\n', '\n' + spaces)
-                        print('**** SHM **** ' + s)
                     row = row.replace(r, s)
             outFile.write(row)
 
@@ -29,14 +31,14 @@ def createReplacements(table, fields):
 
     replacements = {}
     replacements['{{TableName}}'] = table
-    _Table = table[0].upper() + table[1:]
-    replacements['{{CapTableName}}'] = _Table
+    replacements['{{CapTableName}}'] = table.title()
 
     pkFieldsTyped = ''
     pkFieldsListTyped = ''
     pkFieldsAssign = ''
     pkFieldsAnd = ''
     pkFieldsDict = '{'
+    pkFieldsGetters = ''
     pkTestDataList = ''
     pkTestDataAssign = ''
     pkTestDataAssertEqual = ''
@@ -46,6 +48,8 @@ def createReplacements(table, fields):
     valueFieldsAssign = ''
     valueFieldsAnd = ''
     valueFieldsDict = '{'
+    valueFieldsGetters = ''
+    valueFieldsSetters = ''
     valueTestDataList = ''
     valueTestDataAssertEqual = ''
     valueTestDataAssertEqual2 = ''
@@ -64,17 +68,20 @@ def createReplacements(table, fields):
                     "object.__setattr__(self, '" + k +"', " + k + ')\n' 
             pkFieldsAnd += k + ' and '
             pkFieldsDict += "'" + k + "' : " + k + ', '  
+            pkFieldsGetters += PK_GETTER_TMPL.format(k.title(), k)
             pkTestDataAssign += 'keys.' + k + ' = '
-            pkTestDataAssertEqual += 'self.assertEqual(obj.keys.'
-            pkTestDataAssertEqual2 += 'self.assertEqual(obj.keys.'
+            pkTestDataAssertEqual += \
+                    'self.assertEqual(obj.get' + k.title() + '(), '
+            pkTestDataAssertEqual2 += \
+                    'self.assertEqual(obj.get' + k.title() + '(), '
             pkTestDataDict += "'" + k + "': " 
             tmp = tmp2 = tmp3 = ''
             if v[0] == 'str':
                 if v[2] is not None:
-                    tmp = k + ", '" + v[2] + " TD')\n"
+                    tmp = "'" + v[2] + " TD')\n"
                     tmp3 = "'" + v[2] + " TD', "
                 else:
-                    tmp = k + ", '" + table + ' ' + k + " TD')\n"
+                    tmp = "'" + table + ' ' + k + " TD')\n"
                     tmp3 = "'" + table + ' ' + k + " TD', "
                 pkTestDataList += tmp3 
                 pkTestDataDict += tmp3
@@ -84,19 +91,19 @@ def createReplacements(table, fields):
                 pkTestDataList += '98, '
                 pkTestDataAssign += '75\n' 
                 pkTestDataDict += '98, '
-                tmp = k + ', 98)\n'
+                tmp = '98)\n'
                 tmp2 = tmp.replace('98', '99')
             elif v[0] == 'float':
                 pkTestDataList += '2.3, '
                 pkTestDataAssign += '1.6\n' 
                 pkTestDataDict += '2.3, '
-                tmp = k + ', 2.3)\n'
+                tmp = '2.3)\n'
                 tmp2 = tmp.replace('2.3', '2.4')
             elif v[0] == 'char':
                 pkTestDataList += "'X', "
                 pkTestDataAssign += "'A'\n"
                 pkTestDataDict += "'X', "
-                tmp = k + ", 'X')\n"
+                tmp = "'X')\n"
                 tmp2 = tmp.replace('X', 'Z')
             pkTestDataAssertEqual += tmp 
             pkTestDataAssertEqual2 += tmp2
@@ -106,32 +113,37 @@ def createReplacements(table, fields):
                     "object.__setattr__(self, '" + k +"', " + k + ')\n' 
             valueFieldsAnd += k + ' and '
             valueFieldsDict += "'" + k + "' : " + k + ', '  
+            valueFieldsGetters += VALS_GETTER_TMPL.format(k.title(), k)
+            valueFieldsSetters += \
+                    VALS_SETTER_TMPL.format(k.title(), k, type_, k, k)
             valueTestDataDict += "'" + k + "': "
-            valueTestDataAssertEqual += 'self.assertEqual(obj.vals.'
-            valueTestDataAssertEqual2 += 'self.assertEqual(obj.vals.'
+            valueTestDataAssertEqual += \
+                    'self.assertEqual(obj.get' + k.title() + '(), '
+            valueTestDataAssertEqual2 += \
+                    'self.assertEqual(obj.get' + k.title() + '(), '
             tmp = tmp2 = tmp3 = ''
             if v[0] == 'str':
                 if v[2] is not None:
-                    tmp = k + ", '" + v[2] + " TD')\n"
+                    tmp = "'" + v[2] + " TD')\n"
                     tmp3 = "'" + v[2] + " TD', "
                 else:
-                    tmp = k + ", '" + table + ' ' + k + " TD')\n"
+                    tmp = "'" + table + ' ' + k + " TD')\n"
                     tmp3 = "'" + table + ' ' + k + " TD', "
                 tmp2 = tmp.replace('TD', 'TD2')
                 valueTestDataList += tmp3
                 valueTestDataDict += tmp3
             elif v[0] == 'int':
-                tmp = k + ', 98)\n'
+                tmp = '98)\n'
                 tmp2 = tmp.replace('98', '99')
                 valueTestDataDict += '98, '
                 valueTestDataList += '98, '
             elif v[0] == 'float':
-                tmp = k + ', 2.3)\n'
+                tmp = '2.3)\n'
                 tmp2 = tmp.replace('2.3', '2.4')
                 valueTestDataDict += '2.3, '
                 valueTestDataList += '2.3, '
             elif v[0] == 'char':
-                tmp = k + ", 'X')\n"
+                tmp = "'X')\n"
                 tmp2 = tmp.replace('X', 'Z')
                 valueTestDataDict += "'X', "
                 valueTestDataList += "'X', "
@@ -171,7 +183,7 @@ def createReplacements(table, fields):
     valueFieldsDict = valueFieldsDict[:-2] + '}'
     valueFieldsDictSelf = valueFieldsDict.replace(': ', ': self.')
     valueFieldsAnd = valueFieldsAnd[:-5]
-    valueFieldsAndSelf = 'self. ' + valueFieldsAnd
+    valueFieldsAndSelf = 'self.' + valueFieldsAnd
     valueFieldsAndSelf = valueFieldsAndSelf.replace(' and ', ' and self.')
     valueTestDataDict = valueTestDataDict[:-2] + '}'
     allFieldsList = allFieldsList[:-2]
@@ -200,6 +212,7 @@ def createReplacements(table, fields):
     replacements['{{PKFieldsList}}'] = pkFieldsAnd.replace(' and', ',')
     replacements['{{PKFieldsDict}}'] = pkFieldsDict
     replacements['{{PKFieldsDictSelf}}'] = pkFieldsDictSelf
+    replacements['{{PKFieldsGetters}}'] = pkFieldsGetters
     replacements['{{PKTestDataList}}'] = pkTestDataList
     replacements['{{PKTestDataAssign}}'] = pkTestDataAssign
     replacements['{{PKTestDataAssertEqual}}'] = pkTestDataAssertEqual
@@ -216,6 +229,8 @@ def createReplacements(table, fields):
     replacements['{{ValueFieldsList}}'] = valueFieldsAnd.replace(' and', ',')
     replacements['{{ValueFieldsDict}}'] = valueFieldsDict
     replacements['{{ValueFieldsDictSelf}}'] = valueFieldsDictSelf
+    replacements['{{ValueFieldsGetters}}'] = valueFieldsGetters
+    replacements['{{ValueFieldsSetters}}'] = valueFieldsSetters
     replacements['{{ValueTestDataAssertEqual}}'] = valueTestDataAssertEqual
     replacements['{{ValueTestDataAssertEqualIdx0}}'] = \
             valueTestDataAssertEqual.replace('obj.', 'objs[0].')

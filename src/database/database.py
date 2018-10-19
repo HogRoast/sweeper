@@ -12,19 +12,16 @@ class DatabaseInvObjError(Exception):
 @dataclass(frozen=True)
 class DatabaseKeys(ABC):
     '''
-    A class to represent the primary key of a database object
+    An immutable abstract class to represent the primary key of a database 
+    object
     '''
-    def __init__(self, table:str, fields:dict):
+    def __init__(self, fields:dict):
         '''
-        Constructor for provided table and with the given fields
+        Constructor for an object with the given primary key fields
 
-        :param table: the database table this object represents
         :param fields: a dictionary of primary key fields
-        :returns: N/A
-        :raises: none
         '''
         # Need to use setattr as the class is Frozen (immutable)
-        object.__setattr__(self, 'table', table)
         object.__setattr__(self, '_fields', fields)
 
     @abstractmethod
@@ -37,37 +34,79 @@ class AdhocKeys(DatabaseKeys):
     A class to allow for adhoc selection outside of an objects primary key 
     fields
     '''
-    def __init__(self, table:str, fields:dict):
+    def __init__(self, fields:dict):
         '''
-        Constructor for provided table and with the given fields
+        Constructor for an object with the given primary key fields
 
-        :param table: the database table this object represents
         :param fields: a dictionary of primary key fields
-        :returns: N/A
-        :raises: none
         '''
-        super().__init__(table, fields)
+        super().__init__(fields)
 
     def getFields(self):
         return self._fields
 
 class DatabaseValues(ABC):
     '''
-    A class to represent the non primary key fields of a database object
+    An abstract class to represent the value fields of a database object
     '''
     def __init__(self, fields:dict):
         '''
         Constructor for the given fields
 
         :param fields: a dictionary of data fields
-        :returns: N/A
-        :raises: none
         '''
         self._fields = fields
 
     @abstractmethod
     def getFields(self):
         return self._fields
+
+class DatabaseObject(ABC):
+    def __init__(self, table:str, keys:DatabaseKeys, values:DatabaseValues):
+        '''
+        Constructor for a database object representing the given table and
+        primary key and values fields
+
+        :param table: the underlying database table name
+        :param keys: a DatabaseKeys object representing the primary key fields
+        :param values: a DatabaseValues object representing the value fields
+        '''
+        self._table = table
+        self._keys = keys
+        self._vals = values
+
+    @abstractmethod
+    def _createAdhoc(self, keys:AdhocKeys):
+        '''
+        Abstract instance method to create a database object with the 
+        provided adhoc keys list
+
+        :param keys: an AdhocKeys object
+        :returns: a League object constructed via the primary key
+        '''
+        pass
+
+    @abstractmethod
+    def _createSingle(cls, row:tuple):
+        '''
+        Abstract instance method to create a database object from the provided 
+        database row
+
+        :param row: a list of values representing the objects key and values
+        :returns: a League object constructed from row
+        '''
+        pass
+
+    @abstractmethod
+    def _createMulti(cls, rows:tuple):
+        '''
+        Abstract instance method to create database objects from the provided 
+        database rows
+
+        :param rows: a list of lists of representing object keys and values
+        :returns: a list of League objects constructed from rows
+        '''
+        pass
 
 def isDatabaseKeys(fn):
     '''
@@ -85,12 +124,8 @@ def isDatabaseObject(fn):
     '''    
     def wrapper(*args, **kwargs):
         o = args[1]
-        d = dir(o)
-        if 'keys' in d and 'vals' in d and 'createSingle' in d \
-                and 'createMulti' in d:
-            if isinstance(o.keys, DatabaseKeys) and \
-                    isinstance(o.vals, DatabaseValues):
-                return fn(*args, **kwargs)
+        if isinstance(o, DatabaseObject):
+            return fn(*args, **kwargs)
         raise DatabaseInvObjError('Not a valid DB object : ' + str(args[1]))
     return wrapper
 
@@ -111,8 +146,6 @@ class Database:
 
         :param dbname: a full path database name
         :param impl: a database implementation object instance
-        :returns: N/A
-        :raises: none
         '''
         self._dbname = dbname 
         self._impl = impl 
@@ -121,7 +154,7 @@ class Database:
         self.enableForeignKeys()
 
     @isDatabaseObject
-    def select(self, obj):
+    def select(self, obj:DatabaseObject):
         '''
         Select from db the object(s) matching the provided object's key
 
@@ -129,37 +162,35 @@ class Database:
         :returns: a list of database objects constructed from the selected rows
         :raises: DatabaseInvObjError if obj is not a valid DBO
         '''
-        rows = self._impl.select(obj.keys.table, obj.keys.getFields())
+        rows = self._impl.select(obj._table, obj._keys.getFields())
         return obj.createMulti(rows)
 
     @isDatabaseObject
-    def upsert(self, obj):
+    def upsert(self, obj:DatabaseObject):
         '''
         Insert or update the object into the database
 
         :param obj: a valid database object used to form the underlying SQL
-        :returns: N/A
         :raises: DatabaseInvObjError if obj is not a valid DBO
         :raises: DatabaseDataError underlying impl raises nothing to upsert
         '''
         if len(self.select(obj)) == 0:
-            inserts = dict(chain(obj.keys.getFields().items(), \
-                    obj.vals.getFields().items()))
-            self._impl.insert(obj.keys.table, inserts)
+            inserts = dict(chain(obj._keys.getFields().items(), \
+                    obj._vals.getFields().items()))
+            self._impl.insert(obj._table, inserts)
         else:
             self._impl.update(
-                    obj.keys.table, obj.vals.getFields(), obj.keys.getFields())
+                    obj._table, obj._vals.getFields(), obj._keys.getFields())
 
     @isDatabaseObject
-    def delete(self, obj):
+    def delete(self, obj:DatabaseObject):
         '''
         Delete the object identified by the key from the database
 
         :param obj: a valid database object used to form the underlying SQL
-        :returns: N/A
         :raises: DatabaseInvObjError if obj is not a valid DBO
         '''
-        self._impl.delete(obj.keys.table, obj.keys.getFields())
+        self._impl.delete(obj._table, obj._keys.getFields())
 
     def enableForeignKeys(self):
         self._impl.execute('pragma foreign_keys=1')
@@ -167,7 +198,7 @@ class Database:
     def disableForeignKeys(self):
         self._impl.execute('pragma foreign_keys=0')
 
-    def execute(self, s):
+    def execute(self, s:str):
         '''
         Execute the provided SQL against the underlying DB
 
