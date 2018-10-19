@@ -1,19 +1,6 @@
 from dataclasses import dataclass
 from itertools import chain
-
-class DatabaseDataError(Exception):
-    '''
-    Data provided to the database is in error
-    '''
-    def __init__(self, msg):
-        self.msg = msg
-
-class DatabaseIntegrityError(Exception):
-    '''
-    A database constraint has been breached
-    '''
-    def __init__(self, msg):
-        self.msg = msg
+from abc import ABC, abstractmethod
 
 class DatabaseInvObjError(Exception):
     '''
@@ -23,7 +10,7 @@ class DatabaseInvObjError(Exception):
         self.msg = msg
 
 @dataclass(frozen=True)
-class DatabaseKeys:
+class DatabaseKeys(ABC):
     '''
     A class to represent the primary key of a database object
     '''
@@ -38,9 +25,33 @@ class DatabaseKeys:
         '''
         # Need to use setattr as the class is Frozen (immutable)
         object.__setattr__(self, 'table', table)
-        object.__setattr__(self, 'fields', fields)
+        object.__setattr__(self, '_fields', fields)
 
-class DatabaseValues:
+    @abstractmethod
+    def getFields(self):
+        return self._fields
+
+@dataclass(frozen=True)
+class AdhocKeys(DatabaseKeys):
+    '''
+    A class to allow for adhoc selection outside of an objects primary key 
+    fields
+    '''
+    def __init__(self, table:str, fields:dict):
+        '''
+        Constructor for provided table and with the given fields
+
+        :param table: the database table this object represents
+        :param fields: a dictionary of primary key fields
+        :returns: N/A
+        :raises: none
+        '''
+        super().__init__(table, fields)
+
+    def getFields(self):
+        return self._fields
+
+class DatabaseValues(ABC):
     '''
     A class to represent the non primary key fields of a database object
     '''
@@ -52,7 +63,11 @@ class DatabaseValues:
         :returns: N/A
         :raises: none
         '''
-        self.fields = fields
+        self._fields = fields
+
+    @abstractmethod
+    def getFields(self):
+        return self._fields
 
 def isDatabaseKeys(fn):
     '''
@@ -114,7 +129,7 @@ class Database:
         :returns: a list of database objects constructed from the selected rows
         :raises: DatabaseInvObjError if obj is not a valid DBO
         '''
-        rows = self._impl.select(obj.keys.table, obj.keys.fields)
+        rows = self._impl.select(obj.keys.table, obj.keys.getFields())
         return obj.createMulti(rows)
 
     @isDatabaseObject
@@ -128,11 +143,12 @@ class Database:
         :raises: DatabaseDataError underlying impl raises nothing to upsert
         '''
         if len(self.select(obj)) == 0:
-            inserts = dict(chain(obj.keys.fields.items(), \
-                    obj.vals.fields.items()))
+            inserts = dict(chain(obj.keys.getFields().items(), \
+                    obj.vals.getFields().items()))
             self._impl.insert(obj.keys.table, inserts)
         else:
-            self._impl.update(obj.keys.table, obj.vals.fields, obj.keys.fields)
+            self._impl.update(
+                    obj.keys.table, obj.vals.getFields(), obj.keys.getFields())
 
     @isDatabaseObject
     def delete(self, obj):
@@ -143,7 +159,7 @@ class Database:
         :returns: N/A
         :raises: DatabaseInvObjError if obj is not a valid DBO
         '''
-        self._impl.delete(obj.keys.table, obj.keys.fields)
+        self._impl.delete(obj.keys.table, obj.keys.getFields())
 
     def enableForeignKeys(self):
         self._impl.execute('pragma foreign_keys=1')
@@ -161,11 +177,46 @@ class Database:
         '''
         return self._impl.execute(s)
 
-    def commit(self):
-        self._impl.commit()
-
-    def rollback(self):
-        self._impl.rollback()
+    def transaction(self):
+        '''
+        Create and return a database transaction object
+        '''
+        return Transaction(self)
 
     def close(self):
+        '''
+        Close the active database connection
+        '''
         self._impl.close()
+
+class Transaction:
+    '''
+    Context manager enabled database transaction class
+    '''
+    def __init__(self, db:Database):
+        '''
+        Constructor for the given database
+
+        :param db: a Database object
+        :returns: N/A
+        :raises: None
+        '''
+        self._db = db
+        self._fail = False
+
+    def __enter__(self):
+        self._db._impl.begin()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type or self._fail:
+            self._db._impl.rollback()
+        else:
+            self._db._impl.commit()
+        return False
+
+    def fail(self):
+        '''
+        Force a rollback by setting fail attribute True
+        '''
+        self._fail = True

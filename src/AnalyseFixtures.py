@@ -144,4 +144,4 @@ if __name__ == '__main__':
     fixturesURL = 'http://www.football-data.co.uk/fixtures.csv'
     #fixturesURL = 'file:///home/mckone/Documents/Stuff/Footy/fixtures.txt'
 
-    analyseFixtures(resultURLTmpl, fixturesURL, sys.argv)
+    analyseFixtures(resultsURLTmpl, fixturesURL, sys.argv)

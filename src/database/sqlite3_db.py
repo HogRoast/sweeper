@@ -1,12 +1,17 @@
 from sqlite3 import connect, IntegrityError
-from Footy.src.database.database import DatabaseDataError, \
-        DatabaseIntegrityError
+from Footy.src.database.database_impl import DatabaseDataError, \
+        DatabaseIntegrityError, DatabaseImpl
 
-class SQLite3Impl:
+class SQLite3Impl(DatabaseImpl):
     '''
     SQLite3 implementation class to be used with the generic Database class
     '''
     def connect(self, dbname:str):
+        '''
+        Connect to the named db
+
+        :param dbname: the full path to the database file
+        '''
         self._dbname = dbname
         self._conn = connect(dbname)
 
@@ -139,11 +144,26 @@ class SQLite3Impl:
 
         return rows
 
+    def begin(self):
+        '''
+        Begin a database transaction
+        '''
+        self.execute('begin transaction')
+
     def commit(self):
+        '''
+        Commit the active database transaction
+        '''
         self._conn.commit()
 
     def rollback(self):
+        '''
+        Commit the active database transaction
+        '''
         self._conn.rollback()
 
     def close(self):
+        '''
+        Close the active database connection
+        '''
         self._conn.close()

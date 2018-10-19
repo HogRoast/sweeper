@@ -10,8 +10,17 @@ def createFile(tmplFilename, outFilename, replacements):
         for row in tmplFile:
             for r in replacements.keys():
                 # Replace patterns
-                if r in row:
-                    row = row.replace(r, replacements[r])
+                i = row.find(r)
+                if i > -1:
+                    s = replacements[r]
+                    # if the replacement pattern contains newlines then we 
+                    # must ensure the indent is correct
+                    if '\n' in s: 
+                        spaces = str().join([' '] * i)
+                        print('**** SHM **** ' + s)
+                        s = s.replace('\n', '\n' + spaces)
+                        print('**** SHM **** ' + s)
+                    row = row.replace(r, s)
             outFile.write(row)
 
 def createReplacements(table, fields):
@@ -49,10 +58,10 @@ def createReplacements(table, fields):
     for k, v in fields.items():
         type_ = 'str' if v[0] == 'char' else v[0]
         if v[1] == True:
-            pkFieldsTyped += k + ':' + type_ +'\n    '
+            pkFieldsTyped += k + ':' + type_ +'\n'
             pkFieldsListTyped += k + ':' + type_ + ', '
             pkFieldsAssign += \
-                    "object.__setattr__(self, '" + k +"', " + k + ')\n        ' 
+                    "object.__setattr__(self, '" + k +"', " + k + ')\n' 
             pkFieldsAnd += k + ' and '
             pkFieldsDict += "'" + k + "' : " + k + ', '  
             pkTestDataAssign += 'keys.' + k + ' = '
@@ -62,39 +71,39 @@ def createReplacements(table, fields):
             tmp = tmp2 = tmp3 = ''
             if v[0] == 'str':
                 if v[2] is not None:
-                    tmp = k + ", '" + v[2] + " TD')\n        "
+                    tmp = k + ", '" + v[2] + " TD')\n"
                     tmp3 = "'" + v[2] + " TD', "
                 else:
-                    tmp = k + ", '" + table + ' ' + k + " TD')\n        "
+                    tmp = k + ", '" + table + ' ' + k + " TD')\n"
                     tmp3 = "'" + table + ' ' + k + " TD', "
                 pkTestDataList += tmp3 
                 pkTestDataDict += tmp3
-                pkTestDataAssign += "'Something New'\n            "
+                pkTestDataAssign += "'Something New'\n"
                 tmp2 = tmp.replace('TD', 'TD2')
             elif v[0] == 'int':
                 pkTestDataList += '98, '
-                pkTestDataAssign += '75\n            ' 
+                pkTestDataAssign += '75\n' 
                 pkTestDataDict += '98, '
-                tmp = k + ', 98)\n        '
+                tmp = k + ', 98)\n'
                 tmp2 = tmp.replace('98', '99')
             elif v[0] == 'float':
                 pkTestDataList += '2.3, '
-                pkTestDataAssign += '1.6\n            ' 
+                pkTestDataAssign += '1.6\n' 
                 pkTestDataDict += '2.3, '
-                tmp = k + ', 2.3)\n        '
+                tmp = k + ', 2.3)\n'
                 tmp2 = tmp.replace('2.3', '2.4')
             elif v[0] == 'char':
                 pkTestDataList += "'X', "
-                pkTestDataAssign += "'A'\n            "
+                pkTestDataAssign += "'A'\n"
                 pkTestDataDict += "'X', "
-                tmp = k + ", 'X')\n        "
+                tmp = k + ", 'X')\n"
                 tmp2 = tmp.replace('X', 'Z')
             pkTestDataAssertEqual += tmp 
             pkTestDataAssertEqual2 += tmp2
         else:
             valueFieldsListTypedAndDef += k + ':' + type_ + ' = None, '
             valueFieldsAssign += \
-                    "object.__setattr__(self, '" + k +"', " + k + ')\n        ' 
+                    "object.__setattr__(self, '" + k +"', " + k + ')\n' 
             valueFieldsAnd += k + ' and '
             valueFieldsDict += "'" + k + "' : " + k + ', '  
             valueTestDataDict += "'" + k + "': "
@@ -103,26 +112,26 @@ def createReplacements(table, fields):
             tmp = tmp2 = tmp3 = ''
             if v[0] == 'str':
                 if v[2] is not None:
-                    tmp = k + ", '" + v[2] + " TD')\n        "
+                    tmp = k + ", '" + v[2] + " TD')\n"
                     tmp3 = "'" + v[2] + " TD', "
                 else:
-                    tmp = k + ", '" + table + ' ' + k + " TD')\n        "
+                    tmp = k + ", '" + table + ' ' + k + " TD')\n"
                     tmp3 = "'" + table + ' ' + k + " TD', "
                 tmp2 = tmp.replace('TD', 'TD2')
                 valueTestDataList += tmp3
                 valueTestDataDict += tmp3
             elif v[0] == 'int':
-                tmp = k + ', 98)\n        '
+                tmp = k + ', 98)\n'
                 tmp2 = tmp.replace('98', '99')
                 valueTestDataDict += '98, '
                 valueTestDataList += '98, '
             elif v[0] == 'float':
-                tmp = k + ', 2.3)\n        '
+                tmp = k + ', 2.3)\n'
                 tmp2 = tmp.replace('2.3', '2.4')
                 valueTestDataDict += '2.3, '
                 valueTestDataList += '2.3, '
             elif v[0] == 'char':
-                tmp = k + ", 'X')\n        "
+                tmp = k + ", 'X')\n"
                 tmp2 = tmp.replace('X', 'Z')
                 valueTestDataDict += "'X', "
                 valueTestDataList += "'X', "
@@ -151,20 +160,29 @@ def createReplacements(table, fields):
     # remove extraneous comma and other guff
     pkFieldsListTyped = pkFieldsListTyped[:-2]
     pkFieldsDict = pkFieldsDict[:-2] + '}'
+    pkFieldsDictSelf = pkFieldsDict.replace(': ', ': self.')
     pkFieldsAnd = pkFieldsAnd[:-5]
+    pkFieldsAndSelf = 'self.' + pkFieldsAnd
+    pkFieldsAndSelf = pkFieldsAndSelf.replace(' and ', ' and self.')
     pkTestDataList = pkTestDataList[:-2]
     pkTestDataDict = pkTestDataDict[:-2] + '}'
     valueTestDataList = valueTestDataList[:-2]
     valueFieldsListTypedAndDef = valueFieldsListTypedAndDef[:-2]
     valueFieldsDict = valueFieldsDict[:-2] + '}'
+    valueFieldsDictSelf = valueFieldsDict.replace(': ', ': self.')
     valueFieldsAnd = valueFieldsAnd[:-5]
+    valueFieldsAndSelf = 'self. ' + valueFieldsAnd
+    valueFieldsAndSelf = valueFieldsAndSelf.replace(' and ', ' and self.')
     valueTestDataDict = valueTestDataDict[:-2] + '}'
     allFieldsList = allFieldsList[:-2]
     allFieldsListTypedAndDef = allFieldsListTypedAndDef[:-2]
     allTestDataList = allTestDataList[:-2]
     allTestDataList2 = allTestDataList2[:-2]
-    allTestDataRows = '(' + allTestDataList + '),\n' + '                (' + allTestDataList2 + ')'
+    allTestDataRows = '(' + allTestDataList + '),\n' + '(' + allTestDataList2 + ')'
     newPKTestDataList = pkTestDataList.replace( \
+                'TD', 'TD INS').replace('98', '100').replace( \
+                '2.3', '5.6').replace('X', 'A')
+    newPKTestDataDict = pkTestDataDict.replace( \
                 'TD', 'TD INS').replace('98', '100').replace( \
                 '2.3', '5.6').replace('X', 'A')
     newValueTestDataList = valueTestDataList.replace( \
@@ -178,8 +196,10 @@ def createReplacements(table, fields):
     replacements['{{PKFieldsListTyped}}'] = pkFieldsListTyped
     replacements['{{PKFieldsAssign}}'] = pkFieldsAssign
     replacements['{{PKFieldsAnd}}'] = pkFieldsAnd
+    replacements['{{PKFieldsAndSelf}}'] = pkFieldsAndSelf
     replacements['{{PKFieldsList}}'] = pkFieldsAnd.replace(' and', ',')
     replacements['{{PKFieldsDict}}'] = pkFieldsDict
+    replacements['{{PKFieldsDictSelf}}'] = pkFieldsDictSelf
     replacements['{{PKTestDataList}}'] = pkTestDataList
     replacements['{{PKTestDataAssign}}'] = pkTestDataAssign
     replacements['{{PKTestDataAssertEqual}}'] = pkTestDataAssertEqual
@@ -192,8 +212,10 @@ def createReplacements(table, fields):
     replacements['{{ValueFieldsListTypedAndDef}}'] = valueFieldsListTypedAndDef
     replacements['{{ValueFieldsAssign}}'] = valueFieldsAssign
     replacements['{{ValueFieldsAnd}}'] = valueFieldsAnd
+    replacements['{{ValueFieldsAndSelf}}'] = valueFieldsAndSelf
     replacements['{{ValueFieldsList}}'] = valueFieldsAnd.replace(' and', ',')
     replacements['{{ValueFieldsDict}}'] = valueFieldsDict
+    replacements['{{ValueFieldsDictSelf}}'] = valueFieldsDictSelf
     replacements['{{ValueTestDataAssertEqual}}'] = valueTestDataAssertEqual
     replacements['{{ValueTestDataAssertEqualIdx0}}'] = \
             valueTestDataAssertEqual.replace('obj.', 'objs[0].')
@@ -207,6 +229,7 @@ def createReplacements(table, fields):
     replacements['{{NewValueTestDataList}}'] = newValueTestDataList
     replacements['{{NewValueTestDataDict}}'] = newValueTestDataDict
     replacements['{{NewPKTestDataList}}'] = newPKTestDataList
+    replacements['{{NewPKTestDataDict}}'] = newPKTestDataDict
 
     return replacements
 

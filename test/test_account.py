@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.account import Account, AccountKeys, AccountValues
-from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestAccount(TestCase):
@@ -21,7 +21,6 @@ class TestAccount(TestCase):
         os.system('cat {} | sqlite3 {}'.format(createName, dbName))
         os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
         cls.db = Database(dbName, SQLite3Impl())
-        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
@@ -42,9 +41,9 @@ class TestAccount(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = Account.createAdhoc(DatabaseKeys('account', None))
+        l = Account.createAdhoc(AdhocKeys('account', None))
         self.assertEqual(l.keys.table, 'account')
-        self.assertTrue(l.keys.fields is None)
+        self.assertTrue(l.keys.getFields() is None)
 
     def test_createSingle(self):
         obj = Account.createSingle(('account name TD', 'account expiry_date TD', 'account joined_date TD', 98))
@@ -104,7 +103,7 @@ class TestAccount(TestCase):
         self.assertEqual(objs[0].vals.plan_id, 98)
         
 
-        objs = TestAccount.db.select(Account.createAdhoc(DatabaseKeys('account', {'expiry_date': 'account expiry_date TD', 'joined_date': 'account joined_date TD', 'plan_id': 98})))
+        objs = TestAccount.db.select(Account.createAdhoc(AdhocKeys('account', {'expiry_date': 'account expiry_date TD', 'joined_date': 'account joined_date TD', 'plan_id': 98})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].keys.name, 'account name TD')
         
@@ -117,42 +116,73 @@ class TestAccount(TestCase):
         # Disable Foreign Keys checks for this test
         TestAccount.db.disableForeignKeys()
 
-        TestAccount.db.upsert(
-                Account('account name TD', 'account expiry_date TD UPD', 'account joined_date TD UPD', 100))
-        objs = TestAccount.db.select(Account('account name TD'))
-        self.assertEqual(len(objs), 1)
+        with TestAccount.db.transaction() as t:
+            TestAccount.db.upsert(
+                    Account('account name TD', 'account expiry_date TD UPD', 'account joined_date TD UPD', 100))
+            objs = TestAccount.db.select(Account('account name TD'))
 
-        d = eval("{'expiry_date': 'account expiry_date TD UPD', 'joined_date': 'account joined_date TD UPD', 'plan_id': 100}")
-        for k, v in d.items():
-            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.name, 'account name TD')
+            
 
-        TestAccount.db.rollback()
+            d = eval("{'expiry_date': 'account expiry_date TD UPD', 'joined_date': 'account joined_date TD UPD', 'plan_id': 100}")
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
+
+        with TestAccount.db.transaction() as t:
+            account = TestAccount.db.select(Account('account name TD'))[0]
+            for k, v in d.items():
+                object.__setattr__(account.vals, k, v)
+
+            TestAccount.db.upsert(account)
+
+            objs = TestAccount.db.select(Account('account name TD'))
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.name, 'account name TD')
+            
+
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_insert(self):
         # Disable Foreign Keys checks for this test
         TestAccount.db.disableForeignKeys()
 
-        TestAccount.db.upsert(
-                Account('account name TD INS', 'account expiry_date TD UPD', 'account joined_date TD UPD', 100))
-        objs = TestAccount.db.select(Account())
-        self.assertEqual(len(objs), 3)
+        with TestAccount.db.transaction() as t:
+            TestAccount.db.upsert(
+                    Account('account name TD INS', 'account expiry_date TD UPD', 'account joined_date TD UPD', 100))
+            objs = TestAccount.db.select(Account())
 
-        d = eval("{'expiry_date': 'account expiry_date TD UPD', 'joined_date': 'account joined_date TD UPD', 'plan_id': 100}")
-        for k, v in d.items():
-            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 3)
 
-        TestAccount.db.rollback()
+            d = eval("{'name': 'account name TD INS'}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+
+            d = eval("{'expiry_date': 'account expiry_date TD UPD', 'joined_date': 'account joined_date TD UPD', 'plan_id': 100}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_delete(self):
         # Disable Foreign Keys checks for this test
         TestAccount.db.disableForeignKeys()
 
-        TestAccount.db.delete(Account('account name TD'))
+        with TestAccount.db.transaction() as t:
+            TestAccount.db.delete(Account('account name TD'))
 
-        objs = TestAccount.db.select(Account())
-        self.assertEqual(len(objs), 1)
-
-        TestAccount.db.rollback()
+            objs = TestAccount.db.select(Account())
+            self.assertEqual(len(objs), 1)
+            # force a rollback
+            t.fail()
 
 if __name__ == '__main__':
     import unittest

@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.team import Team, TeamKeys, TeamValues
-from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestTeam(TestCase):
@@ -21,7 +21,6 @@ class TestTeam(TestCase):
         os.system('cat {} | sqlite3 {}'.format(createName, dbName))
         os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
         cls.db = Database(dbName, SQLite3Impl())
-        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
@@ -42,9 +41,9 @@ class TestTeam(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = Team.createAdhoc(DatabaseKeys('team', None))
+        l = Team.createAdhoc(AdhocKeys('team', None))
         self.assertEqual(l.keys.table, 'team')
-        self.assertTrue(l.keys.fields is None)
+        self.assertTrue(l.keys.getFields() is None)
 
     def test_createSingle(self):
         obj = Team.createSingle(('team name TD', 'league name TD'))
@@ -92,7 +91,7 @@ class TestTeam(TestCase):
         self.assertEqual(objs[0].vals.league, 'league name TD')
         
 
-        objs = TestTeam.db.select(Team.createAdhoc(DatabaseKeys('team', {'league': 'league name TD'})))
+        objs = TestTeam.db.select(Team.createAdhoc(AdhocKeys('team', {'league': 'league name TD'})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].keys.name, 'team name TD')
         
@@ -103,42 +102,73 @@ class TestTeam(TestCase):
         # Disable Foreign Keys checks for this test
         TestTeam.db.disableForeignKeys()
 
-        TestTeam.db.upsert(
-                Team('team name TD', 'league name TD UPD'))
-        objs = TestTeam.db.select(Team('team name TD'))
-        self.assertEqual(len(objs), 1)
+        with TestTeam.db.transaction() as t:
+            TestTeam.db.upsert(
+                    Team('team name TD', 'league name TD UPD'))
+            objs = TestTeam.db.select(Team('team name TD'))
 
-        d = eval("{'league': 'league name TD UPD'}")
-        for k, v in d.items():
-            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.name, 'team name TD')
+            
 
-        TestTeam.db.rollback()
+            d = eval("{'league': 'league name TD UPD'}")
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
+
+        with TestTeam.db.transaction() as t:
+            team = TestTeam.db.select(Team('team name TD'))[0]
+            for k, v in d.items():
+                object.__setattr__(team.vals, k, v)
+
+            TestTeam.db.upsert(team)
+
+            objs = TestTeam.db.select(Team('team name TD'))
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.name, 'team name TD')
+            
+
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_insert(self):
         # Disable Foreign Keys checks for this test
         TestTeam.db.disableForeignKeys()
 
-        TestTeam.db.upsert(
-                Team('team name TD INS', 'league name TD UPD'))
-        objs = TestTeam.db.select(Team())
-        self.assertEqual(len(objs), 3)
+        with TestTeam.db.transaction() as t:
+            TestTeam.db.upsert(
+                    Team('team name TD INS', 'league name TD UPD'))
+            objs = TestTeam.db.select(Team())
 
-        d = eval("{'league': 'league name TD UPD'}")
-        for k, v in d.items():
-            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 3)
 
-        TestTeam.db.rollback()
+            d = eval("{'name': 'team name TD INS'}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+
+            d = eval("{'league': 'league name TD UPD'}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_delete(self):
         # Disable Foreign Keys checks for this test
         TestTeam.db.disableForeignKeys()
 
-        TestTeam.db.delete(Team('team name TD'))
+        with TestTeam.db.transaction() as t:
+            TestTeam.db.delete(Team('team name TD'))
 
-        objs = TestTeam.db.select(Team())
-        self.assertEqual(len(objs), 1)
-
-        TestTeam.db.rollback()
+            objs = TestTeam.db.select(Team())
+            self.assertEqual(len(objs), 1)
+            # force a rollback
+            t.fail()
 
 if __name__ == '__main__':
     import unittest

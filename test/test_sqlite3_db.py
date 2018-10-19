@@ -5,7 +5,7 @@ from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 from Footy.src.database.sqlite3_db import SQLite3Impl
-from Footy.src.database.database import DatabaseDataError, \
+from Footy.src.database.database_impl import DatabaseDataError, \
         DatabaseIntegrityError
 
 class TestSQLite3Impl(TestCase):
@@ -73,6 +73,49 @@ class TestSQLite3Impl(TestCase):
         self.assertEqual(rows[2], ('my_team', 'English Champ'))
 
         TestSQLite3Impl.db.rollback()
+
+    def test_transaction(self):
+        TestSQLite3Impl.db.begin()
+
+        TestSQLite3Impl.db.insert(
+                'team', {'name' : 'my_team', 'league' : 'English Champ'})
+        TestSQLite3Impl.db.insert(
+                'team', {'name' : 'my_team2', 'league' : 'English Champ'})
+
+        TestSQLite3Impl.db.commit()
+
+        rows = TestSQLite3Impl.db.select('team', {})    
+        self.assertEqual(len(rows), 4)
+
+        TestSQLite3Impl.db.insert(
+                'team', {'name' : 'my_team3', 'league' : 'English Champ'})
+
+        rows = TestSQLite3Impl.db.select('team', {})    
+        self.assertEqual(len(rows), 5)
+
+        TestSQLite3Impl.db.rollback()
+
+        rows = TestSQLite3Impl.db.select('team', {})    
+        self.assertEqual(len(rows), 4)
+
+    def test_transaction_Failure(self):
+        TestSQLite3Impl.db.begin()
+
+        TestSQLite3Impl.db.insert(
+                'team', {'name' : 'my_team4', 'league' : 'English Champ'})
+        try:
+            TestSQLite3Impl.db.insert('team', None)
+        except:
+            pass
+
+        rows = TestSQLite3Impl.db.select('team', {'name' : 'my_team4'})
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0], ('my_team4', 'English Champ'))
+
+        TestSQLite3Impl.db.rollback()
+
+        rows = TestSQLite3Impl.db.select('team', {'name' : 'my_team4'})
+        self.assertEqual(len(rows), 0)
 
     def test_insert_Error(self):
         with self.assertRaises(DatabaseDataError) as cm:

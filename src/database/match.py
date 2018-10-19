@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Footy.src.database.database import DatabaseKeys, DatabaseValues
+from Footy.src.database.database import DatabaseKeys, DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
 class MatchKeys(DatabaseKeys):
@@ -26,9 +26,18 @@ class MatchKeys(DatabaseKeys):
         object.__setattr__(self, 'home_team', home_team)
         object.__setattr__(self, 'away_team', away_team)
         
-        fields = None if not (date and league and home_team and away_team) else {'date' : date, 'league' : league, 'home_team' : home_team, 'away_team' : away_team}
-        super().__init__('match', fields)
+        super().__init__('match', self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the PK fields for this object in a dictionary form
+        
+        :returns: a dictionary of all MatchKeys fields
+        :raises: None
+        '''
+        fields = None if not (self.date and self.league and self.home_team and self.away_team) else {'date' : self.date, 'league' : self.league, 'home_team' : self.home_team, 'away_team' : self.away_team}
+        return fields
+        
 class MatchValues(DatabaseValues):
     '''
     match database object values representation
@@ -44,19 +53,29 @@ class MatchValues(DatabaseValues):
         object.__setattr__(self, 'result', result)
         object.__setattr__(self, 'best_odds', best_odds)
         
-        fields = None if not (result and best_odds) else {'result' : result, 'best_odds' : best_odds}
-        super().__init__(fields)
+        super().__init__(self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the value fields for this object in a dictionary form
+        
+        :returns: a dictionary of all MatchValues fields
+        :raises: None
+        '''
+        fields = None if not (self. result and self.best_odds) else {'result' : self.result, 'best_odds' : self.best_odds}
+        return fields
+        
 class Match:
     '''
     match database object representation
     '''
     @classmethod
-    def createAdhoc(cls, keys:DatabaseKeys):
+    def createAdhoc(cls, keys:AdhocKeys):
         '''
-        Class method to create a database object with the provided primary key
+        Class method to create a database object with the provided adhoc keys
+        list
 
-        :param keys: a DatabaseKeys object
+        :param keys: an AdhocKeys object
         :returns: a Match object constructed via the primary key
         :raises: None
         '''
@@ -102,5 +121,5 @@ class Match:
         self.vals = MatchValues(result, best_odds)
 
     def __repr__(self):
-        return self.keys.table + ' : Keys ' + str(self.keys.fields) + \
-                ' : Values ' + str(self.vals.fields)
+        return self.keys.table + ' : Keys ' + str(self.keys.getFields()) + \
+                ' : Values ' + str(self.vals.getFields())

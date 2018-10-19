@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.match import Match, MatchKeys, MatchValues
-from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestMatch(TestCase):
@@ -21,7 +21,6 @@ class TestMatch(TestCase):
         os.system('cat {} | sqlite3 {}'.format(createName, dbName))
         os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
         cls.db = Database(dbName, SQLite3Impl())
-        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
@@ -45,9 +44,9 @@ class TestMatch(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = Match.createAdhoc(DatabaseKeys('match', None))
+        l = Match.createAdhoc(AdhocKeys('match', None))
         self.assertEqual(l.keys.table, 'match')
-        self.assertTrue(l.keys.fields is None)
+        self.assertTrue(l.keys.getFields() is None)
 
     def test_createSingle(self):
         obj = Match.createSingle(('match date TD', 'league name TD', 'team name TD', 'team name TD', 'X', 2.3))
@@ -119,7 +118,7 @@ class TestMatch(TestCase):
         self.assertEqual(objs[0].vals.best_odds, 2.3)
         
 
-        objs = TestMatch.db.select(Match.createAdhoc(DatabaseKeys('match', {'result': 'X', 'best_odds': 2.3})))
+        objs = TestMatch.db.select(Match.createAdhoc(AdhocKeys('match', {'result': 'X', 'best_odds': 2.3})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].keys.date, 'match date TD')
         self.assertEqual(objs[0].keys.league, 'league name TD')
@@ -134,42 +133,79 @@ class TestMatch(TestCase):
         # Disable Foreign Keys checks for this test
         TestMatch.db.disableForeignKeys()
 
-        TestMatch.db.upsert(
-                Match('match date TD', 'league name TD', 'team name TD', 'team name TD', 'A', 5.6))
-        objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
-        self.assertEqual(len(objs), 1)
+        with TestMatch.db.transaction() as t:
+            TestMatch.db.upsert(
+                    Match('match date TD', 'league name TD', 'team name TD', 'team name TD', 'A', 5.6))
+            objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
 
-        d = eval("{'result': 'A', 'best_odds': 5.6}")
-        for k, v in d.items():
-            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.date, 'match date TD')
+            self.assertEqual(objs[0].keys.league, 'league name TD')
+            self.assertEqual(objs[0].keys.home_team, 'team name TD')
+            self.assertEqual(objs[0].keys.away_team, 'team name TD')
+            
 
-        TestMatch.db.rollback()
+            d = eval("{'result': 'A', 'best_odds': 5.6}")
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
+
+        with TestMatch.db.transaction() as t:
+            match = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))[0]
+            for k, v in d.items():
+                object.__setattr__(match.vals, k, v)
+
+            TestMatch.db.upsert(match)
+
+            objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.date, 'match date TD')
+            self.assertEqual(objs[0].keys.league, 'league name TD')
+            self.assertEqual(objs[0].keys.home_team, 'team name TD')
+            self.assertEqual(objs[0].keys.away_team, 'team name TD')
+            
+
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_insert(self):
         # Disable Foreign Keys checks for this test
         TestMatch.db.disableForeignKeys()
 
-        TestMatch.db.upsert(
-                Match('match date TD INS', 'league name TD INS', 'team name TD INS', 'team name TD INS', 'A', 5.6))
-        objs = TestMatch.db.select(Match())
-        self.assertEqual(len(objs), 3)
+        with TestMatch.db.transaction() as t:
+            TestMatch.db.upsert(
+                    Match('match date TD INS', 'league name TD INS', 'team name TD INS', 'team name TD INS', 'A', 5.6))
+            objs = TestMatch.db.select(Match())
 
-        d = eval("{'result': 'A', 'best_odds': 5.6}")
-        for k, v in d.items():
-            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 3)
 
-        TestMatch.db.rollback()
+            d = eval("{'date': 'match date TD INS', 'league': 'league name TD INS', 'home_team': 'team name TD INS', 'away_team': 'team name TD INS'}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+
+            d = eval("{'result': 'A', 'best_odds': 5.6}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_delete(self):
         # Disable Foreign Keys checks for this test
         TestMatch.db.disableForeignKeys()
 
-        TestMatch.db.delete(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
+        with TestMatch.db.transaction() as t:
+            TestMatch.db.delete(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
 
-        objs = TestMatch.db.select(Match())
-        self.assertEqual(len(objs), 1)
-
-        TestMatch.db.rollback()
+            objs = TestMatch.db.select(Match())
+            self.assertEqual(len(objs), 1)
+            # force a rollback
+            t.fail()
 
 if __name__ == '__main__':
     import unittest

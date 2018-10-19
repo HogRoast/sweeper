@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Footy.src.database.database import DatabaseKeys, DatabaseValues
+from Footy.src.database.database import DatabaseKeys, DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
 class Account_permsKeys(DatabaseKeys):
@@ -20,9 +20,18 @@ class Account_permsKeys(DatabaseKeys):
         # Need to use setattr as the class is Frozen (immutable)
         object.__setattr__(self, 'id', id)
         
-        fields = None if not (id) else {'id' : id}
-        super().__init__('account_perms', fields)
+        super().__init__('account_perms', self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the PK fields for this object in a dictionary form
+        
+        :returns: a dictionary of all Account_permsKeys fields
+        :raises: None
+        '''
+        fields = None if not (self.id) else {'id' : self.id}
+        return fields
+        
 class Account_permsValues(DatabaseValues):
     '''
     account_perms database object values representation
@@ -39,19 +48,29 @@ class Account_permsValues(DatabaseValues):
         object.__setattr__(self, 'league', league)
         object.__setattr__(self, 'algo_id', algo_id)
         
-        fields = None if not (account and league and algo_id) else {'account' : account, 'league' : league, 'algo_id' : algo_id}
-        super().__init__(fields)
+        super().__init__(self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the value fields for this object in a dictionary form
+        
+        :returns: a dictionary of all Account_permsValues fields
+        :raises: None
+        '''
+        fields = None if not (self. account and self.league and self.algo_id) else {'account' : self.account, 'league' : self.league, 'algo_id' : self.algo_id}
+        return fields
+        
 class Account_perms:
     '''
     account_perms database object representation
     '''
     @classmethod
-    def createAdhoc(cls, keys:DatabaseKeys):
+    def createAdhoc(cls, keys:AdhocKeys):
         '''
-        Class method to create a database object with the provided primary key
+        Class method to create a database object with the provided adhoc keys
+        list
 
-        :param keys: a DatabaseKeys object
+        :param keys: an AdhocKeys object
         :returns: a Account_perms object constructed via the primary key
         :raises: None
         '''
@@ -97,5 +116,5 @@ class Account_perms:
         self.vals = Account_permsValues(account, league, algo_id)
 
     def __repr__(self):
-        return self.keys.table + ' : Keys ' + str(self.keys.fields) + \
-                ' : Values ' + str(self.vals.fields)
+        return self.keys.table + ' : Keys ' + str(self.keys.getFields()) + \
+                ' : Values ' + str(self.vals.getFields())

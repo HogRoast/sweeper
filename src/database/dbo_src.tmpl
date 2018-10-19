@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Footy.src.database.database import DatabaseKeys, DatabaseValues
+from Footy.src.database.database import DatabaseKeys, DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
 class {{CapTableName}}Keys(DatabaseKeys):
@@ -18,9 +18,18 @@ class {{CapTableName}}Keys(DatabaseKeys):
         '''
         # Need to use setattr as the class is Frozen (immutable)
         {{PKFieldsAssign}}
-        fields = None if not ({{PKFieldsAnd}}) else {{PKFieldsDict}}
-        super().__init__('{{TableName}}', fields)
+        super().__init__('{{TableName}}', self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the PK fields for this object in a dictionary form
+        
+        :returns: a dictionary of all {{CapTableName}}Keys fields
+        :raises: None
+        '''
+        fields = None if not ({{PKFieldsAndSelf}}) else {{PKFieldsDictSelf}}
+        return fields
+        
 class {{CapTableName}}Values(DatabaseValues):
     '''
     {{TableName}} database object values representation
@@ -34,19 +43,29 @@ class {{CapTableName}}Values(DatabaseValues):
         :raises: None
         '''
         {{ValueFieldsAssign}}
-        fields = None if not ({{ValueFieldsAnd}}) else {{ValueFieldsDict}}
-        super().__init__(fields)
+        super().__init__(self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the value fields for this object in a dictionary form
+        
+        :returns: a dictionary of all {{CapTableName}}Values fields
+        :raises: None
+        '''
+        fields = None if not ({{ValueFieldsAndSelf}}) else {{ValueFieldsDictSelf}}
+        return fields
+        
 class {{CapTableName}}:
     '''
     {{TableName}} database object representation
     '''
     @classmethod
-    def createAdhoc(cls, keys:DatabaseKeys):
+    def createAdhoc(cls, keys:AdhocKeys):
         '''
-        Class method to create a database object with the provided primary key
+        Class method to create a database object with the provided adhoc keys
+        list
 
-        :param keys: a DatabaseKeys object
+        :param keys: an AdhocKeys object
         :returns: a {{CapTableName}} object constructed via the primary key
         :raises: None
         '''
@@ -92,5 +111,5 @@ class {{CapTableName}}:
         self.vals = {{CapTableName}}Values({{ValueFieldsList}})
 
     def __repr__(self):
-        return self.keys.table + ' : Keys ' + str(self.keys.fields) + \
-                ' : Values ' + str(self.vals.fields)
+        return self.keys.table + ' : Keys ' + str(self.keys.getFields()) + \
+                ' : Values ' + str(self.vals.getFields())

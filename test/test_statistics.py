@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.statistics import Statistics, StatisticsKeys, StatisticsValues
-from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestStatistics(TestCase):
@@ -21,7 +21,6 @@ class TestStatistics(TestCase):
         os.system('cat {} | sqlite3 {}'.format(createName, dbName))
         os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
         cls.db = Database(dbName, SQLite3Impl())
-        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
@@ -44,9 +43,9 @@ class TestStatistics(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = Statistics.createAdhoc(DatabaseKeys('statistics', None))
+        l = Statistics.createAdhoc(AdhocKeys('statistics', None))
         self.assertEqual(l.keys.table, 'statistics')
-        self.assertTrue(l.keys.fields is None)
+        self.assertTrue(l.keys.getFields() is None)
 
     def test_createSingle(self):
         obj = Statistics.createSingle(('statistics generation_date TD', 98, 'league name TD', 98, 98, 98, 98, 98))
@@ -130,7 +129,7 @@ class TestStatistics(TestCase):
         self.assertEqual(objs[0].vals.draw_freq, 98)
         
 
-        objs = TestStatistics.db.select(Statistics.createAdhoc(DatabaseKeys('statistics', {'mark': 98, 'mark_freq': 98, 'home_freq': 98, 'away_freq': 98, 'draw_freq': 98})))
+        objs = TestStatistics.db.select(Statistics.createAdhoc(AdhocKeys('statistics', {'mark': 98, 'mark_freq': 98, 'home_freq': 98, 'away_freq': 98, 'draw_freq': 98})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].keys.generation_date, 'statistics generation_date TD')
         self.assertEqual(objs[0].keys.algo_id, 98)
@@ -147,42 +146,77 @@ class TestStatistics(TestCase):
         # Disable Foreign Keys checks for this test
         TestStatistics.db.disableForeignKeys()
 
-        TestStatistics.db.upsert(
-                Statistics('statistics generation_date TD', 98, 'league name TD', 100, 100, 100, 100, 100))
-        objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league name TD'))
-        self.assertEqual(len(objs), 1)
+        with TestStatistics.db.transaction() as t:
+            TestStatistics.db.upsert(
+                    Statistics('statistics generation_date TD', 98, 'league name TD', 100, 100, 100, 100, 100))
+            objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league name TD'))
 
-        d = eval("{'mark': 100, 'mark_freq': 100, 'home_freq': 100, 'away_freq': 100, 'draw_freq': 100}")
-        for k, v in d.items():
-            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.generation_date, 'statistics generation_date TD')
+            self.assertEqual(objs[0].keys.algo_id, 98)
+            self.assertEqual(objs[0].keys.league, 'league name TD')
+            
 
-        TestStatistics.db.rollback()
+            d = eval("{'mark': 100, 'mark_freq': 100, 'home_freq': 100, 'away_freq': 100, 'draw_freq': 100}")
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
+
+        with TestStatistics.db.transaction() as t:
+            statistics = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league name TD'))[0]
+            for k, v in d.items():
+                object.__setattr__(statistics.vals, k, v)
+
+            TestStatistics.db.upsert(statistics)
+
+            objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league name TD'))
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.generation_date, 'statistics generation_date TD')
+            self.assertEqual(objs[0].keys.algo_id, 98)
+            self.assertEqual(objs[0].keys.league, 'league name TD')
+            
+
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_insert(self):
         # Disable Foreign Keys checks for this test
         TestStatistics.db.disableForeignKeys()
 
-        TestStatistics.db.upsert(
-                Statistics('statistics generation_date TD INS', 100, 'league name TD INS', 100, 100, 100, 100, 100))
-        objs = TestStatistics.db.select(Statistics())
-        self.assertEqual(len(objs), 3)
+        with TestStatistics.db.transaction() as t:
+            TestStatistics.db.upsert(
+                    Statistics('statistics generation_date TD INS', 100, 'league name TD INS', 100, 100, 100, 100, 100))
+            objs = TestStatistics.db.select(Statistics())
 
-        d = eval("{'mark': 100, 'mark_freq': 100, 'home_freq': 100, 'away_freq': 100, 'draw_freq': 100}")
-        for k, v in d.items():
-            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 3)
 
-        TestStatistics.db.rollback()
+            d = eval("{'generation_date': 'statistics generation_date TD INS', 'algo_id': 100, 'league': 'league name TD INS'}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+
+            d = eval("{'mark': 100, 'mark_freq': 100, 'home_freq': 100, 'away_freq': 100, 'draw_freq': 100}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_delete(self):
         # Disable Foreign Keys checks for this test
         TestStatistics.db.disableForeignKeys()
 
-        TestStatistics.db.delete(Statistics('statistics generation_date TD', 98, 'league name TD'))
+        with TestStatistics.db.transaction() as t:
+            TestStatistics.db.delete(Statistics('statistics generation_date TD', 98, 'league name TD'))
 
-        objs = TestStatistics.db.select(Statistics())
-        self.assertEqual(len(objs), 1)
-
-        TestStatistics.db.rollback()
+            objs = TestStatistics.db.select(Statistics())
+            self.assertEqual(len(objs), 1)
+            # force a rollback
+            t.fail()
 
 if __name__ == '__main__':
     import unittest

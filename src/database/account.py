@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Footy.src.database.database import DatabaseKeys, DatabaseValues
+from Footy.src.database.database import DatabaseKeys, DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
 class AccountKeys(DatabaseKeys):
@@ -20,9 +20,18 @@ class AccountKeys(DatabaseKeys):
         # Need to use setattr as the class is Frozen (immutable)
         object.__setattr__(self, 'name', name)
         
-        fields = None if not (name) else {'name' : name}
-        super().__init__('account', fields)
+        super().__init__('account', self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the PK fields for this object in a dictionary form
+        
+        :returns: a dictionary of all AccountKeys fields
+        :raises: None
+        '''
+        fields = None if not (self.name) else {'name' : self.name}
+        return fields
+        
 class AccountValues(DatabaseValues):
     '''
     account database object values representation
@@ -39,19 +48,29 @@ class AccountValues(DatabaseValues):
         object.__setattr__(self, 'joined_date', joined_date)
         object.__setattr__(self, 'plan_id', plan_id)
         
-        fields = None if not (expiry_date and joined_date and plan_id) else {'expiry_date' : expiry_date, 'joined_date' : joined_date, 'plan_id' : plan_id}
-        super().__init__(fields)
+        super().__init__(self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the value fields for this object in a dictionary form
+        
+        :returns: a dictionary of all AccountValues fields
+        :raises: None
+        '''
+        fields = None if not (self. expiry_date and self.joined_date and self.plan_id) else {'expiry_date' : self.expiry_date, 'joined_date' : self.joined_date, 'plan_id' : self.plan_id}
+        return fields
+        
 class Account:
     '''
     account database object representation
     '''
     @classmethod
-    def createAdhoc(cls, keys:DatabaseKeys):
+    def createAdhoc(cls, keys:AdhocKeys):
         '''
-        Class method to create a database object with the provided primary key
+        Class method to create a database object with the provided adhoc keys
+        list
 
-        :param keys: a DatabaseKeys object
+        :param keys: an AdhocKeys object
         :returns: a Account object constructed via the primary key
         :raises: None
         '''
@@ -97,5 +116,5 @@ class Account:
         self.vals = AccountValues(expiry_date, joined_date, plan_id)
 
     def __repr__(self):
-        return self.keys.table + ' : Keys ' + str(self.keys.fields) + \
-                ' : Values ' + str(self.vals.fields)
+        return self.keys.table + ' : Keys ' + str(self.keys.getFields()) + \
+                ' : Values ' + str(self.vals.getFields())

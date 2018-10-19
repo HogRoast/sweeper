@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.account_perms import Account_perms, Account_permsKeys, Account_permsValues
-from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestAccount_perms(TestCase):
@@ -21,7 +21,6 @@ class TestAccount_perms(TestCase):
         os.system('cat {} | sqlite3 {}'.format(createName, dbName))
         os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
         cls.db = Database(dbName, SQLite3Impl())
-        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
@@ -42,9 +41,9 @@ class TestAccount_perms(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = Account_perms.createAdhoc(DatabaseKeys('account_perms', None))
+        l = Account_perms.createAdhoc(AdhocKeys('account_perms', None))
         self.assertEqual(l.keys.table, 'account_perms')
-        self.assertTrue(l.keys.fields is None)
+        self.assertTrue(l.keys.getFields() is None)
 
     def test_createSingle(self):
         obj = Account_perms.createSingle((98, 'account name TD', 'league name TD', 98))
@@ -104,7 +103,7 @@ class TestAccount_perms(TestCase):
         self.assertEqual(objs[0].vals.algo_id, 98)
         
 
-        objs = TestAccount_perms.db.select(Account_perms.createAdhoc(DatabaseKeys('account_perms', {'account': 'account name TD', 'league': 'league name TD', 'algo_id': 98})))
+        objs = TestAccount_perms.db.select(Account_perms.createAdhoc(AdhocKeys('account_perms', {'account': 'account name TD', 'league': 'league name TD', 'algo_id': 98})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].keys.id, 98)
         
@@ -117,42 +116,73 @@ class TestAccount_perms(TestCase):
         # Disable Foreign Keys checks for this test
         TestAccount_perms.db.disableForeignKeys()
 
-        TestAccount_perms.db.upsert(
-                Account_perms(98, 'account name TD UPD', 'league name TD UPD', 100))
-        objs = TestAccount_perms.db.select(Account_perms(98))
-        self.assertEqual(len(objs), 1)
+        with TestAccount_perms.db.transaction() as t:
+            TestAccount_perms.db.upsert(
+                    Account_perms(98, 'account name TD UPD', 'league name TD UPD', 100))
+            objs = TestAccount_perms.db.select(Account_perms(98))
 
-        d = eval("{'account': 'account name TD UPD', 'league': 'league name TD UPD', 'algo_id': 100}")
-        for k, v in d.items():
-            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.id, 98)
+            
 
-        TestAccount_perms.db.rollback()
+            d = eval("{'account': 'account name TD UPD', 'league': 'league name TD UPD', 'algo_id': 100}")
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
+
+        with TestAccount_perms.db.transaction() as t:
+            account_perms = TestAccount_perms.db.select(Account_perms(98))[0]
+            for k, v in d.items():
+                object.__setattr__(account_perms.vals, k, v)
+
+            TestAccount_perms.db.upsert(account_perms)
+
+            objs = TestAccount_perms.db.select(Account_perms(98))
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.id, 98)
+            
+
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_insert(self):
         # Disable Foreign Keys checks for this test
         TestAccount_perms.db.disableForeignKeys()
 
-        TestAccount_perms.db.upsert(
-                Account_perms(100, 'account name TD UPD', 'league name TD UPD', 100))
-        objs = TestAccount_perms.db.select(Account_perms())
-        self.assertEqual(len(objs), 3)
+        with TestAccount_perms.db.transaction() as t:
+            TestAccount_perms.db.upsert(
+                    Account_perms(100, 'account name TD UPD', 'league name TD UPD', 100))
+            objs = TestAccount_perms.db.select(Account_perms())
 
-        d = eval("{'account': 'account name TD UPD', 'league': 'league name TD UPD', 'algo_id': 100}")
-        for k, v in d.items():
-            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 3)
 
-        TestAccount_perms.db.rollback()
+            d = eval("{'id': 100}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+
+            d = eval("{'account': 'account name TD UPD', 'league': 'league name TD UPD', 'algo_id': 100}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_delete(self):
         # Disable Foreign Keys checks for this test
         TestAccount_perms.db.disableForeignKeys()
 
-        TestAccount_perms.db.delete(Account_perms(98))
+        with TestAccount_perms.db.transaction() as t:
+            TestAccount_perms.db.delete(Account_perms(98))
 
-        objs = TestAccount_perms.db.select(Account_perms())
-        self.assertEqual(len(objs), 1)
-
-        TestAccount_perms.db.rollback()
+            objs = TestAccount_perms.db.select(Account_perms())
+            self.assertEqual(len(objs), 1)
+            # force a rollback
+            t.fail()
 
 if __name__ == '__main__':
     import unittest

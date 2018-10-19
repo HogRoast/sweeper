@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.algo import Algo, AlgoKeys, AlgoValues
-from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class TestAlgo(TestCase):
@@ -21,7 +21,6 @@ class TestAlgo(TestCase):
         os.system('cat {} | sqlite3 {}'.format(createName, dbName))
         os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
         cls.db = Database(dbName, SQLite3Impl())
-        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
@@ -42,9 +41,9 @@ class TestAlgo(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = Algo.createAdhoc(DatabaseKeys('algo', None))
+        l = Algo.createAdhoc(AdhocKeys('algo', None))
         self.assertEqual(l.keys.table, 'algo')
-        self.assertTrue(l.keys.fields is None)
+        self.assertTrue(l.keys.getFields() is None)
 
     def test_createSingle(self):
         obj = Algo.createSingle((98, 'algo name TD', 'algo desc TD'))
@@ -98,7 +97,7 @@ class TestAlgo(TestCase):
         self.assertEqual(objs[0].vals.desc, 'algo desc TD')
         
 
-        objs = TestAlgo.db.select(Algo.createAdhoc(DatabaseKeys('algo', {'name': 'algo name TD', 'desc': 'algo desc TD'})))
+        objs = TestAlgo.db.select(Algo.createAdhoc(AdhocKeys('algo', {'name': 'algo name TD', 'desc': 'algo desc TD'})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].keys.id, 98)
         
@@ -110,42 +109,73 @@ class TestAlgo(TestCase):
         # Disable Foreign Keys checks for this test
         TestAlgo.db.disableForeignKeys()
 
-        TestAlgo.db.upsert(
-                Algo(98, 'algo name TD UPD', 'algo desc TD UPD'))
-        objs = TestAlgo.db.select(Algo(98))
-        self.assertEqual(len(objs), 1)
+        with TestAlgo.db.transaction() as t:
+            TestAlgo.db.upsert(
+                    Algo(98, 'algo name TD UPD', 'algo desc TD UPD'))
+            objs = TestAlgo.db.select(Algo(98))
 
-        d = eval("{'name': 'algo name TD UPD', 'desc': 'algo desc TD UPD'}")
-        for k, v in d.items():
-            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.id, 98)
+            
 
-        TestAlgo.db.rollback()
+            d = eval("{'name': 'algo name TD UPD', 'desc': 'algo desc TD UPD'}")
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
+
+        with TestAlgo.db.transaction() as t:
+            algo = TestAlgo.db.select(Algo(98))[0]
+            for k, v in d.items():
+                object.__setattr__(algo.vals, k, v)
+
+            TestAlgo.db.upsert(algo)
+
+            objs = TestAlgo.db.select(Algo(98))
+            self.assertEqual(len(objs), 1)
+            self.assertEqual(objs[0].keys.id, 98)
+            
+
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_insert(self):
         # Disable Foreign Keys checks for this test
         TestAlgo.db.disableForeignKeys()
 
-        TestAlgo.db.upsert(
-                Algo(100, 'algo name TD UPD', 'algo desc TD UPD'))
-        objs = TestAlgo.db.select(Algo())
-        self.assertEqual(len(objs), 3)
+        with TestAlgo.db.transaction() as t:
+            TestAlgo.db.upsert(
+                    Algo(100, 'algo name TD UPD', 'algo desc TD UPD'))
+            objs = TestAlgo.db.select(Algo())
 
-        d = eval("{'name': 'algo name TD UPD', 'desc': 'algo desc TD UPD'}")
-        for k, v in d.items():
-            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 3)
 
-        TestAlgo.db.rollback()
+            d = eval("{'id': 100}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+
+            d = eval("{'name': 'algo name TD UPD', 'desc': 'algo desc TD UPD'}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_delete(self):
         # Disable Foreign Keys checks for this test
         TestAlgo.db.disableForeignKeys()
 
-        TestAlgo.db.delete(Algo(98))
+        with TestAlgo.db.transaction() as t:
+            TestAlgo.db.delete(Algo(98))
 
-        objs = TestAlgo.db.select(Algo())
-        self.assertEqual(len(objs), 1)
-
-        TestAlgo.db.rollback()
+            objs = TestAlgo.db.select(Algo())
+            self.assertEqual(len(objs), 1)
+            # force a rollback
+            t.fail()
 
 if __name__ == '__main__':
     import unittest

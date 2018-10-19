@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Footy.src.database.database import DatabaseKeys, DatabaseValues
+from Footy.src.database.database import DatabaseKeys, DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
 class AlgoKeys(DatabaseKeys):
@@ -20,9 +20,18 @@ class AlgoKeys(DatabaseKeys):
         # Need to use setattr as the class is Frozen (immutable)
         object.__setattr__(self, 'id', id)
         
-        fields = None if not (id) else {'id' : id}
-        super().__init__('algo', fields)
+        super().__init__('algo', self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the PK fields for this object in a dictionary form
+        
+        :returns: a dictionary of all AlgoKeys fields
+        :raises: None
+        '''
+        fields = None if not (self.id) else {'id' : self.id}
+        return fields
+        
 class AlgoValues(DatabaseValues):
     '''
     algo database object values representation
@@ -38,19 +47,29 @@ class AlgoValues(DatabaseValues):
         object.__setattr__(self, 'name', name)
         object.__setattr__(self, 'desc', desc)
         
-        fields = None if not (name and desc) else {'name' : name, 'desc' : desc}
-        super().__init__(fields)
+        super().__init__(self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the value fields for this object in a dictionary form
+        
+        :returns: a dictionary of all AlgoValues fields
+        :raises: None
+        '''
+        fields = None if not (self. name and self.desc) else {'name' : self.name, 'desc' : self.desc}
+        return fields
+        
 class Algo:
     '''
     algo database object representation
     '''
     @classmethod
-    def createAdhoc(cls, keys:DatabaseKeys):
+    def createAdhoc(cls, keys:AdhocKeys):
         '''
-        Class method to create a database object with the provided primary key
+        Class method to create a database object with the provided adhoc keys
+        list
 
-        :param keys: a DatabaseKeys object
+        :param keys: an AdhocKeys object
         :returns: a Algo object constructed via the primary key
         :raises: None
         '''
@@ -96,5 +115,5 @@ class Algo:
         self.vals = AlgoValues(name, desc)
 
     def __repr__(self):
-        return self.keys.table + ' : Keys ' + str(self.keys.fields) + \
-                ' : Values ' + str(self.vals.fields)
+        return self.keys.table + ' : Keys ' + str(self.keys.getFields()) + \
+                ' : Values ' + str(self.vals.getFields())

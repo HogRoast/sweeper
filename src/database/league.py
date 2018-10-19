@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Footy.src.database.database import DatabaseKeys, DatabaseValues
+from Footy.src.database.database import DatabaseKeys, DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
 class LeagueKeys(DatabaseKeys):
@@ -20,9 +20,18 @@ class LeagueKeys(DatabaseKeys):
         # Need to use setattr as the class is Frozen (immutable)
         object.__setattr__(self, 'name', name)
         
-        fields = None if not (name) else {'name' : name}
-        super().__init__('league', fields)
+        super().__init__('league', self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the PK fields for this object in a dictionary form
+        
+        :returns: a dictionary of all LeagueKeys fields
+        :raises: None
+        '''
+        fields = None if not (self.name) else {'name' : self.name}
+        return fields
+        
 class LeagueValues(DatabaseValues):
     '''
     league database object values representation
@@ -37,19 +46,29 @@ class LeagueValues(DatabaseValues):
         '''
         object.__setattr__(self, 'desc', desc)
         
-        fields = None if not (desc) else {'desc' : desc}
-        super().__init__(fields)
+        super().__init__(self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the value fields for this object in a dictionary form
+        
+        :returns: a dictionary of all LeagueValues fields
+        :raises: None
+        '''
+        fields = None if not (self. desc) else {'desc' : self.desc}
+        return fields
+        
 class League:
     '''
     league database object representation
     '''
     @classmethod
-    def createAdhoc(cls, keys:DatabaseKeys):
+    def createAdhoc(cls, keys:AdhocKeys):
         '''
-        Class method to create a database object with the provided primary key
+        Class method to create a database object with the provided adhoc keys
+        list
 
-        :param keys: a DatabaseKeys object
+        :param keys: an AdhocKeys object
         :returns: a League object constructed via the primary key
         :raises: None
         '''
@@ -95,5 +114,5 @@ class League:
         self.vals = LeagueValues(desc)
 
     def __repr__(self):
-        return self.keys.table + ' : Keys ' + str(self.keys.fields) + \
-                ' : Values ' + str(self.vals.fields)
+        return self.keys.table + ' : Keys ' + str(self.keys.getFields()) + \
+                ' : Values ' + str(self.vals.getFields())

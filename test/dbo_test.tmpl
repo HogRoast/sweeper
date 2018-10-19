@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call
 from dataclasses import FrozenInstanceError
 from Footy.src.database.{{TableName}} import {{CapTableName}}, {{CapTableName}}Keys, {{CapTableName}}Values
-from Footy.src.database.database import Database, DatabaseKeys
+from Footy.src.database.database import Database, DatabaseKeys, AdhocKeys
 from Footy.src.database.sqlite3_db import SQLite3Impl
 
 class Test{{CapTableName}}(TestCase):
@@ -21,7 +21,6 @@ class Test{{CapTableName}}(TestCase):
         os.system('cat {} | sqlite3 {}'.format(createName, dbName))
         os.system('cat {} | sqlite3 {}'.format(testDataName, dbName))
         cls.db = Database(dbName, SQLite3Impl())
-        cls.db.enableForeignKeys()
 
     @classmethod
     def tearDownClass(cls):
@@ -41,9 +40,9 @@ class Test{{CapTableName}}(TestCase):
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
     def test_keys_adhoc(self):
-        l = {{CapTableName}}.createAdhoc(DatabaseKeys('{{TableName}}', None))
+        l = {{CapTableName}}.createAdhoc(AdhocKeys('{{TableName}}', None))
         self.assertEqual(l.keys.table, '{{TableName}}')
-        self.assertTrue(l.keys.fields is None)
+        self.assertTrue(l.keys.getFields() is None)
 
     def test_createSingle(self):
         obj = {{CapTableName}}.createSingle(({{AllTestDataList}}))
@@ -78,7 +77,7 @@ class Test{{CapTableName}}(TestCase):
         {{PKTestDataAssertEqualIdx0}}
         {{ValueTestDataAssertEqualIdx0}}
 
-        objs = Test{{CapTableName}}.db.select({{CapTableName}}.createAdhoc(DatabaseKeys('{{TableName}}', {{ValueTestDataDict}})))
+        objs = Test{{CapTableName}}.db.select({{CapTableName}}.createAdhoc(AdhocKeys('{{TableName}}', {{ValueTestDataDict}})))
         self.assertEqual(len(objs), 1)
         {{PKTestDataAssertEqualIdx0}}
         {{ValueTestDataAssertEqualIdx0}}
@@ -87,42 +86,71 @@ class Test{{CapTableName}}(TestCase):
         # Disable Foreign Keys checks for this test
         Test{{CapTableName}}.db.disableForeignKeys()
 
-        Test{{CapTableName}}.db.upsert(
-                {{CapTableName}}({{PKTestDataList}}, {{NewValueTestDataList}}))
-        objs = Test{{CapTableName}}.db.select({{CapTableName}}({{PKTestDataList}}))
-        self.assertEqual(len(objs), 1)
+        with Test{{CapTableName}}.db.transaction() as t:
+            Test{{CapTableName}}.db.upsert(
+                    {{CapTableName}}({{PKTestDataList}}, {{NewValueTestDataList}}))
+            objs = Test{{CapTableName}}.db.select({{CapTableName}}({{PKTestDataList}}))
 
-        d = eval("{{NewValueTestDataDict}}")
-        for k, v in d.items():
-            self.assertEqual(objs[0].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 1)
+            {{PKTestDataAssertEqualIdx0}}
 
-        Test{{CapTableName}}.db.rollback()
+            d = eval("{{NewValueTestDataDict}}")
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
+
+        with Test{{CapTableName}}.db.transaction() as t:
+            {{TableName}} = Test{{CapTableName}}.db.select({{CapTableName}}({{PKTestDataList}}))[0]
+            for k, v in d.items():
+                object.__setattr__({{TableName}}.vals, k, v)
+
+            Test{{CapTableName}}.db.upsert({{TableName}})
+
+            objs = Test{{CapTableName}}.db.select({{CapTableName}}({{PKTestDataList}}))
+            self.assertEqual(len(objs), 1)
+            {{PKTestDataAssertEqualIdx0}}
+
+            for k, v in d.items():
+                self.assertEqual(objs[0].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_insert(self):
         # Disable Foreign Keys checks for this test
         Test{{CapTableName}}.db.disableForeignKeys()
 
-        Test{{CapTableName}}.db.upsert(
-                {{CapTableName}}({{NewPKTestDataList}}, {{NewValueTestDataList}}))
-        objs = Test{{CapTableName}}.db.select({{CapTableName}}())
-        self.assertEqual(len(objs), 3)
+        with Test{{CapTableName}}.db.transaction() as t:
+            Test{{CapTableName}}.db.upsert(
+                    {{CapTableName}}({{NewPKTestDataList}}, {{NewValueTestDataList}}))
+            objs = Test{{CapTableName}}.db.select({{CapTableName}}())
 
-        d = eval("{{NewValueTestDataDict}}")
-        for k, v in d.items():
-            self.assertEqual(objs[2].vals.__getattribute__(k), v)
+            self.assertEqual(len(objs), 3)
 
-        Test{{CapTableName}}.db.rollback()
+            d = eval("{{NewPKTestDataDict}}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].keys.__getattribute__(k), v)
+
+            d = eval("{{NewValueTestDataDict}}")
+            for k, v in d.items():
+                self.assertEqual(objs[2].vals.__getattribute__(k), v)
+
+            # force a rollback
+            t.fail()
 
     def test_delete(self):
         # Disable Foreign Keys checks for this test
         Test{{CapTableName}}.db.disableForeignKeys()
 
-        Test{{CapTableName}}.db.delete({{CapTableName}}({{PKTestDataList}}))
+        with Test{{CapTableName}}.db.transaction() as t:
+            Test{{CapTableName}}.db.delete({{CapTableName}}({{PKTestDataList}}))
 
-        objs = Test{{CapTableName}}.db.select({{CapTableName}}())
-        self.assertEqual(len(objs), 1)
-
-        Test{{CapTableName}}.db.rollback()
+            objs = Test{{CapTableName}}.db.select({{CapTableName}}())
+            self.assertEqual(len(objs), 1)
+            # force a rollback
+            t.fail()
 
 if __name__ == '__main__':
     import unittest

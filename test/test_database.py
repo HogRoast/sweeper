@@ -5,8 +5,9 @@ from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 from Footy.src.database.database import Database, DatabaseInvObjError, \
-         DatabaseKeys, DatabaseDataError, DatabaseIntegrityError, \
-         DatabaseInvObjError
+        DatabaseKeys, AdhocKeys
+from Footy.src.database.database_impl import DatabaseDataError, \
+        DatabaseIntegrityError
 from Footy.src.database.league import League
 from Footy.src.database.team import Team
 from Footy.src.database.sqlite3_db import SQLite3Impl
@@ -48,66 +49,98 @@ class TestDatabase(TestCase):
         self.assertEqual(
                 str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'league desc TD'}")
 
-        leagues = TestDatabase.db.select(League.createAdhoc(DatabaseKeys(\
+        leagues = TestDatabase.db.select(League.createAdhoc(AdhocKeys(\
                 'league', {'desc': 'league desc TD2'})))
         self.assertEqual(len(leagues), 1)
         self.assertEqual(
                 str(leagues[0]), "league : Keys {'name': 'league name TD2'} : Values {'desc': 'league desc TD2'}")
 
     def test_foreign_key(self):
-        with self.assertRaises(DatabaseIntegrityError) as cm:
+        with TestDatabase.db.transaction(), \
+                self.assertRaises(DatabaseIntegrityError) as cm:
             TestDatabase.db.upsert(Team('My Team', 'no such league'))
-        TestDatabase.db.rollback()
         self.assertEqual('FOREIGN KEY constraint failed', cm.exception.args[0])
+
+    def test_transaction(self):
+        # test commit
+        with TestDatabase.db.transaction():
+            TestDatabase.db.upsert(
+                    League('My League', 'Based right here'))
+            TestDatabase.db.upsert(
+                    League('My League2', 'Also Based right here'))
+        leagues = TestDatabase.db.select(League())
+        self.assertEqual(len(leagues), 4)
+
+        # test rollback on exception
+        with TestDatabase.db.transaction(), \
+                self.assertRaises(DatabaseDataError) as cm:
+            TestDatabase.db.upsert(League('My League'))
+        self.assertEqual(cm.exception.args[0], 'No values provided for UPDATE')
+        self.assertEqual(len(leagues), 4)
+
+        # test a forced rollback
+        with TestDatabase.db.transaction() as t:
+            TestDatabase.db.upsert(
+                    League('My League3', 'Based right here'))
+            t.fail()
+        self.assertEqual(len(leagues), 4)
+
+        # restore table to pre-test state
+        with TestDatabase.db.transaction():
+            TestDatabase.db.delete(League('My League'))
+            TestDatabase.db.delete(League('My League2'))
+        leagues = TestDatabase.db.select(League())
+        self.assertEqual(len(leagues), 2)
 
     def test_select_NoRows(self):
         leagues = TestDatabase.db.select(League('Bundesliga'))
         self.assertEqual(len(leagues), 0)
 
     def test_upsert(self):
-        TestDatabase.db.upsert(League('My League', 'Based right here'))
+        with TestDatabase.db.transaction() as t:
+            TestDatabase.db.upsert(League('My League', 'Based right here'))
 
-        leagues = TestDatabase.db.select(League())
+            leagues = TestDatabase.db.select(League())
 
-        self.assertEqual(len(leagues), 3)
-        self.assertEqual(
-                str(leagues[2]), "league : Keys {'name': 'My League'} : Values {'desc': 'Based right here'}")
+            self.assertEqual(len(leagues), 3)
+            self.assertEqual(
+                    str(leagues[2]), "league : Keys {'name': 'My League'} : Values {'desc': 'Based right here'}")
 
-        TestDatabase.db.rollback()
+            TestDatabase.db.upsert(League('league name TD', 'Based right here'))
 
-        TestDatabase.db.upsert(League('league name TD', 'Based right here'))
+            leagues = TestDatabase.db.select(League('league name TD'))
 
-        leagues = TestDatabase.db.select(League())
+            self.assertEqual(len(leagues), 1)
+            self.assertEqual(
+                    str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'Based right here'}")
 
-        self.assertEqual(len(leagues), 2)
-        self.assertEqual(
-                str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'Based right here'}")
-
-        TestDatabase.db.rollback()
+            # force a rollback
+            t.fail()
 
     def test_DatabaseObjectError(self):
-        with self.assertRaises(DatabaseInvObjError) as cm:
+        with TestDatabase.db.transaction(), \
+                self.assertRaises(DatabaseInvObjError) as cm:
             leagues = TestDatabase.db.select(object())
         self.assertEqual(
                 cm.exception.msg, 'Not a valid DB object : ' + str(object()))
 
     def test_upsert_Error(self):
-        with self.assertRaises(DatabaseDataError) as cm:
+        with TestDatabase.db.transaction(), \
+                self.assertRaises(DatabaseDataError) as cm:
             TestDatabase.db.upsert(League())
         self.assertEqual(cm.exception.msg, 'No values provided for UPDATE')
 
     def test_delete(self):
-        TestDatabase.db.upsert(
-                League('Bundesliga', 'The German Top Flight'))
-        TestDatabase.db.commit()
+        with TestDatabase.db.transaction():
+            TestDatabase.db.upsert(
+                    League('Bundesliga', 'The German Top Flight'))
 
         leagues = TestDatabase.db.select(League())
         self.assertEqual(len(leagues), 3)
         self.assertEqual(str(leagues[2]), "league : Keys {'name': 'Bundesliga'} : Values {'desc': 'The German Top Flight'}")
 
-        TestDatabase.db.delete(League('Bundesliga'))
-        TestDatabase.db.commit()
-
+        with TestDatabase.db.transaction():
+            TestDatabase.db.delete(League('Bundesliga'))
         leagues = TestDatabase.db.select(League())
         self.assertEqual(len(leagues), 2)
 

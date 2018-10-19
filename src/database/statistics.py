@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Footy.src.database.database import DatabaseKeys, DatabaseValues
+from Footy.src.database.database import DatabaseKeys, DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
 class StatisticsKeys(DatabaseKeys):
@@ -24,9 +24,18 @@ class StatisticsKeys(DatabaseKeys):
         object.__setattr__(self, 'algo_id', algo_id)
         object.__setattr__(self, 'league', league)
         
-        fields = None if not (generation_date and algo_id and league) else {'generation_date' : generation_date, 'algo_id' : algo_id, 'league' : league}
-        super().__init__('statistics', fields)
+        super().__init__('statistics', self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the PK fields for this object in a dictionary form
+        
+        :returns: a dictionary of all StatisticsKeys fields
+        :raises: None
+        '''
+        fields = None if not (self.generation_date and self.algo_id and self.league) else {'generation_date' : self.generation_date, 'algo_id' : self.algo_id, 'league' : self.league}
+        return fields
+        
 class StatisticsValues(DatabaseValues):
     '''
     statistics database object values representation
@@ -45,19 +54,29 @@ class StatisticsValues(DatabaseValues):
         object.__setattr__(self, 'away_freq', away_freq)
         object.__setattr__(self, 'draw_freq', draw_freq)
         
-        fields = None if not (mark and mark_freq and home_freq and away_freq and draw_freq) else {'mark' : mark, 'mark_freq' : mark_freq, 'home_freq' : home_freq, 'away_freq' : away_freq, 'draw_freq' : draw_freq}
-        super().__init__(fields)
+        super().__init__(self.getFields())
 
+    def getFields(self):
+        '''
+        Get all the value fields for this object in a dictionary form
+        
+        :returns: a dictionary of all StatisticsValues fields
+        :raises: None
+        '''
+        fields = None if not (self. mark and self.mark_freq and self.home_freq and self.away_freq and self.draw_freq) else {'mark' : self.mark, 'mark_freq' : self.mark_freq, 'home_freq' : self.home_freq, 'away_freq' : self.away_freq, 'draw_freq' : self.draw_freq}
+        return fields
+        
 class Statistics:
     '''
     statistics database object representation
     '''
     @classmethod
-    def createAdhoc(cls, keys:DatabaseKeys):
+    def createAdhoc(cls, keys:AdhocKeys):
         '''
-        Class method to create a database object with the provided primary key
+        Class method to create a database object with the provided adhoc keys
+        list
 
-        :param keys: a DatabaseKeys object
+        :param keys: an AdhocKeys object
         :returns: a Statistics object constructed via the primary key
         :raises: None
         '''
@@ -103,5 +122,5 @@ class Statistics:
         self.vals = StatisticsValues(mark, mark_freq, home_freq, away_freq, draw_freq)
 
     def __repr__(self):
-        return self.keys.table + ' : Keys ' + str(self.keys.fields) + \
-                ' : Values ' + str(self.vals.fields)
+        return self.keys.table + ' : Keys ' + str(self.keys.getFields()) + \
+                ' : Values ' + str(self.vals.getFields())
