@@ -3,57 +3,61 @@ from Footy.src.database.database import DatabaseObject, DatabaseKeys, \
         DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
-class {{CapTableName}}Keys(DatabaseKeys):
+class RatingKeys(DatabaseKeys):
     '''
-    {{TableName}} database object primary key representation
+    rating database object primary key representation
     '''
-    {{PKFieldsTyped}}
+    match_oid:int
+    
 
-    def __init__(self, {{PKFieldsListTyped}}):
+    def __init__(self, match_oid:int):
         '''
         Construct the object from the provided primary key fields
         
         :param ...: typed primary key fields
         '''
         # Need to use setattr as the class is Frozen (immutable)
-        {{PKFieldsAssign}}
+        object.__setattr__(self, 'match_oid', match_oid)
+        
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
         Get all the PK fields for this object in a dictionary form
         
-        :returns: a dictionary of all {{CapTableName}}Keys fields
+        :returns: a dictionary of all RatingKeys fields
         '''
-        fields = {} if not ({{PKFieldsAndSelf}}) else {{PKFieldsDictSelf}}
+        fields = {} if not (self.match_oid) else {'match_oid' : self.match_oid}
         return fields
         
-class {{CapTableName}}Values(DatabaseValues):
+class RatingValues(DatabaseValues):
     '''
-    {{TableName}} database object values representation
+    rating database object values representation
     '''
-    def __init__(self, {{ValueFieldsListTypedAndDef}}):
+    def __init__(self, algo_id:int = None, rank:int = None):
         '''
         Construct the object from the provided value fields
         
         :param ...: typed value fields
         '''
-        {{ValueFieldsAssign}}
+        object.__setattr__(self, 'algo_id', algo_id)
+        object.__setattr__(self, 'rank', rank)
+        
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
         Get all the non-None value fields for this object in a dictionary form
         
-        :returns: a dictionary of all {{CapTableName}}Values fields
+        :returns: a dictionary of all RatingValues fields
         '''
-        fields = {{ValueFieldsDictSelf}}
+        fields = {'algo_id' : self.algo_id, 'rank' : self.rank}
         fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
-class {{CapTableName}}(DatabaseObject):
+class Rating(DatabaseObject):
     '''
-    {{TableName}} database object representation
+    rating database object representation
     '''
 
     @classmethod
@@ -63,10 +67,10 @@ class {{CapTableName}}(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a {{CapTableName}} object constructed via the primary key
+        :returns: a Rating object constructed via the primary key
         :raises: None
         '''
-        l = {{CapTableName}}()
+        l = Rating()
         l._keys = keys
         return l
 
@@ -78,7 +82,7 @@ class {{CapTableName}}(DatabaseObject):
         :param keys: an AdhocKeys object
         :returns: a League object constructed via the primary key
         '''
-        return {{CapTableName}}.createAdhoc(keys)
+        return Rating.createAdhoc(keys)
 
     @classmethod
     def createSingle(cls, row:tuple):
@@ -86,10 +90,10 @@ class {{CapTableName}}(DatabaseObject):
         Class method to create a database object from the provided database row
 
         :param row: a list of values representing the objects key and values
-        :returns: a {{CapTableName}} object constructed from row
+        :returns: a Rating object constructed from row
         '''
-        {{AllFieldsList}} = row
-        return {{CapTableName}}({{AllFieldsList}})
+        match_oid, algo_id, rank = row
+        return Rating(match_oid, algo_id, rank)
 
     def _createSingle(cls, row:tuple):
         '''
@@ -97,9 +101,9 @@ class {{CapTableName}}(DatabaseObject):
         database row
 
         :param row: a list of values representing the objects key and values
-        :returns: a {{CapTableName}} object constructed from row
+        :returns: a Rating object constructed from row
         '''
-        return {{CapTableName}}.createSingle(row)
+        return Rating.createSingle(row)
 
     @classmethod
     def createMulti(cls, rows:tuple):
@@ -107,7 +111,7 @@ class {{CapTableName}}(DatabaseObject):
         Class method to create database objects from the provided database rows
 
         :param rows: a list of lists of representing object keys and values
-        :returns: a list of {{CapTableName}} objects constructed from rows
+        :returns: a list of Rating objects constructed from rows
         '''
         l = []
         for r in rows:
@@ -120,11 +124,11 @@ class {{CapTableName}}(DatabaseObject):
         database rows
 
         :param rows: a list of lists of representing object keys and values
-        :returns: a list of {{CapTableName}} objects constructed from rows
+        :returns: a list of Rating objects constructed from rows
         '''
-        return {{CapTableName}}.createMulti(rows)
+        return Rating.createMulti(rows)
 
-    def __init__(self, {{AllFieldsListTypedAndDef}}):
+    def __init__(self, match_oid:int = None, algo_id:int = None, rank:int = None):
         '''
         Construct the object from the provided table name, key and value fields
         
@@ -132,17 +136,32 @@ class {{CapTableName}}(DatabaseObject):
         :returns: N/A
         :raises: None
         '''
-        keys = {{CapTableName}}Keys({{PKFieldsList}})
-        vals = {{CapTableName}}Values({{ValueFieldsList}})
+        keys = RatingKeys(match_oid)
+        vals = RatingValues(algo_id, rank)
 
-        super().__init__('{{TableName}}', keys, vals)
+        super().__init__('rating', keys, vals)
 
     def getTable(self):
         return self._table
 
-    {{PKFieldsGetters}}
-    {{ValueFieldsGetters}}
-    {{ValueFieldsSetters}}
+    def getMatch_Oid(self):
+        return self._keys.match_oid
+    
+    
+    def getAlgo_Id(self):
+        return self._vals.algo_id
+    
+    def getRank(self):
+        return self._vals.rank
+    
+    
+    def setAlgo_Id(self, algo_id:int):
+       self._vals.algo_id = algo_id
+    
+    def setRank(self, rank:int):
+       self._vals.rank = rank
+    
+    
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

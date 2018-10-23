@@ -27,7 +27,7 @@ class Account_PermsKeys(DatabaseKeys):
         
         :returns: a dictionary of all Account_PermsKeys fields
         '''
-        fields = None if not (self.id) else {'id' : self.id}
+        fields = {} if not (self.id) else {'id' : self.id}
         return fields
         
 class Account_PermsValues(DatabaseValues):
@@ -48,11 +48,12 @@ class Account_PermsValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the value fields for this object in a dictionary form
+        Get all the non-None value fields for this object in a dictionary form
         
         :returns: a dictionary of all Account_PermsValues fields
         '''
-        fields = None if not (self.account and self.league and self.algo_id) else {'account' : self.account, 'league' : self.league, 'algo_id' : self.algo_id}
+        fields = {'account' : self.account, 'league' : self.league, 'algo_id' : self.algo_id}
+        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Account_Perms(DatabaseObject):

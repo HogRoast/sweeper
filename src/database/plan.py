@@ -27,7 +27,7 @@ class PlanKeys(DatabaseKeys):
         
         :returns: a dictionary of all PlanKeys fields
         '''
-        fields = None if not (self.id) else {'id' : self.id}
+        fields = {} if not (self.id) else {'id' : self.id}
         return fields
         
 class PlanValues(DatabaseValues):
@@ -48,11 +48,12 @@ class PlanValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the value fields for this object in a dictionary form
+        Get all the non-None value fields for this object in a dictionary form
         
         :returns: a dictionary of all PlanValues fields
         '''
-        fields = None if not (self.name and self.desc and self.cost) else {'name' : self.name, 'desc' : self.desc, 'cost' : self.cost}
+        fields = {'name' : self.name, 'desc' : self.desc, 'cost' : self.cost}
+        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Plan(DatabaseObject):

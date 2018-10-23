@@ -33,7 +33,7 @@ class MatchKeys(DatabaseKeys):
         
         :returns: a dictionary of all MatchKeys fields
         '''
-        fields = None if not (self.date and self.league and self.home_team and self.away_team) else {'date' : self.date, 'league' : self.league, 'home_team' : self.home_team, 'away_team' : self.away_team}
+        fields = {} if not (self.date and self.league and self.home_team and self.away_team) else {'date' : self.date, 'league' : self.league, 'home_team' : self.home_team, 'away_team' : self.away_team}
         return fields
         
 class MatchValues(DatabaseValues):
@@ -53,11 +53,12 @@ class MatchValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the value fields for this object in a dictionary form
+        Get all the non-None value fields for this object in a dictionary form
         
         :returns: a dictionary of all MatchValues fields
         '''
-        fields = None if not (self.result and self.best_odds) else {'result' : self.result, 'best_odds' : self.best_odds}
+        fields = {'result' : self.result, 'best_odds' : self.best_odds}
+        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Match(DatabaseObject):

@@ -33,10 +33,10 @@ class TestLeague(TestCase):
         pass
 
     def test_keys_Immutablility(self):
-        keys =LeagueKeys('league name TD')
+        keys =LeagueKeys('league mnemonic TD')
 
         with self.assertRaises(FrozenInstanceError) as cm:
-            keys.name = 'Something New'
+            keys.mnemonic = 'Something New'
             
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
@@ -46,55 +46,62 @@ class TestLeague(TestCase):
         self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
-        obj = League.createSingle(('league name TD', 'league desc TD'))
+        obj = League.createSingle(('league mnemonic TD', 'league name TD', 'league desc TD'))
 
-        self.assertEqual(obj.getName(), 'league name TD')
+        self.assertEqual(obj.getMnemonic(), 'league mnemonic TD')
          
+        self.assertEqual(obj.getName(), 'league name TD')
         self.assertEqual(obj.getDesc(), 'league desc TD')
          
 
     def test_createMulti(self):
-        rows = [('league name TD', 'league desc TD'),
-                ('league name TD2', 'league desc TD2')]
+        rows = [('league mnemonic TD', 'league name TD', 'league desc TD'),
+                ('league mnemonic TD2', 'league name TD2', 'league desc TD2')]
         objs = League.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].getName(), 'league name TD')
+        self.assertEqual(objs[0].getMnemonic(), 'league mnemonic TD')
         
+        self.assertEqual(objs[0].getName(), 'league name TD')
         self.assertEqual(objs[0].getDesc(), 'league desc TD')
         
-        self.assertEqual(objs[1].getName(), 'league name TD2')
+        self.assertEqual(objs[1].getMnemonic(), 'league mnemonic TD2')
         
+        self.assertEqual(objs[1].getName(), 'league name TD2')
         self.assertEqual(objs[1].getDesc(), 'league desc TD2')
         
 
     def test_repr(self):
-        obj = League('league name TD', 'league desc TD')
-        self.assertEqual(str(obj), "league : Keys {'name': 'league name TD'} : Values {'desc': 'league desc TD'}")
+        obj = League('league mnemonic TD', 'league name TD', 'league desc TD')
+        self.assertEqual(str(obj), "league : Keys {'mnemonic': 'league mnemonic TD'} : Values {'name': 'league name TD', 'desc': 'league desc TD'}")
 
     def test_select(self):
         objs = TestLeague.db.select(League())
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].getName(), 'league name TD')
+        self.assertEqual(objs[0].getMnemonic(), 'league mnemonic TD')
         
+        self.assertEqual(objs[0].getName(), 'league name TD')
         self.assertEqual(objs[0].getDesc(), 'league desc TD')
         
-        self.assertEqual(objs[1].getName(), 'league name TD2')
+        self.assertEqual(objs[1].getMnemonic(), 'league mnemonic TD2')
         
+        self.assertEqual(objs[1].getName(), 'league name TD2')
         self.assertEqual(objs[1].getDesc(), 'league desc TD2')
         
         
-        objs = TestLeague.db.select(League('league name TD'))
+        objs = TestLeague.db.select(League('league mnemonic TD'))
         self.assertEqual(len(objs), 1)
-        self.assertEqual(objs[0].getName(), 'league name TD')
+        self.assertEqual(objs[0].getMnemonic(), 'league mnemonic TD')
         
+        self.assertEqual(objs[0].getName(), 'league name TD')
         self.assertEqual(objs[0].getDesc(), 'league desc TD')
         
 
-        objs = TestLeague.db.select(League.createAdhoc(AdhocKeys({'desc': 'league desc TD'})))
+        objs = TestLeague.db.select(League.createAdhoc(AdhocKeys({'name': 'league name TD', 'desc': 'league desc TD'})))
         self.assertEqual(len(objs), 1)
-        self.assertEqual(objs[0].getName(), 'league name TD')
+        self.assertEqual(objs[0].getMnemonic(), 'league mnemonic TD')
         
+        self.assertEqual(objs[0].getName(), 'league name TD')
         self.assertEqual(objs[0].getDesc(), 'league desc TD')
         
 
@@ -104,14 +111,14 @@ class TestLeague(TestCase):
 
         with TestLeague.db.transaction() as t:
             TestLeague.db.upsert(
-                    League('league name TD', 'league desc TD UPD'))
-            objs = TestLeague.db.select(League('league name TD'))
+                    League('league mnemonic TD', 'league name TD UPD', 'league desc TD UPD'))
+            objs = TestLeague.db.select(League('league mnemonic TD'))
 
             self.assertEqual(len(objs), 1)
-            self.assertEqual(objs[0].getName(), 'league name TD')
+            self.assertEqual(objs[0].getMnemonic(), 'league mnemonic TD')
             
 
-            d = eval("{'desc': 'league desc TD UPD'}")
+            d = eval("{'name': 'league name TD UPD', 'desc': 'league desc TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[0].__getattribute__('get' + k.title())(), v)
@@ -120,15 +127,15 @@ class TestLeague(TestCase):
             t.fail()
 
         with TestLeague.db.transaction() as t:
-            league = TestLeague.db.select(League('league name TD'))[0]
+            league = TestLeague.db.select(League('league mnemonic TD'))[0]
             for k, v in d.items():
                 league.__getattribute__('set' + k.title())(v)
 
             TestLeague.db.upsert(league)
 
-            objs = TestLeague.db.select(League('league name TD'))
+            objs = TestLeague.db.select(League('league mnemonic TD'))
             self.assertEqual(len(objs), 1)
-            self.assertEqual(objs[0].getName(), 'league name TD')
+            self.assertEqual(objs[0].getMnemonic(), 'league mnemonic TD')
             
 
             for k, v in d.items():
@@ -144,17 +151,17 @@ class TestLeague(TestCase):
 
         with TestLeague.db.transaction() as t:
             TestLeague.db.upsert(
-                    League('league name TD INS', 'league desc TD UPD'))
+                    League('league mnemonic TD INS', 'league name TD UPD', 'league desc TD UPD'))
             objs = TestLeague.db.select(League())
 
             self.assertEqual(len(objs), 3)
 
-            d = eval("{'name': 'league name TD INS'}")
+            d = eval("{'mnemonic': 'league mnemonic TD INS'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
 
-            d = eval("{'desc': 'league desc TD UPD'}")
+            d = eval("{'name': 'league name TD UPD', 'desc': 'league desc TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
@@ -167,7 +174,7 @@ class TestLeague(TestCase):
         TestLeague.db.disableForeignKeys()
 
         with TestLeague.db.transaction() as t:
-            TestLeague.db.delete(League('league name TD'))
+            TestLeague.db.delete(League('league mnemonic TD'))
 
             objs = TestLeague.db.select(League())
             self.assertEqual(len(objs), 1)

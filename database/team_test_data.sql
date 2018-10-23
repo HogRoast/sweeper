@@ -1,2 +1,2 @@
-insert into team values ('team name TD', 'league name TD'),
-                        ('team name TD2', 'league name TD2');
+insert into team values ('team name TD', 'league mnemonic TD'),
+                        ('team name TD2', 'league mnemonic TD2');

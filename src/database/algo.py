@@ -27,7 +27,7 @@ class AlgoKeys(DatabaseKeys):
         
         :returns: a dictionary of all AlgoKeys fields
         '''
-        fields = None if not (self.id) else {'id' : self.id}
+        fields = {} if not (self.id) else {'id' : self.id}
         return fields
         
 class AlgoValues(DatabaseValues):
@@ -47,11 +47,12 @@ class AlgoValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the value fields for this object in a dictionary form
+        Get all the non-None value fields for this object in a dictionary form
         
         :returns: a dictionary of all AlgoValues fields
         '''
-        fields = None if not (self.name and self.desc) else {'name' : self.name, 'desc' : self.desc}
+        fields = {'name' : self.name, 'desc' : self.desc}
+        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Algo(DatabaseObject):

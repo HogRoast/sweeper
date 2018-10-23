@@ -40,21 +40,22 @@ class TestDatabase(TestCase):
 
         self.assertEqual(len(leagues), 2)
         self.assertEqual(
-                str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'league desc TD'}")
+                str(leagues[0]), "league : Keys {'mnemonic': 'league mnemonic TD'} : Values {'name': 'league name TD', 'desc': 'league desc TD'}")
         self.assertEqual(leagues[1].getTable(), 'league')
+        self.assertEqual(leagues[1].getMnemonic(), 'league mnemonic TD2')
         self.assertEqual(leagues[1].getName(), 'league name TD2')
         self.assertEqual(leagues[1].getDesc(), 'league desc TD2')
 
-        leagues = TestDatabase.db.select(League('league name TD'))
+        leagues = TestDatabase.db.select(League('league mnemonic TD'))
         self.assertEqual(len(leagues), 1)
         self.assertEqual(
-                str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'league desc TD'}")
+                str(leagues[0]), "league : Keys {'mnemonic': 'league mnemonic TD'} : Values {'name': 'league name TD', 'desc': 'league desc TD'}")
 
         leagues = TestDatabase.db.select(
                 League.createAdhoc(AdhocKeys({'desc': 'league desc TD2'})))
         self.assertEqual(len(leagues), 1)
         self.assertEqual(
-                str(leagues[0]), "league : Keys {'name': 'league name TD2'} : Values {'desc': 'league desc TD2'}")
+                str(leagues[0]), "league : Keys {'mnemonic': 'league mnemonic TD2'} : Values {'name': 'league name TD2', 'desc': 'league desc TD2'}")
 
     def test_foreign_key(self):
         with TestDatabase.db.transaction(), \
@@ -66,54 +67,55 @@ class TestDatabase(TestCase):
         # test commit
         with TestDatabase.db.transaction():
             TestDatabase.db.upsert(
-                    League('My League', 'Based right here'))
+                    League('ML1', 'My League', 'Based right here'))
             TestDatabase.db.upsert(
-                    League('My League2', 'Also Based right here'))
+                    League('ML2', 'My League2', 'Also Based right here'))
         leagues = TestDatabase.db.select(League())
         self.assertEqual(len(leagues), 4)
 
         # test rollback on exception
         with TestDatabase.db.transaction(), \
-                self.assertRaises(DatabaseDataError) as cm:
-            TestDatabase.db.upsert(League('My League'))
-        self.assertEqual(cm.exception.args[0], 'No values provided for UPDATE')
+                self.assertRaises(DatabaseIntegrityError) as cm:
+            TestDatabase.db.upsert(League('ML3'))
+        self.assertEqual(cm.exception.args[0], 'NOT NULL constraint failed: league.name')
         self.assertEqual(len(leagues), 4)
 
         # test a forced rollback
         with TestDatabase.db.transaction() as t:
             TestDatabase.db.upsert(
-                    League('My League3', 'Based right here'))
+                    League('ML4', 'My League4', 'Based right here'))
             t.fail()
         self.assertEqual(len(leagues), 4)
 
         # restore table to pre-test state
         with TestDatabase.db.transaction():
-            TestDatabase.db.delete(League('My League'))
-            TestDatabase.db.delete(League('My League2'))
+            TestDatabase.db.delete(League('ML1'))
+            TestDatabase.db.delete(League('ML2'))
         leagues = TestDatabase.db.select(League())
         self.assertEqual(len(leagues), 2)
 
     def test_select_NoRows(self):
-        leagues = TestDatabase.db.select(League('Bundesliga'))
+        leagues = TestDatabase.db.select(League('D1'))
         self.assertEqual(len(leagues), 0)
 
     def test_upsert(self):
         with TestDatabase.db.transaction() as t:
-            TestDatabase.db.upsert(League('My League', 'Based right here'))
+            TestDatabase.db.upsert(
+                    League('ML1', 'My League', 'Based right here'))
 
             leagues = TestDatabase.db.select(League())
 
             self.assertEqual(len(leagues), 3)
             self.assertEqual(
-                    str(leagues[2]), "league : Keys {'name': 'My League'} : Values {'desc': 'Based right here'}")
+                    str(leagues[2]), "league : Keys {'mnemonic': 'ML1'} : Values {'name': 'My League', 'desc': 'Based right here'}")
 
-            TestDatabase.db.upsert(League('league name TD', 'Based right here'))
+            TestDatabase.db.upsert(League('league mnemonic TD', desc='Based right here'))
 
-            leagues = TestDatabase.db.select(League('league name TD'))
+            leagues = TestDatabase.db.select(League('league mnemonic TD'))
 
             self.assertEqual(len(leagues), 1)
             self.assertEqual(
-                    str(leagues[0]), "league : Keys {'name': 'league name TD'} : Values {'desc': 'Based right here'}")
+                    str(leagues[0]), "league : Keys {'mnemonic': 'league mnemonic TD'} : Values {'name': 'league name TD', 'desc': 'Based right here'}")
 
             # force a rollback
             t.fail()
@@ -134,18 +136,18 @@ class TestDatabase(TestCase):
     def test_delete(self):
         with TestDatabase.db.transaction():
             TestDatabase.db.upsert(
-                    League('Bundesliga', 'The German Top Flight'))
+                    League('D1', 'Bundesliga', 'The German Top Flight'))
 
         leagues = TestDatabase.db.select(League())
         self.assertEqual(len(leagues), 3)
-        self.assertEqual(str(leagues[2]), "league : Keys {'name': 'Bundesliga'} : Values {'desc': 'The German Top Flight'}")
+        self.assertEqual(str(leagues[2]), "league : Keys {'mnemonic': 'D1'} : Values {'name': 'Bundesliga', 'desc': 'The German Top Flight'}")
 
         with TestDatabase.db.transaction():
-            TestDatabase.db.delete(League('Bundesliga'))
+            TestDatabase.db.delete(League('D1'))
         leagues = TestDatabase.db.select(League())
         self.assertEqual(len(leagues), 2)
 
-        leagues = TestDatabase.db.select(League('Bundesliga'))
+        leagues = TestDatabase.db.select(League('D1'))
         self.assertEqual(len(leagues), 0)
         
 if __name__ == '__main__':

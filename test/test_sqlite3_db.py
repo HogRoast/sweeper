@@ -36,20 +36,22 @@ class TestSQLite3Impl(TestCase):
         rows = TestSQLite3Impl.db.select('league', {})    
 
         self.assertEqual(len(rows), 2)
-        self.assertEqual(rows[0], ('league name TD', 'league desc TD'))
-        self.assertEqual(rows[1], ('league name TD2', 'league desc TD2'))
+        self.assertEqual(rows[0], ( \
+                'league mnemonic TD', 'league name TD', 'league desc TD'))
+        self.assertEqual(rows[1], ( \
+                'league mnemonic TD2', 'league name TD2', 'league desc TD2'))
 
         rows = TestSQLite3Impl.db.select('team', {'name' : 'team name TD2'})
 
         self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0], ('team name TD2', 'league name TD2'))
+        self.assertEqual(rows[0], ('team name TD2', 'league mnemonic TD2'))
 
         rows = TestSQLite3Impl.db.select(
-                'team', {'league' : 'league name TD'})
+                'team', {'league' : 'league mnemonic TD'})
 
         self.assertEqual(len(rows), 1)
         self.assertEqual(
-                rows[0], ('team name TD', 'league name TD'))
+                rows[0], ('team name TD', 'league mnemonic TD'))
   
     def test_foreign_key(self):
         TestSQLite3Impl.db.execute('pragma foreign_keys=1')
@@ -65,12 +67,12 @@ class TestSQLite3Impl(TestCase):
 
     def test_insert(self):
         TestSQLite3Impl.db.insert(
-                'team', {'name' : 'my_team', 'league' : 'English Champ'})
+                'team', {'name' : 'my_team', 'league' : 'E1'})
 
         rows = TestSQLite3Impl.db.select('team')
 
         self.assertEqual(len(rows), 3)
-        self.assertEqual(rows[2], ('my_team', 'English Champ'))
+        self.assertEqual(rows[2], ('my_team', 'E1'))
 
         TestSQLite3Impl.db.rollback()
 
@@ -78,9 +80,9 @@ class TestSQLite3Impl(TestCase):
         TestSQLite3Impl.db.begin()
 
         TestSQLite3Impl.db.insert(
-                'team', {'name' : 'my_team', 'league' : 'English Champ'})
+                'team', {'name' : 'my_team', 'league' : 'E1'})
         TestSQLite3Impl.db.insert(
-                'team', {'name' : 'my_team2', 'league' : 'English Champ'})
+                'team', {'name' : 'my_team2', 'league' : 'E1'})
 
         TestSQLite3Impl.db.commit()
 
@@ -88,7 +90,7 @@ class TestSQLite3Impl(TestCase):
         self.assertEqual(len(rows), 4)
 
         TestSQLite3Impl.db.insert(
-                'team', {'name' : 'my_team3', 'league' : 'English Champ'})
+                'team', {'name' : 'my_team3', 'league' : 'E1'})
 
         rows = TestSQLite3Impl.db.select('team', {})    
         self.assertEqual(len(rows), 5)
@@ -102,7 +104,7 @@ class TestSQLite3Impl(TestCase):
         TestSQLite3Impl.db.begin()
 
         TestSQLite3Impl.db.insert(
-                'team', {'name' : 'my_team4', 'league' : 'English Champ'})
+                'team', {'name' : 'my_team4', 'league' : 'E1'})
         try:
             TestSQLite3Impl.db.insert('team', None)
         except:
@@ -110,7 +112,7 @@ class TestSQLite3Impl(TestCase):
 
         rows = TestSQLite3Impl.db.select('team', {'name' : 'my_team4'})
         self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0], ('my_team4', 'English Champ'))
+        self.assertEqual(rows[0], ('my_team4', 'E1'))
 
         TestSQLite3Impl.db.rollback()
 
@@ -124,28 +126,31 @@ class TestSQLite3Impl(TestCase):
 
     def test_update(self):
         TestSQLite3Impl.db.update('league', {'desc' : 'New description'}, \
-                {'name' : 'league name TD'})
+                {'mnemonic' : 'league mnemonic TD'})
 
         rows = TestSQLite3Impl.db.select('league')
 
         self.assertEqual(len(rows), 2)
-        self.assertEqual(rows[0], ('league name TD', 'New description'))
+        self.assertEqual(rows[0], ( \
+                'league mnemonic TD', 'league name TD', 'New description'))
 
         TestSQLite3Impl.db.rollback()
 
     def test_update_Error(self):
         with self.assertRaises(DatabaseDataError) as cm:
             TestSQLite3Impl.db.update('team', {})
-        self.assertEqual(cm.exception.msg, 'No values provided for UPDATE')
+        self.assertEqual(
+                cm.exception.msg, 'No values provided for UPDATE')
 
     def test_delete(self):
-        TestSQLite3Impl.db.insert('league', {'name' : 'Bundesliga', \
+        TestSQLite3Impl.db.insert('league', \
+                {'mnemonic' : 'D1', 'name' : 'Bundesliga', \
                 'desc' : 'The German Top Flight'})
         TestSQLite3Impl.db.commit()
 
         rows = TestSQLite3Impl.db.select('league')
         self.assertEqual(len(rows), 3)
-        self.assertEqual(rows[2], ('Bundesliga', 'The German Top Flight'))
+        self.assertEqual(rows[2], ('D1', 'Bundesliga', 'The German Top Flight'))
 
         TestSQLite3Impl.db.delete('league', {'name' : 'Bundesliga'})
         TestSQLite3Impl.db.commit()

@@ -31,7 +31,7 @@ class StatisticsKeys(DatabaseKeys):
         
         :returns: a dictionary of all StatisticsKeys fields
         '''
-        fields = None if not (self.generation_date and self.algo_id and self.league) else {'generation_date' : self.generation_date, 'algo_id' : self.algo_id, 'league' : self.league}
+        fields = {} if not (self.generation_date and self.algo_id and self.league) else {'generation_date' : self.generation_date, 'algo_id' : self.algo_id, 'league' : self.league}
         return fields
         
 class StatisticsValues(DatabaseValues):
@@ -54,11 +54,12 @@ class StatisticsValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the value fields for this object in a dictionary form
+        Get all the non-None value fields for this object in a dictionary form
         
         :returns: a dictionary of all StatisticsValues fields
         '''
-        fields = None if not (self.mark and self.mark_freq and self.home_freq and self.away_freq and self.draw_freq) else {'mark' : self.mark, 'mark_freq' : self.mark_freq, 'home_freq' : self.home_freq, 'away_freq' : self.away_freq, 'draw_freq' : self.draw_freq}
+        fields = {'mark' : self.mark, 'mark_freq' : self.mark_freq, 'home_freq' : self.home_freq, 'away_freq' : self.away_freq, 'draw_freq' : self.draw_freq}
+        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Statistics(DatabaseObject):

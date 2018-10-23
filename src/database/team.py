@@ -27,7 +27,7 @@ class TeamKeys(DatabaseKeys):
         
         :returns: a dictionary of all TeamKeys fields
         '''
-        fields = None if not (self.name) else {'name' : self.name}
+        fields = {} if not (self.name) else {'name' : self.name}
         return fields
         
 class TeamValues(DatabaseValues):
@@ -46,11 +46,12 @@ class TeamValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the value fields for this object in a dictionary form
+        Get all the non-None value fields for this object in a dictionary form
         
         :returns: a dictionary of all TeamValues fields
         '''
-        fields = None if not (self.league) else {'league' : self.league}
+        fields = {'league' : self.league}
+        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Team(DatabaseObject):

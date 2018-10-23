@@ -172,7 +172,7 @@ class Database:
 
         :param obj: a valid database object used to form the underlying SQL
         :raises: DatabaseInvObjError if obj is not a valid DBO
-        :raises: DatabaseDataError underlying impl raises nothing to upsert
+        :raises: DatabaseDataError underlying impl raises if nothing to upsert
         '''
         if len(self.select(obj)) == 0:
             inserts = dict(chain(obj._keys.getFields().items(), \

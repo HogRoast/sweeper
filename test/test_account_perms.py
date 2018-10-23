@@ -46,37 +46,37 @@ class TestAccount_Perms(TestCase):
         self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
-        obj = Account_Perms.createSingle((98, 'account name TD', 'league name TD', 98))
+        obj = Account_Perms.createSingle((98, 'account name TD', 'league mnemonic TD', 98))
 
         self.assertEqual(obj.getId(), 98)
          
         self.assertEqual(obj.getAccount(), 'account name TD')
-        self.assertEqual(obj.getLeague(), 'league name TD')
+        self.assertEqual(obj.getLeague(), 'league mnemonic TD')
         self.assertEqual(obj.getAlgo_Id(), 98)
          
 
     def test_createMulti(self):
-        rows = [(98, 'account name TD', 'league name TD', 98),
-                (99, 'account name TD2', 'league name TD2', 99)]
+        rows = [(98, 'account name TD', 'league mnemonic TD', 98),
+                (99, 'account name TD2', 'league mnemonic TD2', 99)]
         objs = Account_Perms.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getAccount(), 'account name TD')
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         self.assertEqual(objs[0].getAlgo_Id(), 98)
         
         self.assertEqual(objs[1].getId(), 99)
         
         self.assertEqual(objs[1].getAccount(), 'account name TD2')
-        self.assertEqual(objs[1].getLeague(), 'league name TD2')
+        self.assertEqual(objs[1].getLeague(), 'league mnemonic TD2')
         self.assertEqual(objs[1].getAlgo_Id(), 99)
         
 
     def test_repr(self):
-        obj = Account_Perms(98, 'account name TD', 'league name TD', 98)
-        self.assertEqual(str(obj), "account_perms : Keys {'id': 98} : Values {'account': 'account name TD', 'league': 'league name TD', 'algo_id': 98}")
+        obj = Account_Perms(98, 'account name TD', 'league mnemonic TD', 98)
+        self.assertEqual(str(obj), "account_perms : Keys {'id': 98} : Values {'account': 'account name TD', 'league': 'league mnemonic TD', 'algo_id': 98}")
 
     def test_select(self):
         objs = TestAccount_Perms.db.select(Account_Perms())
@@ -84,13 +84,13 @@ class TestAccount_Perms(TestCase):
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getAccount(), 'account name TD')
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         self.assertEqual(objs[0].getAlgo_Id(), 98)
         
         self.assertEqual(objs[1].getId(), 99)
         
         self.assertEqual(objs[1].getAccount(), 'account name TD2')
-        self.assertEqual(objs[1].getLeague(), 'league name TD2')
+        self.assertEqual(objs[1].getLeague(), 'league mnemonic TD2')
         self.assertEqual(objs[1].getAlgo_Id(), 99)
         
         
@@ -99,16 +99,16 @@ class TestAccount_Perms(TestCase):
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getAccount(), 'account name TD')
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         self.assertEqual(objs[0].getAlgo_Id(), 98)
         
 
-        objs = TestAccount_Perms.db.select(Account_Perms.createAdhoc(AdhocKeys({'account': 'account name TD', 'league': 'league name TD', 'algo_id': 98})))
+        objs = TestAccount_Perms.db.select(Account_Perms.createAdhoc(AdhocKeys({'account': 'account name TD', 'league': 'league mnemonic TD', 'algo_id': 98})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getAccount(), 'account name TD')
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         self.assertEqual(objs[0].getAlgo_Id(), 98)
         
 
@@ -118,14 +118,14 @@ class TestAccount_Perms(TestCase):
 
         with TestAccount_Perms.db.transaction() as t:
             TestAccount_Perms.db.upsert(
-                    Account_Perms(98, 'account name TD UPD', 'league name TD UPD', 100))
+                    Account_Perms(98, 'account name TD UPD', 'league mnemonic TD UPD', 100))
             objs = TestAccount_Perms.db.select(Account_Perms(98))
 
             self.assertEqual(len(objs), 1)
             self.assertEqual(objs[0].getId(), 98)
             
 
-            d = eval("{'account': 'account name TD UPD', 'league': 'league name TD UPD', 'algo_id': 100}")
+            d = eval("{'account': 'account name TD UPD', 'league': 'league mnemonic TD UPD', 'algo_id': 100}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[0].__getattribute__('get' + k.title())(), v)
@@ -158,7 +158,7 @@ class TestAccount_Perms(TestCase):
 
         with TestAccount_Perms.db.transaction() as t:
             TestAccount_Perms.db.upsert(
-                    Account_Perms(100, 'account name TD UPD', 'league name TD UPD', 100))
+                    Account_Perms(100, 'account name TD UPD', 'league mnemonic TD UPD', 100))
             objs = TestAccount_Perms.db.select(Account_Perms())
 
             self.assertEqual(len(objs), 3)
@@ -168,7 +168,7 @@ class TestAccount_Perms(TestCase):
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
 
-            d = eval("{'account': 'account name TD UPD', 'league': 'league name TD UPD', 'algo_id': 100}")
+            d = eval("{'account': 'account name TD UPD', 'league': 'league mnemonic TD UPD', 'algo_id': 100}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)

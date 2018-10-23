@@ -3,57 +3,61 @@ from Footy.src.database.database import DatabaseObject, DatabaseKeys, \
         DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
-class {{CapTableName}}Keys(DatabaseKeys):
+class SeasonKeys(DatabaseKeys):
     '''
-    {{TableName}} database object primary key representation
+    season database object primary key representation
     '''
-    {{PKFieldsTyped}}
+    name:str
+    
 
-    def __init__(self, {{PKFieldsListTyped}}):
+    def __init__(self, name:str):
         '''
         Construct the object from the provided primary key fields
         
         :param ...: typed primary key fields
         '''
         # Need to use setattr as the class is Frozen (immutable)
-        {{PKFieldsAssign}}
+        object.__setattr__(self, 'name', name)
+        
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
         Get all the PK fields for this object in a dictionary form
         
-        :returns: a dictionary of all {{CapTableName}}Keys fields
+        :returns: a dictionary of all SeasonKeys fields
         '''
-        fields = {} if not ({{PKFieldsAndSelf}}) else {{PKFieldsDictSelf}}
+        fields = {} if not (self.name) else {'name' : self.name}
         return fields
         
-class {{CapTableName}}Values(DatabaseValues):
+class SeasonValues(DatabaseValues):
     '''
-    {{TableName}} database object values representation
+    season database object values representation
     '''
-    def __init__(self, {{ValueFieldsListTypedAndDef}}):
+    def __init__(self, l_bnd_date:str = None, u_bnd_date:str = None):
         '''
         Construct the object from the provided value fields
         
         :param ...: typed value fields
         '''
-        {{ValueFieldsAssign}}
+        object.__setattr__(self, 'l_bnd_date', l_bnd_date)
+        object.__setattr__(self, 'u_bnd_date', u_bnd_date)
+        
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
         Get all the non-None value fields for this object in a dictionary form
         
-        :returns: a dictionary of all {{CapTableName}}Values fields
+        :returns: a dictionary of all SeasonValues fields
         '''
-        fields = {{ValueFieldsDictSelf}}
+        fields = {'l_bnd_date' : self.l_bnd_date, 'u_bnd_date' : self.u_bnd_date}
         fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
-class {{CapTableName}}(DatabaseObject):
+class Season(DatabaseObject):
     '''
-    {{TableName}} database object representation
+    season database object representation
     '''
 
     @classmethod
@@ -63,10 +67,10 @@ class {{CapTableName}}(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a {{CapTableName}} object constructed via the primary key
+        :returns: a Season object constructed via the primary key
         :raises: None
         '''
-        l = {{CapTableName}}()
+        l = Season()
         l._keys = keys
         return l
 
@@ -78,7 +82,7 @@ class {{CapTableName}}(DatabaseObject):
         :param keys: an AdhocKeys object
         :returns: a League object constructed via the primary key
         '''
-        return {{CapTableName}}.createAdhoc(keys)
+        return Season.createAdhoc(keys)
 
     @classmethod
     def createSingle(cls, row:tuple):
@@ -86,10 +90,10 @@ class {{CapTableName}}(DatabaseObject):
         Class method to create a database object from the provided database row
 
         :param row: a list of values representing the objects key and values
-        :returns: a {{CapTableName}} object constructed from row
+        :returns: a Season object constructed from row
         '''
-        {{AllFieldsList}} = row
-        return {{CapTableName}}({{AllFieldsList}})
+        name, l_bnd_date, u_bnd_date = row
+        return Season(name, l_bnd_date, u_bnd_date)
 
     def _createSingle(cls, row:tuple):
         '''
@@ -97,9 +101,9 @@ class {{CapTableName}}(DatabaseObject):
         database row
 
         :param row: a list of values representing the objects key and values
-        :returns: a {{CapTableName}} object constructed from row
+        :returns: a Season object constructed from row
         '''
-        return {{CapTableName}}.createSingle(row)
+        return Season.createSingle(row)
 
     @classmethod
     def createMulti(cls, rows:tuple):
@@ -107,7 +111,7 @@ class {{CapTableName}}(DatabaseObject):
         Class method to create database objects from the provided database rows
 
         :param rows: a list of lists of representing object keys and values
-        :returns: a list of {{CapTableName}} objects constructed from rows
+        :returns: a list of Season objects constructed from rows
         '''
         l = []
         for r in rows:
@@ -120,11 +124,11 @@ class {{CapTableName}}(DatabaseObject):
         database rows
 
         :param rows: a list of lists of representing object keys and values
-        :returns: a list of {{CapTableName}} objects constructed from rows
+        :returns: a list of Season objects constructed from rows
         '''
-        return {{CapTableName}}.createMulti(rows)
+        return Season.createMulti(rows)
 
-    def __init__(self, {{AllFieldsListTypedAndDef}}):
+    def __init__(self, name:str = None, l_bnd_date:str = None, u_bnd_date:str = None):
         '''
         Construct the object from the provided table name, key and value fields
         
@@ -132,17 +136,32 @@ class {{CapTableName}}(DatabaseObject):
         :returns: N/A
         :raises: None
         '''
-        keys = {{CapTableName}}Keys({{PKFieldsList}})
-        vals = {{CapTableName}}Values({{ValueFieldsList}})
+        keys = SeasonKeys(name)
+        vals = SeasonValues(l_bnd_date, u_bnd_date)
 
-        super().__init__('{{TableName}}', keys, vals)
+        super().__init__('season', keys, vals)
 
     def getTable(self):
         return self._table
 
-    {{PKFieldsGetters}}
-    {{ValueFieldsGetters}}
-    {{ValueFieldsSetters}}
+    def getName(self):
+        return self._keys.name
+    
+    
+    def getL_Bnd_Date(self):
+        return self._vals.l_bnd_date
+    
+    def getU_Bnd_Date(self):
+        return self._vals.u_bnd_date
+    
+    
+    def setL_Bnd_Date(self, l_bnd_date:str):
+       self._vals.l_bnd_date = l_bnd_date
+    
+    def setU_Bnd_Date(self, u_bnd_date:str):
+       self._vals.u_bnd_date = u_bnd_date
+    
+    
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

@@ -2,7 +2,9 @@
 Data/
 Analysis/
 database/footy.db
+database/insert_sources.sql
 excel/Gambling.*.xlsx
+excel/Wins.*.xlsx
 footy.ini
 
 # gvim backup ignores

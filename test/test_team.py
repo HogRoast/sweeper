@@ -46,56 +46,56 @@ class TestTeam(TestCase):
         self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
-        obj = Team.createSingle(('team name TD', 'league name TD'))
+        obj = Team.createSingle(('team name TD', 'league mnemonic TD'))
 
         self.assertEqual(obj.getName(), 'team name TD')
          
-        self.assertEqual(obj.getLeague(), 'league name TD')
+        self.assertEqual(obj.getLeague(), 'league mnemonic TD')
          
 
     def test_createMulti(self):
-        rows = [('team name TD', 'league name TD'),
-                ('team name TD2', 'league name TD2')]
+        rows = [('team name TD', 'league mnemonic TD'),
+                ('team name TD2', 'league mnemonic TD2')]
         objs = Team.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
         self.assertEqual(objs[0].getName(), 'team name TD')
         
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         
         self.assertEqual(objs[1].getName(), 'team name TD2')
         
-        self.assertEqual(objs[1].getLeague(), 'league name TD2')
+        self.assertEqual(objs[1].getLeague(), 'league mnemonic TD2')
         
 
     def test_repr(self):
-        obj = Team('team name TD', 'league name TD')
-        self.assertEqual(str(obj), "team : Keys {'name': 'team name TD'} : Values {'league': 'league name TD'}")
+        obj = Team('team name TD', 'league mnemonic TD')
+        self.assertEqual(str(obj), "team : Keys {'name': 'team name TD'} : Values {'league': 'league mnemonic TD'}")
 
     def test_select(self):
         objs = TestTeam.db.select(Team())
         self.assertEqual(len(objs), 2)
         self.assertEqual(objs[0].getName(), 'team name TD')
         
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         
         self.assertEqual(objs[1].getName(), 'team name TD2')
         
-        self.assertEqual(objs[1].getLeague(), 'league name TD2')
+        self.assertEqual(objs[1].getLeague(), 'league mnemonic TD2')
         
         
         objs = TestTeam.db.select(Team('team name TD'))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getName(), 'team name TD')
         
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         
 
-        objs = TestTeam.db.select(Team.createAdhoc(AdhocKeys({'league': 'league name TD'})))
+        objs = TestTeam.db.select(Team.createAdhoc(AdhocKeys({'league': 'league mnemonic TD'})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getName(), 'team name TD')
         
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         
 
     def test_update(self):
@@ -104,14 +104,14 @@ class TestTeam(TestCase):
 
         with TestTeam.db.transaction() as t:
             TestTeam.db.upsert(
-                    Team('team name TD', 'league name TD UPD'))
+                    Team('team name TD', 'league mnemonic TD UPD'))
             objs = TestTeam.db.select(Team('team name TD'))
 
             self.assertEqual(len(objs), 1)
             self.assertEqual(objs[0].getName(), 'team name TD')
             
 
-            d = eval("{'league': 'league name TD UPD'}")
+            d = eval("{'league': 'league mnemonic TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[0].__getattribute__('get' + k.title())(), v)
@@ -144,7 +144,7 @@ class TestTeam(TestCase):
 
         with TestTeam.db.transaction() as t:
             TestTeam.db.upsert(
-                    Team('team name TD INS', 'league name TD UPD'))
+                    Team('team name TD INS', 'league mnemonic TD UPD'))
             objs = TestTeam.db.select(Team())
 
             self.assertEqual(len(objs), 3)
@@ -154,7 +154,7 @@ class TestTeam(TestCase):
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
 
-            d = eval("{'league': 'league name TD UPD'}")
+            d = eval("{'league': 'league mnemonic TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)

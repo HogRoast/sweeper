@@ -3,57 +3,62 @@ from Footy.src.database.database import DatabaseObject, DatabaseKeys, \
         DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
-class {{CapTableName}}Keys(DatabaseKeys):
+class SourceKeys(DatabaseKeys):
     '''
-    {{TableName}} database object primary key representation
+    source database object primary key representation
     '''
-    {{PKFieldsTyped}}
+    id:int
+    
 
-    def __init__(self, {{PKFieldsListTyped}}):
+    def __init__(self, id:int):
         '''
         Construct the object from the provided primary key fields
         
         :param ...: typed primary key fields
         '''
         # Need to use setattr as the class is Frozen (immutable)
-        {{PKFieldsAssign}}
+        object.__setattr__(self, 'id', id)
+        
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
         Get all the PK fields for this object in a dictionary form
         
-        :returns: a dictionary of all {{CapTableName}}Keys fields
+        :returns: a dictionary of all SourceKeys fields
         '''
-        fields = {} if not ({{PKFieldsAndSelf}}) else {{PKFieldsDictSelf}}
+        fields = {} if not (self.id) else {'id' : self.id}
         return fields
         
-class {{CapTableName}}Values(DatabaseValues):
+class SourceValues(DatabaseValues):
     '''
-    {{TableName}} database object values representation
+    source database object values representation
     '''
-    def __init__(self, {{ValueFieldsListTypedAndDef}}):
+    def __init__(self, name:str = None, url:str = None, fixtures_url:str = None):
         '''
         Construct the object from the provided value fields
         
         :param ...: typed value fields
         '''
-        {{ValueFieldsAssign}}
+        object.__setattr__(self, 'name', name)
+        object.__setattr__(self, 'url', url)
+        object.__setattr__(self, 'fixtures_url', fixtures_url)
+        
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
         Get all the non-None value fields for this object in a dictionary form
         
-        :returns: a dictionary of all {{CapTableName}}Values fields
+        :returns: a dictionary of all SourceValues fields
         '''
-        fields = {{ValueFieldsDictSelf}}
+        fields = {'name' : self.name, 'url' : self.url, 'fixtures_url' : self.fixtures_url}
         fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
-class {{CapTableName}}(DatabaseObject):
+class Source(DatabaseObject):
     '''
-    {{TableName}} database object representation
+    source database object representation
     '''
 
     @classmethod
@@ -63,10 +68,10 @@ class {{CapTableName}}(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a {{CapTableName}} object constructed via the primary key
+        :returns: a Source object constructed via the primary key
         :raises: None
         '''
-        l = {{CapTableName}}()
+        l = Source()
         l._keys = keys
         return l
 
@@ -78,7 +83,7 @@ class {{CapTableName}}(DatabaseObject):
         :param keys: an AdhocKeys object
         :returns: a League object constructed via the primary key
         '''
-        return {{CapTableName}}.createAdhoc(keys)
+        return Source.createAdhoc(keys)
 
     @classmethod
     def createSingle(cls, row:tuple):
@@ -86,10 +91,10 @@ class {{CapTableName}}(DatabaseObject):
         Class method to create a database object from the provided database row
 
         :param row: a list of values representing the objects key and values
-        :returns: a {{CapTableName}} object constructed from row
+        :returns: a Source object constructed from row
         '''
-        {{AllFieldsList}} = row
-        return {{CapTableName}}({{AllFieldsList}})
+        id, name, url, fixtures_url = row
+        return Source(id, name, url, fixtures_url)
 
     def _createSingle(cls, row:tuple):
         '''
@@ -97,9 +102,9 @@ class {{CapTableName}}(DatabaseObject):
         database row
 
         :param row: a list of values representing the objects key and values
-        :returns: a {{CapTableName}} object constructed from row
+        :returns: a Source object constructed from row
         '''
-        return {{CapTableName}}.createSingle(row)
+        return Source.createSingle(row)
 
     @classmethod
     def createMulti(cls, rows:tuple):
@@ -107,7 +112,7 @@ class {{CapTableName}}(DatabaseObject):
         Class method to create database objects from the provided database rows
 
         :param rows: a list of lists of representing object keys and values
-        :returns: a list of {{CapTableName}} objects constructed from rows
+        :returns: a list of Source objects constructed from rows
         '''
         l = []
         for r in rows:
@@ -120,11 +125,11 @@ class {{CapTableName}}(DatabaseObject):
         database rows
 
         :param rows: a list of lists of representing object keys and values
-        :returns: a list of {{CapTableName}} objects constructed from rows
+        :returns: a list of Source objects constructed from rows
         '''
-        return {{CapTableName}}.createMulti(rows)
+        return Source.createMulti(rows)
 
-    def __init__(self, {{AllFieldsListTypedAndDef}}):
+    def __init__(self, id:int = None, name:str = None, url:str = None, fixtures_url:str = None):
         '''
         Construct the object from the provided table name, key and value fields
         
@@ -132,17 +137,38 @@ class {{CapTableName}}(DatabaseObject):
         :returns: N/A
         :raises: None
         '''
-        keys = {{CapTableName}}Keys({{PKFieldsList}})
-        vals = {{CapTableName}}Values({{ValueFieldsList}})
+        keys = SourceKeys(id)
+        vals = SourceValues(name, url, fixtures_url)
 
-        super().__init__('{{TableName}}', keys, vals)
+        super().__init__('source', keys, vals)
 
     def getTable(self):
         return self._table
 
-    {{PKFieldsGetters}}
-    {{ValueFieldsGetters}}
-    {{ValueFieldsSetters}}
+    def getId(self):
+        return self._keys.id
+    
+    
+    def getName(self):
+        return self._vals.name
+    
+    def getUrl(self):
+        return self._vals.url
+    
+    def getFixtures_Url(self):
+        return self._vals.fixtures_url
+    
+    
+    def setName(self, name:str):
+       self._vals.name = name
+    
+    def setUrl(self, url:str):
+       self._vals.url = url
+    
+    def setFixtures_Url(self, fixtures_url:str):
+       self._vals.fixtures_url = fixtures_url
+    
+    
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

@@ -27,7 +27,7 @@ class AccountKeys(DatabaseKeys):
         
         :returns: a dictionary of all AccountKeys fields
         '''
-        fields = None if not (self.name) else {'name' : self.name}
+        fields = {} if not (self.name) else {'name' : self.name}
         return fields
         
 class AccountValues(DatabaseValues):
@@ -48,11 +48,12 @@ class AccountValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the value fields for this object in a dictionary form
+        Get all the non-None value fields for this object in a dictionary form
         
         :returns: a dictionary of all AccountValues fields
         '''
-        fields = None if not (self.expiry_date and self.joined_date and self.plan_id) else {'expiry_date' : self.expiry_date, 'joined_date' : self.joined_date, 'plan_id' : self.plan_id}
+        fields = {'expiry_date' : self.expiry_date, 'joined_date' : self.joined_date, 'plan_id' : self.plan_id}
+        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Account(DatabaseObject):

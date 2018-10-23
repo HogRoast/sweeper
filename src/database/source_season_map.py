@@ -3,57 +3,63 @@ from Footy.src.database.database import DatabaseObject, DatabaseKeys, \
         DatabaseValues, AdhocKeys
 
 @dataclass(frozen=True)
-class {{CapTableName}}Keys(DatabaseKeys):
+class Source_Season_MapKeys(DatabaseKeys):
     '''
-    {{TableName}} database object primary key representation
+    source_season_map database object primary key representation
     '''
-    {{PKFieldsTyped}}
+    source_id:int
+    season:str
+    
 
-    def __init__(self, {{PKFieldsListTyped}}):
+    def __init__(self, source_id:int, season:str):
         '''
         Construct the object from the provided primary key fields
         
         :param ...: typed primary key fields
         '''
         # Need to use setattr as the class is Frozen (immutable)
-        {{PKFieldsAssign}}
+        object.__setattr__(self, 'source_id', source_id)
+        object.__setattr__(self, 'season', season)
+        
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
         Get all the PK fields for this object in a dictionary form
         
-        :returns: a dictionary of all {{CapTableName}}Keys fields
+        :returns: a dictionary of all Source_Season_MapKeys fields
         '''
-        fields = {} if not ({{PKFieldsAndSelf}}) else {{PKFieldsDictSelf}}
+        fields = {} if not (self.source_id and self.season) else {'source_id' : self.source_id, 'season' : self.season}
         return fields
         
-class {{CapTableName}}Values(DatabaseValues):
+class Source_Season_MapValues(DatabaseValues):
     '''
-    {{TableName}} database object values representation
+    source_season_map database object values representation
     '''
-    def __init__(self, {{ValueFieldsListTypedAndDef}}):
+    def __init__(self, moniker:str = None, data_url:str = None):
         '''
         Construct the object from the provided value fields
         
         :param ...: typed value fields
         '''
-        {{ValueFieldsAssign}}
+        object.__setattr__(self, 'moniker', moniker)
+        object.__setattr__(self, 'data_url', data_url)
+        
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
         Get all the non-None value fields for this object in a dictionary form
         
-        :returns: a dictionary of all {{CapTableName}}Values fields
+        :returns: a dictionary of all Source_Season_MapValues fields
         '''
-        fields = {{ValueFieldsDictSelf}}
+        fields = {'moniker' : self.moniker, 'data_url' : self.data_url}
         fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
-class {{CapTableName}}(DatabaseObject):
+class Source_Season_Map(DatabaseObject):
     '''
-    {{TableName}} database object representation
+    source_season_map database object representation
     '''
 
     @classmethod
@@ -63,10 +69,10 @@ class {{CapTableName}}(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a {{CapTableName}} object constructed via the primary key
+        :returns: a Source_Season_Map object constructed via the primary key
         :raises: None
         '''
-        l = {{CapTableName}}()
+        l = Source_Season_Map()
         l._keys = keys
         return l
 
@@ -78,7 +84,7 @@ class {{CapTableName}}(DatabaseObject):
         :param keys: an AdhocKeys object
         :returns: a League object constructed via the primary key
         '''
-        return {{CapTableName}}.createAdhoc(keys)
+        return Source_Season_Map.createAdhoc(keys)
 
     @classmethod
     def createSingle(cls, row:tuple):
@@ -86,10 +92,10 @@ class {{CapTableName}}(DatabaseObject):
         Class method to create a database object from the provided database row
 
         :param row: a list of values representing the objects key and values
-        :returns: a {{CapTableName}} object constructed from row
+        :returns: a Source_Season_Map object constructed from row
         '''
-        {{AllFieldsList}} = row
-        return {{CapTableName}}({{AllFieldsList}})
+        source_id, season, moniker, data_url = row
+        return Source_Season_Map(source_id, season, moniker, data_url)
 
     def _createSingle(cls, row:tuple):
         '''
@@ -97,9 +103,9 @@ class {{CapTableName}}(DatabaseObject):
         database row
 
         :param row: a list of values representing the objects key and values
-        :returns: a {{CapTableName}} object constructed from row
+        :returns: a Source_Season_Map object constructed from row
         '''
-        return {{CapTableName}}.createSingle(row)
+        return Source_Season_Map.createSingle(row)
 
     @classmethod
     def createMulti(cls, rows:tuple):
@@ -107,7 +113,7 @@ class {{CapTableName}}(DatabaseObject):
         Class method to create database objects from the provided database rows
 
         :param rows: a list of lists of representing object keys and values
-        :returns: a list of {{CapTableName}} objects constructed from rows
+        :returns: a list of Source_Season_Map objects constructed from rows
         '''
         l = []
         for r in rows:
@@ -120,11 +126,11 @@ class {{CapTableName}}(DatabaseObject):
         database rows
 
         :param rows: a list of lists of representing object keys and values
-        :returns: a list of {{CapTableName}} objects constructed from rows
+        :returns: a list of Source_Season_Map objects constructed from rows
         '''
-        return {{CapTableName}}.createMulti(rows)
+        return Source_Season_Map.createMulti(rows)
 
-    def __init__(self, {{AllFieldsListTypedAndDef}}):
+    def __init__(self, source_id:int = None, season:str = None, moniker:str = None, data_url:str = None):
         '''
         Construct the object from the provided table name, key and value fields
         
@@ -132,17 +138,35 @@ class {{CapTableName}}(DatabaseObject):
         :returns: N/A
         :raises: None
         '''
-        keys = {{CapTableName}}Keys({{PKFieldsList}})
-        vals = {{CapTableName}}Values({{ValueFieldsList}})
+        keys = Source_Season_MapKeys(source_id, season)
+        vals = Source_Season_MapValues(moniker, data_url)
 
-        super().__init__('{{TableName}}', keys, vals)
+        super().__init__('source_season_map', keys, vals)
 
     def getTable(self):
         return self._table
 
-    {{PKFieldsGetters}}
-    {{ValueFieldsGetters}}
-    {{ValueFieldsSetters}}
+    def getSource_Id(self):
+        return self._keys.source_id
+    
+    def getSeason(self):
+        return self._keys.season
+    
+    
+    def getMoniker(self):
+        return self._vals.moniker
+    
+    def getData_Url(self):
+        return self._vals.data_url
+    
+    
+    def setMoniker(self, moniker:str):
+       self._vals.moniker = moniker
+    
+    def setData_Url(self, data_url:str):
+       self._vals.data_url = data_url
+    
+    
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

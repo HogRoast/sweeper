@@ -33,7 +33,7 @@ class TestMatch(TestCase):
         pass
 
     def test_keys_Immutablility(self):
-        keys =MatchKeys('match date TD', 'league name TD', 'team name TD', 'team name TD')
+        keys =MatchKeys('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD')
 
         with self.assertRaises(FrozenInstanceError) as cm:
             keys.date = 'Something New'
@@ -49,10 +49,10 @@ class TestMatch(TestCase):
         self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
-        obj = Match.createSingle(('match date TD', 'league name TD', 'team name TD', 'team name TD', 'X', 2.3))
+        obj = Match.createSingle(('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 'X', 2.3))
 
         self.assertEqual(obj.getDate(), 'match date TD')
-        self.assertEqual(obj.getLeague(), 'league name TD')
+        self.assertEqual(obj.getLeague(), 'league mnemonic TD')
         self.assertEqual(obj.getHome_Team(), 'team name TD')
         self.assertEqual(obj.getAway_Team(), 'team name TD')
          
@@ -61,13 +61,13 @@ class TestMatch(TestCase):
          
 
     def test_createMulti(self):
-        rows = [('match date TD', 'league name TD', 'team name TD', 'team name TD', 'X', 2.3),
-                ('match date TD2', 'league name TD2', 'team name TD2', 'team name TD2', 'Z', 2.4)]
+        rows = [('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 'X', 2.3),
+                ('match date TD2', 'league mnemonic TD2', 'team name TD2', 'team name TD2', 'Z', 2.4)]
         objs = Match.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
         self.assertEqual(objs[0].getDate(), 'match date TD')
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         self.assertEqual(objs[0].getHome_Team(), 'team name TD')
         self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         
@@ -75,7 +75,7 @@ class TestMatch(TestCase):
         self.assertEqual(objs[0].getBest_Odds(), 2.3)
         
         self.assertEqual(objs[1].getDate(), 'match date TD2')
-        self.assertEqual(objs[1].getLeague(), 'league name TD2')
+        self.assertEqual(objs[1].getLeague(), 'league mnemonic TD2')
         self.assertEqual(objs[1].getHome_Team(), 'team name TD2')
         self.assertEqual(objs[1].getAway_Team(), 'team name TD2')
         
@@ -84,14 +84,14 @@ class TestMatch(TestCase):
         
 
     def test_repr(self):
-        obj = Match('match date TD', 'league name TD', 'team name TD', 'team name TD', 'X', 2.3)
-        self.assertEqual(str(obj), "match : Keys {'date': 'match date TD', 'league': 'league name TD', 'home_team': 'team name TD', 'away_team': 'team name TD'} : Values {'result': 'X', 'best_odds': 2.3}")
+        obj = Match('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 'X', 2.3)
+        self.assertEqual(str(obj), "match : Keys {'date': 'match date TD', 'league': 'league mnemonic TD', 'home_team': 'team name TD', 'away_team': 'team name TD'} : Values {'result': 'X', 'best_odds': 2.3}")
 
     def test_select(self):
         objs = TestMatch.db.select(Match())
         self.assertEqual(len(objs), 2)
         self.assertEqual(objs[0].getDate(), 'match date TD')
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         self.assertEqual(objs[0].getHome_Team(), 'team name TD')
         self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         
@@ -99,7 +99,7 @@ class TestMatch(TestCase):
         self.assertEqual(objs[0].getBest_Odds(), 2.3)
         
         self.assertEqual(objs[1].getDate(), 'match date TD2')
-        self.assertEqual(objs[1].getLeague(), 'league name TD2')
+        self.assertEqual(objs[1].getLeague(), 'league mnemonic TD2')
         self.assertEqual(objs[1].getHome_Team(), 'team name TD2')
         self.assertEqual(objs[1].getAway_Team(), 'team name TD2')
         
@@ -107,10 +107,10 @@ class TestMatch(TestCase):
         self.assertEqual(objs[1].getBest_Odds(), 2.4)
         
         
-        objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
+        objs = TestMatch.db.select(Match('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD'))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getDate(), 'match date TD')
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         self.assertEqual(objs[0].getHome_Team(), 'team name TD')
         self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         
@@ -121,7 +121,7 @@ class TestMatch(TestCase):
         objs = TestMatch.db.select(Match.createAdhoc(AdhocKeys({'result': 'X', 'best_odds': 2.3})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getDate(), 'match date TD')
-        self.assertEqual(objs[0].getLeague(), 'league name TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
         self.assertEqual(objs[0].getHome_Team(), 'team name TD')
         self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         
@@ -135,12 +135,12 @@ class TestMatch(TestCase):
 
         with TestMatch.db.transaction() as t:
             TestMatch.db.upsert(
-                    Match('match date TD', 'league name TD', 'team name TD', 'team name TD', 'A', 5.6))
-            objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
+                    Match('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 'A', 5.6))
+            objs = TestMatch.db.select(Match('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD'))
 
             self.assertEqual(len(objs), 1)
             self.assertEqual(objs[0].getDate(), 'match date TD')
-            self.assertEqual(objs[0].getLeague(), 'league name TD')
+            self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
             self.assertEqual(objs[0].getHome_Team(), 'team name TD')
             self.assertEqual(objs[0].getAway_Team(), 'team name TD')
             
@@ -154,16 +154,16 @@ class TestMatch(TestCase):
             t.fail()
 
         with TestMatch.db.transaction() as t:
-            match = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))[0]
+            match = TestMatch.db.select(Match('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD'))[0]
             for k, v in d.items():
                 match.__getattribute__('set' + k.title())(v)
 
             TestMatch.db.upsert(match)
 
-            objs = TestMatch.db.select(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
+            objs = TestMatch.db.select(Match('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD'))
             self.assertEqual(len(objs), 1)
             self.assertEqual(objs[0].getDate(), 'match date TD')
-            self.assertEqual(objs[0].getLeague(), 'league name TD')
+            self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
             self.assertEqual(objs[0].getHome_Team(), 'team name TD')
             self.assertEqual(objs[0].getAway_Team(), 'team name TD')
             
@@ -181,12 +181,12 @@ class TestMatch(TestCase):
 
         with TestMatch.db.transaction() as t:
             TestMatch.db.upsert(
-                    Match('match date TD INS', 'league name TD INS', 'team name TD INS', 'team name TD INS', 'A', 5.6))
+                    Match('match date TD INS', 'league mnemonic TD INS', 'team name TD INS', 'team name TD INS', 'A', 5.6))
             objs = TestMatch.db.select(Match())
 
             self.assertEqual(len(objs), 3)
 
-            d = eval("{'date': 'match date TD INS', 'league': 'league name TD INS', 'home_team': 'team name TD INS', 'away_team': 'team name TD INS'}")
+            d = eval("{'date': 'match date TD INS', 'league': 'league mnemonic TD INS', 'home_team': 'team name TD INS', 'away_team': 'team name TD INS'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
@@ -204,7 +204,7 @@ class TestMatch(TestCase):
         TestMatch.db.disableForeignKeys()
 
         with TestMatch.db.transaction() as t:
-            TestMatch.db.delete(Match('match date TD', 'league name TD', 'team name TD', 'team name TD'))
+            TestMatch.db.delete(Match('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD'))
 
             objs = TestMatch.db.select(Match())
             self.assertEqual(len(objs), 1)

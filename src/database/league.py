@@ -7,17 +7,17 @@ class LeagueKeys(DatabaseKeys):
     '''
     league database object primary key representation
     '''
-    name:str
+    mnemonic:str
     
 
-    def __init__(self, name:str):
+    def __init__(self, mnemonic:str):
         '''
         Construct the object from the provided primary key fields
         
         :param ...: typed primary key fields
         '''
         # Need to use setattr as the class is Frozen (immutable)
-        object.__setattr__(self, 'name', name)
+        object.__setattr__(self, 'mnemonic', mnemonic)
         
         super().__init__(self.getFields())
 
@@ -27,30 +27,32 @@ class LeagueKeys(DatabaseKeys):
         
         :returns: a dictionary of all LeagueKeys fields
         '''
-        fields = None if not (self.name) else {'name' : self.name}
+        fields = {} if not (self.mnemonic) else {'mnemonic' : self.mnemonic}
         return fields
         
 class LeagueValues(DatabaseValues):
     '''
     league database object values representation
     '''
-    def __init__(self, desc:str = None):
+    def __init__(self, name:str = None, desc:str = None):
         '''
         Construct the object from the provided value fields
         
         :param ...: typed value fields
         '''
+        object.__setattr__(self, 'name', name)
         object.__setattr__(self, 'desc', desc)
         
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
-        Get all the value fields for this object in a dictionary form
+        Get all the non-None value fields for this object in a dictionary form
         
         :returns: a dictionary of all LeagueValues fields
         '''
-        fields = None if not (self.desc) else {'desc' : self.desc}
+        fields = {'name' : self.name, 'desc' : self.desc}
+        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class League(DatabaseObject):
@@ -90,8 +92,8 @@ class League(DatabaseObject):
         :param row: a list of values representing the objects key and values
         :returns: a League object constructed from row
         '''
-        name, desc = row
-        return League(name, desc)
+        mnemonic, name, desc = row
+        return League(mnemonic, name, desc)
 
     def _createSingle(cls, row:tuple):
         '''
@@ -126,7 +128,7 @@ class League(DatabaseObject):
         '''
         return League.createMulti(rows)
 
-    def __init__(self, name:str = None, desc:str = None):
+    def __init__(self, mnemonic:str = None, name:str = None, desc:str = None):
         '''
         Construct the object from the provided table name, key and value fields
         
@@ -134,21 +136,27 @@ class League(DatabaseObject):
         :returns: N/A
         :raises: None
         '''
-        keys = LeagueKeys(name)
-        vals = LeagueValues(desc)
+        keys = LeagueKeys(mnemonic)
+        vals = LeagueValues(name, desc)
 
         super().__init__('league', keys, vals)
 
     def getTable(self):
         return self._table
 
-    def getName(self):
-        return self._keys.name
+    def getMnemonic(self):
+        return self._keys.mnemonic
     
+    
+    def getName(self):
+        return self._vals.name
     
     def getDesc(self):
         return self._vals.desc
     
+    
+    def setName(self, name:str):
+       self._vals.name = name
     
     def setDesc(self, desc:str):
        self._vals.desc = desc
