@@ -29,7 +29,9 @@ class SQLite3Impl(DatabaseImpl):
         if where and len(where) > 0:
             s += 'WHERE '
             for k, v in where.items():
-                if isinstance(v, str):
+                if v is None:
+                    s += '{}=NULL and '.format(k)
+                elif isinstance(v, str):
                     s += '{}="{}" and '.format(k, v) 
                 else:
                     s += '{}={} and '.format(k, v) 
@@ -58,7 +60,9 @@ class SQLite3Impl(DatabaseImpl):
 
         s += ') values ('
         for v in inserts.values():
-            if isinstance(v, str):
+            if v is None:
+                s += 'NULL,'
+            elif isinstance(v, str):
                 s += '"{}",'.format(v)
             else:
                 s += '{},'.format(v)
@@ -83,7 +87,9 @@ class SQLite3Impl(DatabaseImpl):
         
         s = 'UPDATE {} SET '.format(table)
         for k, v in updates.items():
-            if isinstance(v, str):
+            if v is None:
+                s += '{}=NULL,'.format(k)
+            elif isinstance(v, str):
                 s += '{}="{}",'.format(k, v) 
             else:
                 s += '{}={},'.format(k, v) 
@@ -93,7 +99,9 @@ class SQLite3Impl(DatabaseImpl):
         if where and len(where) > 0:
             s += ' WHERE '
             for k, v in where.items():
-                if isinstance(v, str):
+                if v is None:
+                    s += '{}=NULL and '.format(k)
+                elif isinstance(v, str):
                     s += '{}="{}" and '.format(k, v) 
                 else:
                     s += '{}={} and '.format(k, v) 
@@ -115,7 +123,9 @@ class SQLite3Impl(DatabaseImpl):
         if where and len(where) > 0:
             s += 'WHERE '
             for k, v in where.items():
-                if isinstance(v, str):
+                if v is None:
+                    s += '{}=NULL and '.format(k, v) 
+                elif isinstance(v, str):
                     s += '{}="{}" and '.format(k, v) 
                 else:
                     s += '{}={} and '.format(k, v) 
@@ -135,6 +145,7 @@ class SQLite3Impl(DatabaseImpl):
         curs = self._conn.cursor()
 
         try:
+            print(s)
             curs.execute(s)
         except IntegrityError as e:
             raise DatabaseIntegrityError(e.args[0])

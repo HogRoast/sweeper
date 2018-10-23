@@ -182,6 +182,10 @@ class TestAlgo(TestCase):
             # force a rollback
             t.fail()
 
+    def test_isNullable(self):
+        obj = Algo()
+        self.assertTrue(True and obj.isNullable('name') and obj.isNullable('desc')) 
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

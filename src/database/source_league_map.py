@@ -48,12 +48,11 @@ class Source_League_MapValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the non-None value fields for this object in a dictionary form
+        Get all the value fields for this object in a dictionary form
         
         :returns: a dictionary of all Source_League_MapValues fields
         '''
         fields = {'moniker' : self.moniker}
-        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Source_League_Map(DatabaseObject):
@@ -68,7 +67,7 @@ class Source_League_Map(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a Source_League_Map object constructed via the primary key
+        :returns: a Source_League_Map object constructed via the provided key
         :raises: None
         '''
         l = Source_League_Map()
@@ -77,11 +76,11 @@ class Source_League_Map(DatabaseObject):
 
     def _createAdhoc(self, keys:AdhocKeys):
         '''
-        Private nstance method to create a database object with the 
+        Private instance method to create a database object with the 
         provided adhoc keys list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         '''
         return Source_League_Map.createAdhoc(keys)
 
@@ -131,7 +130,7 @@ class Source_League_Map(DatabaseObject):
 
     def __init__(self, source_id:int = None, league:str = None, moniker:str = None):
         '''
-        Construct the object from the provided table name, key and value fields
+        Construct the object from the provided key and value fields
         
         :param ...: typed key and value fields
         :returns: N/A
@@ -160,6 +159,14 @@ class Source_League_Map(DatabaseObject):
        self._vals.moniker = moniker
     
     
+
+    def isNullable(self, field):
+        if field == 'league':
+            return True
+        elif field == 'moniker':
+            return True
+        
+        return False
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

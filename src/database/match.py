@@ -40,7 +40,7 @@ class MatchValues(DatabaseValues):
     '''
     match database object values representation
     '''
-    def __init__(self, result:str = None, best_odds:float = None):
+    def __init__(self, result:str = None, best_odds:float = None, home_goals:int = None, away_goals:int = None, home_lp:int = None, away_lp:int = None):
         '''
         Construct the object from the provided value fields
         
@@ -48,17 +48,20 @@ class MatchValues(DatabaseValues):
         '''
         object.__setattr__(self, 'result', result)
         object.__setattr__(self, 'best_odds', best_odds)
+        object.__setattr__(self, 'home_goals', home_goals)
+        object.__setattr__(self, 'away_goals', away_goals)
+        object.__setattr__(self, 'home_lp', home_lp)
+        object.__setattr__(self, 'away_lp', away_lp)
         
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
-        Get all the non-None value fields for this object in a dictionary form
+        Get all the value fields for this object in a dictionary form
         
         :returns: a dictionary of all MatchValues fields
         '''
-        fields = {'result' : self.result, 'best_odds' : self.best_odds}
-        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
+        fields = {'result' : self.result, 'best_odds' : self.best_odds, 'home_goals' : self.home_goals, 'away_goals' : self.away_goals, 'home_lp' : self.home_lp, 'away_lp' : self.away_lp}
         return fields
         
 class Match(DatabaseObject):
@@ -73,7 +76,7 @@ class Match(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a Match object constructed via the primary key
+        :returns: a Match object constructed via the provided key
         :raises: None
         '''
         l = Match()
@@ -82,11 +85,11 @@ class Match(DatabaseObject):
 
     def _createAdhoc(self, keys:AdhocKeys):
         '''
-        Private nstance method to create a database object with the 
+        Private instance method to create a database object with the 
         provided adhoc keys list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         '''
         return Match.createAdhoc(keys)
 
@@ -98,8 +101,8 @@ class Match(DatabaseObject):
         :param row: a list of values representing the objects key and values
         :returns: a Match object constructed from row
         '''
-        date, league, home_team, away_team, result, best_odds = row
-        return Match(date, league, home_team, away_team, result, best_odds)
+        date, league, home_team, away_team, result, best_odds, home_goals, away_goals, home_lp, away_lp = row
+        return Match(date, league, home_team, away_team, result, best_odds, home_goals, away_goals, home_lp, away_lp)
 
     def _createSingle(cls, row:tuple):
         '''
@@ -134,16 +137,16 @@ class Match(DatabaseObject):
         '''
         return Match.createMulti(rows)
 
-    def __init__(self, date:str = None, league:str = None, home_team:str = None, away_team:str = None, result:str = None, best_odds:float = None):
+    def __init__(self, date:str = None, league:str = None, home_team:str = None, away_team:str = None, result:str = None, best_odds:float = None, home_goals:int = None, away_goals:int = None, home_lp:int = None, away_lp:int = None):
         '''
-        Construct the object from the provided table name, key and value fields
+        Construct the object from the provided key and value fields
         
         :param ...: typed key and value fields
         :returns: N/A
         :raises: None
         '''
         keys = MatchKeys(date, league, home_team, away_team)
-        vals = MatchValues(result, best_odds)
+        vals = MatchValues(result, best_odds, home_goals, away_goals, home_lp, away_lp)
 
         super().__init__('match', keys, vals)
 
@@ -169,6 +172,18 @@ class Match(DatabaseObject):
     def getBest_Odds(self):
         return self._vals.best_odds
     
+    def getHome_Goals(self):
+        return self._vals.home_goals
+    
+    def getAway_Goals(self):
+        return self._vals.away_goals
+    
+    def getHome_Lp(self):
+        return self._vals.home_lp
+    
+    def getAway_Lp(self):
+        return self._vals.away_lp
+    
     
     def setResult(self, result:str):
        self._vals.result = result
@@ -176,7 +191,35 @@ class Match(DatabaseObject):
     def setBest_Odds(self, best_odds:float):
        self._vals.best_odds = best_odds
     
+    def setHome_Goals(self, home_goals:int):
+       self._vals.home_goals = home_goals
     
+    def setAway_Goals(self, away_goals:int):
+       self._vals.away_goals = away_goals
+    
+    def setHome_Lp(self, home_lp:int):
+       self._vals.home_lp = home_lp
+    
+    def setAway_Lp(self, away_lp:int):
+       self._vals.away_lp = away_lp
+    
+    
+
+    def isNullable(self, field):
+        if field == 'result':
+            return True
+        elif field == 'best_odds':
+            return True
+        elif field == 'home_goals':
+            return True
+        elif field == 'away_goals':
+            return True
+        elif field == 'home_lp':
+            return True
+        elif field == 'away_lp':
+            return True
+        
+        return False
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

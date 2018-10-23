@@ -1,2 +1,2 @@
-insert into plan values (98, 'plan name TD', 'plan desc TD', 2.3),
-                        (99, 'plan name TD2', 'plan desc TD2', 2.4);
+insert into plan values (98, 'plan name TD', 2.3, 'plan desc TD'),
+                        (99, 'plan name TD2', 2.4, 'plan desc TD2');

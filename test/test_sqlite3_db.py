@@ -142,6 +142,30 @@ class TestSQLite3Impl(TestCase):
         self.assertEqual(
                 cm.exception.msg, 'No values provided for UPDATE')
 
+    def test_null_insert(self):
+        TestSQLite3Impl.db.insert('league', \
+                {'mnemonic' : 'E1', 'name' : 'English Champ'})
+
+        rows = TestSQLite3Impl.db.select('league', {'mnemonic' : 'E1'})
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0], ('E1', 'English Champ', None))
+
+        TestSQLite3Impl.db.rollback()
+
+    def test_null_update(self):
+        TestSQLite3Impl.db.insert('league', \
+                {'mnemonic' : 'E1', 'name' : 'English Champ', \
+                'desc' : 'A new description'})
+
+        TestSQLite3Impl.db.update('league', {'desc' : None}, \
+                {'mnemonic' : 'E1'})
+
+        rows = TestSQLite3Impl.db.select('league', {'mnemonic' : 'E1'})
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0], ('E1', 'English Champ', None))
+
+        TestSQLite3Impl.db.rollback()
+
     def test_delete(self):
         TestSQLite3Impl.db.insert('league', \
                 {'mnemonic' : 'D1', 'name' : 'Bundesliga', \

@@ -34,7 +34,7 @@ class RatingValues(DatabaseValues):
     '''
     rating database object values representation
     '''
-    def __init__(self, algo_id:int = None, rank:int = None):
+    def __init__(self, algo_id:int, rank:int):
         '''
         Construct the object from the provided value fields
         
@@ -47,12 +47,11 @@ class RatingValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the non-None value fields for this object in a dictionary form
+        Get all the value fields for this object in a dictionary form
         
         :returns: a dictionary of all RatingValues fields
         '''
         fields = {'algo_id' : self.algo_id, 'rank' : self.rank}
-        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Rating(DatabaseObject):
@@ -67,7 +66,7 @@ class Rating(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a Rating object constructed via the primary key
+        :returns: a Rating object constructed via the provided key
         :raises: None
         '''
         l = Rating()
@@ -76,11 +75,11 @@ class Rating(DatabaseObject):
 
     def _createAdhoc(self, keys:AdhocKeys):
         '''
-        Private nstance method to create a database object with the 
+        Private instance method to create a database object with the 
         provided adhoc keys list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         '''
         return Rating.createAdhoc(keys)
 
@@ -130,7 +129,7 @@ class Rating(DatabaseObject):
 
     def __init__(self, match_oid:int = None, algo_id:int = None, rank:int = None):
         '''
-        Construct the object from the provided table name, key and value fields
+        Construct the object from the provided key and value fields
         
         :param ...: typed key and value fields
         :returns: N/A
@@ -162,6 +161,10 @@ class Rating(DatabaseObject):
        self._vals.rank = rank
     
     
+
+    def isNullable(self, field):
+        
+        return False
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

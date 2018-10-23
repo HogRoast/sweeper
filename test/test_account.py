@@ -46,70 +46,70 @@ class TestAccount(TestCase):
         self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
-        obj = Account.createSingle(('account name TD', 'account expiry_date TD', 'account joined_date TD', 98))
+        obj = Account.createSingle(('account name TD', 98, 'account joined_date TD', 'account expiry_date TD'))
 
         self.assertEqual(obj.getName(), 'account name TD')
          
-        self.assertEqual(obj.getExpiry_Date(), 'account expiry_date TD')
-        self.assertEqual(obj.getJoined_Date(), 'account joined_date TD')
         self.assertEqual(obj.getPlan_Id(), 98)
+        self.assertEqual(obj.getJoined_Date(), 'account joined_date TD')
+        self.assertEqual(obj.getExpiry_Date(), 'account expiry_date TD')
          
 
     def test_createMulti(self):
-        rows = [('account name TD', 'account expiry_date TD', 'account joined_date TD', 98),
-                ('account name TD2', 'account expiry_date TD2', 'account joined_date TD2', 99)]
+        rows = [('account name TD', 98, 'account joined_date TD', 'account expiry_date TD'),
+                ('account name TD2', 99, 'account joined_date TD2', 'account expiry_date TD2')]
         objs = Account.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
         self.assertEqual(objs[0].getName(), 'account name TD')
         
-        self.assertEqual(objs[0].getExpiry_Date(), 'account expiry_date TD')
-        self.assertEqual(objs[0].getJoined_Date(), 'account joined_date TD')
         self.assertEqual(objs[0].getPlan_Id(), 98)
+        self.assertEqual(objs[0].getJoined_Date(), 'account joined_date TD')
+        self.assertEqual(objs[0].getExpiry_Date(), 'account expiry_date TD')
         
         self.assertEqual(objs[1].getName(), 'account name TD2')
         
-        self.assertEqual(objs[1].getExpiry_Date(), 'account expiry_date TD2')
-        self.assertEqual(objs[1].getJoined_Date(), 'account joined_date TD2')
         self.assertEqual(objs[1].getPlan_Id(), 99)
+        self.assertEqual(objs[1].getJoined_Date(), 'account joined_date TD2')
+        self.assertEqual(objs[1].getExpiry_Date(), 'account expiry_date TD2')
         
 
     def test_repr(self):
-        obj = Account('account name TD', 'account expiry_date TD', 'account joined_date TD', 98)
-        self.assertEqual(str(obj), "account : Keys {'name': 'account name TD'} : Values {'expiry_date': 'account expiry_date TD', 'joined_date': 'account joined_date TD', 'plan_id': 98}")
+        obj = Account('account name TD', 98, 'account joined_date TD', 'account expiry_date TD')
+        self.assertEqual(str(obj), "account : Keys {'name': 'account name TD'} : Values {'plan_id': 98, 'joined_date': 'account joined_date TD', 'expiry_date': 'account expiry_date TD'}")
 
     def test_select(self):
         objs = TestAccount.db.select(Account())
         self.assertEqual(len(objs), 2)
         self.assertEqual(objs[0].getName(), 'account name TD')
         
-        self.assertEqual(objs[0].getExpiry_Date(), 'account expiry_date TD')
-        self.assertEqual(objs[0].getJoined_Date(), 'account joined_date TD')
         self.assertEqual(objs[0].getPlan_Id(), 98)
+        self.assertEqual(objs[0].getJoined_Date(), 'account joined_date TD')
+        self.assertEqual(objs[0].getExpiry_Date(), 'account expiry_date TD')
         
         self.assertEqual(objs[1].getName(), 'account name TD2')
         
-        self.assertEqual(objs[1].getExpiry_Date(), 'account expiry_date TD2')
-        self.assertEqual(objs[1].getJoined_Date(), 'account joined_date TD2')
         self.assertEqual(objs[1].getPlan_Id(), 99)
+        self.assertEqual(objs[1].getJoined_Date(), 'account joined_date TD2')
+        self.assertEqual(objs[1].getExpiry_Date(), 'account expiry_date TD2')
         
         
         objs = TestAccount.db.select(Account('account name TD'))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getName(), 'account name TD')
         
-        self.assertEqual(objs[0].getExpiry_Date(), 'account expiry_date TD')
-        self.assertEqual(objs[0].getJoined_Date(), 'account joined_date TD')
         self.assertEqual(objs[0].getPlan_Id(), 98)
+        self.assertEqual(objs[0].getJoined_Date(), 'account joined_date TD')
+        self.assertEqual(objs[0].getExpiry_Date(), 'account expiry_date TD')
         
 
-        objs = TestAccount.db.select(Account.createAdhoc(AdhocKeys({'expiry_date': 'account expiry_date TD', 'joined_date': 'account joined_date TD', 'plan_id': 98})))
+        objs = TestAccount.db.select(Account.createAdhoc(AdhocKeys({'plan_id': 98, 'joined_date': 'account joined_date TD', 'expiry_date': 'account expiry_date TD'})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getName(), 'account name TD')
         
-        self.assertEqual(objs[0].getExpiry_Date(), 'account expiry_date TD')
-        self.assertEqual(objs[0].getJoined_Date(), 'account joined_date TD')
         self.assertEqual(objs[0].getPlan_Id(), 98)
+        self.assertEqual(objs[0].getJoined_Date(), 'account joined_date TD')
+        self.assertEqual(objs[0].getExpiry_Date(), 'account expiry_date TD')
         
 
     def test_update(self):
@@ -118,14 +118,14 @@ class TestAccount(TestCase):
 
         with TestAccount.db.transaction() as t:
             TestAccount.db.upsert(
-                    Account('account name TD', 'account expiry_date TD UPD', 'account joined_date TD UPD', 100))
+                    Account('account name TD', 100, 'account joined_date TD UPD', 'account expiry_date TD UPD'))
             objs = TestAccount.db.select(Account('account name TD'))
 
             self.assertEqual(len(objs), 1)
             self.assertEqual(objs[0].getName(), 'account name TD')
             
 
-            d = eval("{'expiry_date': 'account expiry_date TD UPD', 'joined_date': 'account joined_date TD UPD', 'plan_id': 100}")
+            d = eval("{'plan_id': 100, 'joined_date': 'account joined_date TD UPD', 'expiry_date': 'account expiry_date TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[0].__getattribute__('get' + k.title())(), v)
@@ -158,7 +158,7 @@ class TestAccount(TestCase):
 
         with TestAccount.db.transaction() as t:
             TestAccount.db.upsert(
-                    Account('account name TD INS', 'account expiry_date TD UPD', 'account joined_date TD UPD', 100))
+                    Account('account name TD INS', 100, 'account joined_date TD UPD', 'account expiry_date TD UPD'))
             objs = TestAccount.db.select(Account())
 
             self.assertEqual(len(objs), 3)
@@ -168,7 +168,7 @@ class TestAccount(TestCase):
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
 
-            d = eval("{'expiry_date': 'account expiry_date TD UPD', 'joined_date': 'account joined_date TD UPD', 'plan_id': 100}")
+            d = eval("{'plan_id': 100, 'joined_date': 'account joined_date TD UPD', 'expiry_date': 'account expiry_date TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
@@ -188,6 +188,10 @@ class TestAccount(TestCase):
 
             # force a rollback
             t.fail()
+
+    def test_isNullable(self):
+        obj = Account()
+        self.assertTrue(True and obj.isNullable('expiry_date')) 
 
 if __name__ == '__main__':
     import unittest

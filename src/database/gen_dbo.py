@@ -56,6 +56,8 @@ def createReplacements(table, fields):
     valueTestDataDict = '{'
     allFieldsList = ''
     allFieldsListTypedAndDef = ''
+    allIfNullable = "if field == '"
+    allTestDataIsNullable = 'True and '
     allTestDataList = ''
     allTestDataList2 = ''
     allTestDataRows = ''
@@ -108,7 +110,10 @@ def createReplacements(table, fields):
             pkTestDataAssertEqual += tmp 
             pkTestDataAssertEqual2 += tmp2
         else:
-            valueFieldsListTypedAndDef += k + ':' + type_ + ' = None, '
+            if v[3]:
+                valueFieldsListTypedAndDef += k + ':' + type_ + ' = None, '
+            else:
+                valueFieldsListTypedAndDef += k + ':' + type_ + ', '
             valueFieldsAssign += \
                     "object.__setattr__(self, '" + k +"', " + k + ')\n' 
             valueFieldsAnd += k + ' and '
@@ -151,7 +156,11 @@ def createReplacements(table, fields):
             valueTestDataAssertEqual2 += tmp2
 
         allFieldsList += k + ', '
+        if v[3]:
+            allIfNullable += k + "':\n    return True\nelif field == '"
+            allTestDataIsNullable += "obj.isNullable('" + k + "') and "
         allFieldsListTypedAndDef += k + ':' + type_ + ' = None, '
+
         if v[0] == 'str':
             if v[2] is not None:
                 tmp = "'" + v[2] + " TD', "
@@ -188,6 +197,8 @@ def createReplacements(table, fields):
     valueTestDataDict = valueTestDataDict[:-2] + '}'
     allFieldsList = allFieldsList[:-2]
     allFieldsListTypedAndDef = allFieldsListTypedAndDef[:-2]
+    allIfNullable = allIfNullable[:-15]
+    allTestDataIsNullable = allTestDataIsNullable[:-5]
     allTestDataList = allTestDataList[:-2]
     allTestDataList2 = allTestDataList2[:-2]
     allTestDataRows = '(' + allTestDataList + '),\n' + '(' + allTestDataList2 + ')'
@@ -241,6 +252,8 @@ def createReplacements(table, fields):
     replacements['{{AllFieldsListTypedAndDef}}'] = allFieldsListTypedAndDef
     replacements['{{AllTestDataList}}'] = allTestDataList
     replacements['{{AllTestDataRows}}'] = allTestDataRows
+    replacements['{{AllIfNullable}}'] = allIfNullable
+    replacements['{{AllTestDataIsNullable}}'] = allTestDataIsNullable
     replacements['{{NewValueTestDataList}}'] = newValueTestDataList
     replacements['{{NewValueTestDataDict}}'] = newValueTestDataDict
     replacements['{{NewPKTestDataList}}'] = newPKTestDataList
@@ -284,9 +297,12 @@ def generateDBO():
                     elif 'char' in row:
                         j = row.index('char')
                         t = 'char'
+
                     if j > 0:
                         f = row[:j].strip()
-                        fields[f] = [t, False, None]
+                        fields[f] = [t, False, None, True]
+                        if 'not null' in row:
+                            fields[f][3] = False
 
                     if 'primary key' in row or \
                             'PRIMARY KEY' in row:
@@ -303,6 +319,8 @@ def generateDBO():
                         b = row.rindex('(')
                         c = row.rindex(')')
                         fields[f][2] = row[a+11:b] + ' ' + row[b+1:c]
+
+
                 # Complete fields dict by assigning primary key property
                 for f in fields:
                     if f in pk:

@@ -189,6 +189,10 @@ class TestAccount_Perms(TestCase):
             # force a rollback
             t.fail()
 
+    def test_isNullable(self):
+        obj = Account_Perms()
+        self.assertTrue(True) 
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

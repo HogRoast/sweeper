@@ -175,6 +175,10 @@ class TestTeam(TestCase):
             # force a rollback
             t.fail()
 
+    def test_isNullable(self):
+        obj = Team()
+        self.assertTrue(True) 
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

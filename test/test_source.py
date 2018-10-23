@@ -46,37 +46,37 @@ class TestSource(TestCase):
         self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
-        obj = Source.createSingle((98, 'source name TD', 'source url TD', 'source fixtures_url TD'))
+        obj = Source.createSingle((98, 'source name TD', 'source fixtures_url TD', 'source url TD'))
 
         self.assertEqual(obj.getId(), 98)
          
         self.assertEqual(obj.getName(), 'source name TD')
-        self.assertEqual(obj.getUrl(), 'source url TD')
         self.assertEqual(obj.getFixtures_Url(), 'source fixtures_url TD')
+        self.assertEqual(obj.getUrl(), 'source url TD')
          
 
     def test_createMulti(self):
-        rows = [(98, 'source name TD', 'source url TD', 'source fixtures_url TD'),
-                (99, 'source name TD2', 'source url TD2', 'source fixtures_url TD2')]
+        rows = [(98, 'source name TD', 'source fixtures_url TD', 'source url TD'),
+                (99, 'source name TD2', 'source fixtures_url TD2', 'source url TD2')]
         objs = Source.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getName(), 'source name TD')
-        self.assertEqual(objs[0].getUrl(), 'source url TD')
         self.assertEqual(objs[0].getFixtures_Url(), 'source fixtures_url TD')
+        self.assertEqual(objs[0].getUrl(), 'source url TD')
         
         self.assertEqual(objs[1].getId(), 99)
         
         self.assertEqual(objs[1].getName(), 'source name TD2')
-        self.assertEqual(objs[1].getUrl(), 'source url TD2')
         self.assertEqual(objs[1].getFixtures_Url(), 'source fixtures_url TD2')
+        self.assertEqual(objs[1].getUrl(), 'source url TD2')
         
 
     def test_repr(self):
-        obj = Source(98, 'source name TD', 'source url TD', 'source fixtures_url TD')
-        self.assertEqual(str(obj), "source : Keys {'id': 98} : Values {'name': 'source name TD', 'url': 'source url TD', 'fixtures_url': 'source fixtures_url TD'}")
+        obj = Source(98, 'source name TD', 'source fixtures_url TD', 'source url TD')
+        self.assertEqual(str(obj), "source : Keys {'id': 98} : Values {'name': 'source name TD', 'fixtures_url': 'source fixtures_url TD', 'url': 'source url TD'}")
 
     def test_select(self):
         objs = TestSource.db.select(Source())
@@ -84,14 +84,14 @@ class TestSource(TestCase):
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getName(), 'source name TD')
-        self.assertEqual(objs[0].getUrl(), 'source url TD')
         self.assertEqual(objs[0].getFixtures_Url(), 'source fixtures_url TD')
+        self.assertEqual(objs[0].getUrl(), 'source url TD')
         
         self.assertEqual(objs[1].getId(), 99)
         
         self.assertEqual(objs[1].getName(), 'source name TD2')
-        self.assertEqual(objs[1].getUrl(), 'source url TD2')
         self.assertEqual(objs[1].getFixtures_Url(), 'source fixtures_url TD2')
+        self.assertEqual(objs[1].getUrl(), 'source url TD2')
         
         
         objs = TestSource.db.select(Source(98))
@@ -99,17 +99,17 @@ class TestSource(TestCase):
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getName(), 'source name TD')
-        self.assertEqual(objs[0].getUrl(), 'source url TD')
         self.assertEqual(objs[0].getFixtures_Url(), 'source fixtures_url TD')
+        self.assertEqual(objs[0].getUrl(), 'source url TD')
         
 
-        objs = TestSource.db.select(Source.createAdhoc(AdhocKeys({'name': 'source name TD', 'url': 'source url TD', 'fixtures_url': 'source fixtures_url TD'})))
+        objs = TestSource.db.select(Source.createAdhoc(AdhocKeys({'name': 'source name TD', 'fixtures_url': 'source fixtures_url TD', 'url': 'source url TD'})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getName(), 'source name TD')
-        self.assertEqual(objs[0].getUrl(), 'source url TD')
         self.assertEqual(objs[0].getFixtures_Url(), 'source fixtures_url TD')
+        self.assertEqual(objs[0].getUrl(), 'source url TD')
         
 
     def test_update(self):
@@ -118,14 +118,14 @@ class TestSource(TestCase):
 
         with TestSource.db.transaction() as t:
             TestSource.db.upsert(
-                    Source(98, 'source name TD UPD', 'source url TD UPD', 'source fixtures_url TD UPD'))
+                    Source(98, 'source name TD UPD', 'source fixtures_url TD UPD', 'source url TD UPD'))
             objs = TestSource.db.select(Source(98))
 
             self.assertEqual(len(objs), 1)
             self.assertEqual(objs[0].getId(), 98)
             
 
-            d = eval("{'name': 'source name TD UPD', 'url': 'source url TD UPD', 'fixtures_url': 'source fixtures_url TD UPD'}")
+            d = eval("{'name': 'source name TD UPD', 'fixtures_url': 'source fixtures_url TD UPD', 'url': 'source url TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[0].__getattribute__('get' + k.title())(), v)
@@ -158,7 +158,7 @@ class TestSource(TestCase):
 
         with TestSource.db.transaction() as t:
             TestSource.db.upsert(
-                    Source(100, 'source name TD UPD', 'source url TD UPD', 'source fixtures_url TD UPD'))
+                    Source(100, 'source name TD UPD', 'source fixtures_url TD UPD', 'source url TD UPD'))
             objs = TestSource.db.select(Source())
 
             self.assertEqual(len(objs), 3)
@@ -168,7 +168,7 @@ class TestSource(TestCase):
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
 
-            d = eval("{'name': 'source name TD UPD', 'url': 'source url TD UPD', 'fixtures_url': 'source fixtures_url TD UPD'}")
+            d = eval("{'name': 'source name TD UPD', 'fixtures_url': 'source fixtures_url TD UPD', 'url': 'source url TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
@@ -188,6 +188,10 @@ class TestSource(TestCase):
 
             # force a rollback
             t.fail()
+
+    def test_isNullable(self):
+        obj = Source()
+        self.assertTrue(True and obj.isNullable('url')) 
 
 if __name__ == '__main__':
     import unittest

@@ -43,12 +43,11 @@ class {{CapTableName}}Values(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the non-None value fields for this object in a dictionary form
+        Get all the value fields for this object in a dictionary form
         
         :returns: a dictionary of all {{CapTableName}}Values fields
         '''
         fields = {{ValueFieldsDictSelf}}
-        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class {{CapTableName}}(DatabaseObject):
@@ -63,7 +62,7 @@ class {{CapTableName}}(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a {{CapTableName}} object constructed via the primary key
+        :returns: a {{CapTableName}} object constructed via the provided key
         :raises: None
         '''
         l = {{CapTableName}}()
@@ -72,11 +71,11 @@ class {{CapTableName}}(DatabaseObject):
 
     def _createAdhoc(self, keys:AdhocKeys):
         '''
-        Private nstance method to create a database object with the 
+        Private instance method to create a database object with the 
         provided adhoc keys list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         '''
         return {{CapTableName}}.createAdhoc(keys)
 
@@ -126,7 +125,7 @@ class {{CapTableName}}(DatabaseObject):
 
     def __init__(self, {{AllFieldsListTypedAndDef}}):
         '''
-        Construct the object from the provided table name, key and value fields
+        Construct the object from the provided key and value fields
         
         :param ...: typed key and value fields
         :returns: N/A
@@ -143,6 +142,10 @@ class {{CapTableName}}(DatabaseObject):
     {{PKFieldsGetters}}
     {{ValueFieldsGetters}}
     {{ValueFieldsSetters}}
+
+    def isNullable(self, field):
+        {{AllIfNullable}}
+        return False
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

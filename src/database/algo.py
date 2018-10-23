@@ -47,12 +47,11 @@ class AlgoValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the non-None value fields for this object in a dictionary form
+        Get all the value fields for this object in a dictionary form
         
         :returns: a dictionary of all AlgoValues fields
         '''
         fields = {'name' : self.name, 'desc' : self.desc}
-        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Algo(DatabaseObject):
@@ -67,7 +66,7 @@ class Algo(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a Algo object constructed via the primary key
+        :returns: a Algo object constructed via the provided key
         :raises: None
         '''
         l = Algo()
@@ -76,11 +75,11 @@ class Algo(DatabaseObject):
 
     def _createAdhoc(self, keys:AdhocKeys):
         '''
-        Private nstance method to create a database object with the 
+        Private instance method to create a database object with the 
         provided adhoc keys list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         '''
         return Algo.createAdhoc(keys)
 
@@ -130,7 +129,7 @@ class Algo(DatabaseObject):
 
     def __init__(self, id:int = None, name:str = None, desc:str = None):
         '''
-        Construct the object from the provided table name, key and value fields
+        Construct the object from the provided key and value fields
         
         :param ...: typed key and value fields
         :returns: N/A
@@ -162,6 +161,14 @@ class Algo(DatabaseObject):
        self._vals.desc = desc
     
     
+
+    def isNullable(self, field):
+        if field == 'name':
+            return True
+        elif field == 'desc':
+            return True
+        
+        return False
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

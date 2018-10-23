@@ -182,6 +182,10 @@ class TestRating(TestCase):
             # force a rollback
             t.fail()
 
+    def test_isNullable(self):
+        obj = Rating()
+        self.assertTrue(True) 
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

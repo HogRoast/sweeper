@@ -34,7 +34,7 @@ class Account_PermsValues(DatabaseValues):
     '''
     account_perms database object values representation
     '''
-    def __init__(self, account:str = None, league:str = None, algo_id:int = None):
+    def __init__(self, account:str, league:str, algo_id:int):
         '''
         Construct the object from the provided value fields
         
@@ -48,12 +48,11 @@ class Account_PermsValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the non-None value fields for this object in a dictionary form
+        Get all the value fields for this object in a dictionary form
         
         :returns: a dictionary of all Account_PermsValues fields
         '''
         fields = {'account' : self.account, 'league' : self.league, 'algo_id' : self.algo_id}
-        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Account_Perms(DatabaseObject):
@@ -68,7 +67,7 @@ class Account_Perms(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a Account_Perms object constructed via the primary key
+        :returns: a Account_Perms object constructed via the provided key
         :raises: None
         '''
         l = Account_Perms()
@@ -77,11 +76,11 @@ class Account_Perms(DatabaseObject):
 
     def _createAdhoc(self, keys:AdhocKeys):
         '''
-        Private nstance method to create a database object with the 
+        Private instance method to create a database object with the 
         provided adhoc keys list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         '''
         return Account_Perms.createAdhoc(keys)
 
@@ -131,7 +130,7 @@ class Account_Perms(DatabaseObject):
 
     def __init__(self, id:int = None, account:str = None, league:str = None, algo_id:int = None):
         '''
-        Construct the object from the provided table name, key and value fields
+        Construct the object from the provided key and value fields
         
         :param ...: typed key and value fields
         :returns: N/A
@@ -169,6 +168,10 @@ class Account_Perms(DatabaseObject):
        self._vals.algo_id = algo_id
     
     
+
+    def isNullable(self, field):
+        
+        return False
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

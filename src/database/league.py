@@ -34,7 +34,7 @@ class LeagueValues(DatabaseValues):
     '''
     league database object values representation
     '''
-    def __init__(self, name:str = None, desc:str = None):
+    def __init__(self, name:str, desc:str = None):
         '''
         Construct the object from the provided value fields
         
@@ -47,12 +47,11 @@ class LeagueValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the non-None value fields for this object in a dictionary form
+        Get all the value fields for this object in a dictionary form
         
         :returns: a dictionary of all LeagueValues fields
         '''
         fields = {'name' : self.name, 'desc' : self.desc}
-        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class League(DatabaseObject):
@@ -67,7 +66,7 @@ class League(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         :raises: None
         '''
         l = League()
@@ -76,11 +75,11 @@ class League(DatabaseObject):
 
     def _createAdhoc(self, keys:AdhocKeys):
         '''
-        Private nstance method to create a database object with the 
+        Private instance method to create a database object with the 
         provided adhoc keys list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         '''
         return League.createAdhoc(keys)
 
@@ -130,7 +129,7 @@ class League(DatabaseObject):
 
     def __init__(self, mnemonic:str = None, name:str = None, desc:str = None):
         '''
-        Construct the object from the provided table name, key and value fields
+        Construct the object from the provided key and value fields
         
         :param ...: typed key and value fields
         :returns: N/A
@@ -162,6 +161,12 @@ class League(DatabaseObject):
        self._vals.desc = desc
     
     
+
+    def isNullable(self, field):
+        if field == 'desc':
+            return True
+        
+        return False
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

@@ -185,6 +185,10 @@ class TestSource_Team_Map(TestCase):
             # force a rollback
             t.fail()
 
+    def test_isNullable(self):
+        obj = Source_Team_Map()
+        self.assertTrue(True) 
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

@@ -182,6 +182,10 @@ class TestSeason(TestCase):
             # force a rollback
             t.fail()
 
+    def test_isNullable(self):
+        obj = Season()
+        self.assertTrue(True) 
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

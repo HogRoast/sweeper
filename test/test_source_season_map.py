@@ -192,6 +192,10 @@ class TestSource_Season_Map(TestCase):
             # force a rollback
             t.fail()
 
+    def test_isNullable(self):
+        obj = Source_Season_Map()
+        self.assertTrue(True) 
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

@@ -185,6 +185,10 @@ class TestSource_League_Map(TestCase):
             # force a rollback
             t.fail()
 
+    def test_isNullable(self):
+        obj = Source_League_Map()
+        self.assertTrue(True and obj.isNullable('league') and obj.isNullable('moniker')) 
+
 if __name__ == '__main__':
     import unittest
     unittest.main()

@@ -34,26 +34,25 @@ class SourceValues(DatabaseValues):
     '''
     source database object values representation
     '''
-    def __init__(self, name:str = None, url:str = None, fixtures_url:str = None):
+    def __init__(self, name:str, fixtures_url:str, url:str = None):
         '''
         Construct the object from the provided value fields
         
         :param ...: typed value fields
         '''
         object.__setattr__(self, 'name', name)
-        object.__setattr__(self, 'url', url)
         object.__setattr__(self, 'fixtures_url', fixtures_url)
+        object.__setattr__(self, 'url', url)
         
         super().__init__(self.getFields())
 
     def getFields(self):
         '''
-        Get all the non-None value fields for this object in a dictionary form
+        Get all the value fields for this object in a dictionary form
         
         :returns: a dictionary of all SourceValues fields
         '''
-        fields = {'name' : self.name, 'url' : self.url, 'fixtures_url' : self.fixtures_url}
-        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
+        fields = {'name' : self.name, 'fixtures_url' : self.fixtures_url, 'url' : self.url}
         return fields
         
 class Source(DatabaseObject):
@@ -68,7 +67,7 @@ class Source(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a Source object constructed via the primary key
+        :returns: a Source object constructed via the provided key
         :raises: None
         '''
         l = Source()
@@ -77,11 +76,11 @@ class Source(DatabaseObject):
 
     def _createAdhoc(self, keys:AdhocKeys):
         '''
-        Private nstance method to create a database object with the 
+        Private instance method to create a database object with the 
         provided adhoc keys list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         '''
         return Source.createAdhoc(keys)
 
@@ -93,8 +92,8 @@ class Source(DatabaseObject):
         :param row: a list of values representing the objects key and values
         :returns: a Source object constructed from row
         '''
-        id, name, url, fixtures_url = row
-        return Source(id, name, url, fixtures_url)
+        id, name, fixtures_url, url = row
+        return Source(id, name, fixtures_url, url)
 
     def _createSingle(cls, row:tuple):
         '''
@@ -129,16 +128,16 @@ class Source(DatabaseObject):
         '''
         return Source.createMulti(rows)
 
-    def __init__(self, id:int = None, name:str = None, url:str = None, fixtures_url:str = None):
+    def __init__(self, id:int = None, name:str = None, fixtures_url:str = None, url:str = None):
         '''
-        Construct the object from the provided table name, key and value fields
+        Construct the object from the provided key and value fields
         
         :param ...: typed key and value fields
         :returns: N/A
         :raises: None
         '''
         keys = SourceKeys(id)
-        vals = SourceValues(name, url, fixtures_url)
+        vals = SourceValues(name, fixtures_url, url)
 
         super().__init__('source', keys, vals)
 
@@ -152,23 +151,29 @@ class Source(DatabaseObject):
     def getName(self):
         return self._vals.name
     
-    def getUrl(self):
-        return self._vals.url
-    
     def getFixtures_Url(self):
         return self._vals.fixtures_url
+    
+    def getUrl(self):
+        return self._vals.url
     
     
     def setName(self, name:str):
        self._vals.name = name
     
-    def setUrl(self, url:str):
-       self._vals.url = url
-    
     def setFixtures_Url(self, fixtures_url:str):
        self._vals.fixtures_url = fixtures_url
     
+    def setUrl(self, url:str):
+       self._vals.url = url
     
+    
+
+    def isNullable(self, field):
+        if field == 'url':
+            return True
+        
+        return False
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

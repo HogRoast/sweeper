@@ -109,13 +109,27 @@ class TestDatabase(TestCase):
             self.assertEqual(
                     str(leagues[2]), "league : Keys {'mnemonic': 'ML1'} : Values {'name': 'My League', 'desc': 'Based right here'}")
 
-            TestDatabase.db.upsert(League('league mnemonic TD', desc='Based right here'))
+            TestDatabase.db.upsert(League( \
+                    'league mnemonic TD', 'My League', desc='Based right here'))
 
             leagues = TestDatabase.db.select(League('league mnemonic TD'))
 
             self.assertEqual(len(leagues), 1)
             self.assertEqual(
-                    str(leagues[0]), "league : Keys {'mnemonic': 'league mnemonic TD'} : Values {'name': 'league name TD', 'desc': 'Based right here'}")
+                    str(leagues[0]), "league : Keys {'mnemonic': 'league mnemonic TD'} : Values {'name': 'My League', 'desc': 'Based right here'}")
+
+            # force a rollback
+            t.fail()
+
+    def test_null(self):
+        with TestDatabase.db.transaction() as t:
+            TestDatabase.db.upsert(League('E1', 'English Champ'))
+
+            leagues = TestDatabase.db.select(League('E1'))
+
+            self.assertEqual(len(leagues), 1)
+            self.assertEqual(
+                    str(leagues[0]), "league : Keys {'mnemonic': 'E1'} : Values {'name': 'English Champ', 'desc': None}")
 
             # force a rollback
             t.fail()
@@ -129,9 +143,10 @@ class TestDatabase(TestCase):
 
     def test_upsert_Error(self):
         with TestDatabase.db.transaction(), \
-                self.assertRaises(DatabaseDataError) as cm:
+                self.assertRaises(DatabaseIntegrityError) as cm:
             TestDatabase.db.upsert(League())
-        self.assertEqual(cm.exception.msg, 'No values provided for UPDATE')
+        self.assertEqual(
+                cm.exception.msg, 'NOT NULL constraint failed: league.name')
 
     def test_delete(self):
         with TestDatabase.db.transaction():

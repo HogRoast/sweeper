@@ -38,7 +38,7 @@ class StatisticsValues(DatabaseValues):
     '''
     statistics database object values representation
     '''
-    def __init__(self, mark:int = None, mark_freq:int = None, home_freq:int = None, away_freq:int = None, draw_freq:int = None):
+    def __init__(self, mark:int, mark_freq:int, home_freq:int, away_freq:int, draw_freq:int):
         '''
         Construct the object from the provided value fields
         
@@ -54,12 +54,11 @@ class StatisticsValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the non-None value fields for this object in a dictionary form
+        Get all the value fields for this object in a dictionary form
         
         :returns: a dictionary of all StatisticsValues fields
         '''
         fields = {'mark' : self.mark, 'mark_freq' : self.mark_freq, 'home_freq' : self.home_freq, 'away_freq' : self.away_freq, 'draw_freq' : self.draw_freq}
-        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Statistics(DatabaseObject):
@@ -74,7 +73,7 @@ class Statistics(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a Statistics object constructed via the primary key
+        :returns: a Statistics object constructed via the provided key
         :raises: None
         '''
         l = Statistics()
@@ -83,11 +82,11 @@ class Statistics(DatabaseObject):
 
     def _createAdhoc(self, keys:AdhocKeys):
         '''
-        Private nstance method to create a database object with the 
+        Private instance method to create a database object with the 
         provided adhoc keys list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         '''
         return Statistics.createAdhoc(keys)
 
@@ -137,7 +136,7 @@ class Statistics(DatabaseObject):
 
     def __init__(self, generation_date:str = None, algo_id:int = None, league:str = None, mark:int = None, mark_freq:int = None, home_freq:int = None, away_freq:int = None, draw_freq:int = None):
         '''
-        Construct the object from the provided table name, key and value fields
+        Construct the object from the provided key and value fields
         
         :param ...: typed key and value fields
         :returns: N/A
@@ -193,6 +192,10 @@ class Statistics(DatabaseObject):
        self._vals.draw_freq = draw_freq
     
     
+
+    def isNullable(self, field):
+        
+        return False
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

@@ -36,7 +36,7 @@ class Source_Season_MapValues(DatabaseValues):
     '''
     source_season_map database object values representation
     '''
-    def __init__(self, moniker:str = None, data_url:str = None):
+    def __init__(self, moniker:str, data_url:str):
         '''
         Construct the object from the provided value fields
         
@@ -49,12 +49,11 @@ class Source_Season_MapValues(DatabaseValues):
 
     def getFields(self):
         '''
-        Get all the non-None value fields for this object in a dictionary form
+        Get all the value fields for this object in a dictionary form
         
         :returns: a dictionary of all Source_Season_MapValues fields
         '''
         fields = {'moniker' : self.moniker, 'data_url' : self.data_url}
-        fields = dict([(k, v) for (k, v) in fields.items() if v is not None])
         return fields
         
 class Source_Season_Map(DatabaseObject):
@@ -69,7 +68,7 @@ class Source_Season_Map(DatabaseObject):
         list
 
         :param keys: an AdhocKeys object
-        :returns: a Source_Season_Map object constructed via the primary key
+        :returns: a Source_Season_Map object constructed via the provided key
         :raises: None
         '''
         l = Source_Season_Map()
@@ -78,11 +77,11 @@ class Source_Season_Map(DatabaseObject):
 
     def _createAdhoc(self, keys:AdhocKeys):
         '''
-        Private nstance method to create a database object with the 
+        Private instance method to create a database object with the 
         provided adhoc keys list
 
         :param keys: an AdhocKeys object
-        :returns: a League object constructed via the primary key
+        :returns: a League object constructed via the provided key
         '''
         return Source_Season_Map.createAdhoc(keys)
 
@@ -132,7 +131,7 @@ class Source_Season_Map(DatabaseObject):
 
     def __init__(self, source_id:int = None, season:str = None, moniker:str = None, data_url:str = None):
         '''
-        Construct the object from the provided table name, key and value fields
+        Construct the object from the provided key and value fields
         
         :param ...: typed key and value fields
         :returns: N/A
@@ -167,6 +166,10 @@ class Source_Season_Map(DatabaseObject):
        self._vals.data_url = data_url
     
     
+
+    def isNullable(self, field):
+        
+        return False
 
     def __repr__(self):
         return self._table + ' : Keys ' + str(self._keys.getFields()) + \

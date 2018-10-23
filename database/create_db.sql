@@ -14,6 +14,10 @@ CREATE TABLE match (
     away_team varchar(64) not null, 
     result char, 
     best_odds real, 
+    home_goals integer,
+    away_goals integer,
+    home_lp integer,
+    away_lp integer,
     foreign key (league) references league(mnemonic), 
     foreign key (home_team) references team(name), 
     foreign key (away_team) references team(name),
@@ -32,17 +36,17 @@ DROP TABLE plan;
 CREATE TABLE plan (
     id integer not null, 
     name varchar(64) not null, 
-    desc varchar(256), 
     cost real not null,
+    desc varchar(256), 
     primary key (id)
 );
 
 DROP TABLE account;
 CREATE TABLE account (
     name varchar(64) not null, 
-    expiry_date text, 
-    joined_date text not null, 
     plan_id integer not null, 
+    joined_date text not null, 
+    expiry_date text, 
     foreign key (plan_id) references plan(id),
     primary key (name)
 );
@@ -103,8 +107,8 @@ DROP TABLE source;
 CREATE TABLE source (
     id integer not null,
     name varchar(64) not null, 
-    url varchar(256),
     fixtures_url varchar(256) not null,
+    url varchar(256),
     primary key (id)
 );
 

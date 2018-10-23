@@ -94,22 +94,24 @@ class TestLogging(TestCase):
         l.debug('test_debug_1')
 
         l.toggleMask(Logger.TYPE | Logger.TIME)
-        dt = datetime.now()
+        dt2 = datetime.now()
         l.debug('test_debug_2')
 
         l.toggleMask(Logger.TYPE)
-        dt = datetime.now()
+        dt3 = datetime.now()
         l.debug('test_debug_3')
 
         l.toggleMask(Logger.DEBUG)
-        dt = datetime.now()
+        dt4 = datetime.now()
         # this won't get logged
         l.debug('test_debug_4')
 
         self.assertEqual(self.mockLog[0], 'test_debug_0')
         self.assertEqual(self.mockLog[1], 'DEBUG    : test_debug_1')
-        self.assertEqual(self.mockLog[2], '{!s} : test_debug_2'.format(dt))
-        self.assertEqual(self.mockLog[3], '{!s} : DEBUG    : test_debug_3'.format(dt))
+        self.assertIn('test_debug_2', self.mockLog[2])
+        self.assertIn(str(dt2)[:-5], self.mockLog[2])
+        self.assertIn('test_debug_3', self.mockLog[3])
+        self.assertIn(str(dt3)[:-5], self.mockLog[3])
         # length 4 only as last not logged
         self.assertEqual(len(self.mockLog), 4) 
 
@@ -125,22 +127,24 @@ class TestLogging(TestCase):
         l.warning('test_warn_1')
 
         l.toggleMask(Logger.TYPE | Logger.TIME)
-        dt = datetime.now()
+        dt2 = datetime.now()
         l.warning('test_warn_2')
 
         l.toggleMask(Logger.TYPE)
-        dt = datetime.now()
+        dt3 = datetime.now()
         l.warning('test_warn_3')
 
         l.toggleMask(Logger.WARNING)
-        dt = datetime.now()
+        dt4 = datetime.now()
         # this won't get logged
         l.warning('test_warn_4')
 
         self.assertEqual(self.mockLog[0], 'test_warn_0')
         self.assertEqual(self.mockLog[1], 'WARNING  : test_warn_1')
-        self.assertEqual(self.mockLog[2], '{!s} : test_warn_2'.format(dt))
-        self.assertEqual(self.mockLog[3], '{!s} : WARNING  : test_warn_3'.format(dt))
+        self.assertIn('test_warn_2', self.mockLog[2])
+        self.assertIn(str(dt2)[:-5], self.mockLog[2])
+        self.assertIn('test_warn_3', self.mockLog[3])
+        self.assertIn(str(dt3)[:-5], self.mockLog[3])
         # length 4 only as last not logged
         self.assertEqual(len(self.mockLog), 4) 
 
@@ -156,22 +160,24 @@ class TestLogging(TestCase):
         l.error('test_error_1')
 
         l.toggleMask(Logger.TYPE | Logger.TIME)
-        dt = datetime.now()
+        dt2 = datetime.now()
         l.error('test_error_2')
 
         l.toggleMask(Logger.TYPE)
-        dt = datetime.now()
+        dt3 = datetime.now()
         l.error('test_error_3')
 
         l.toggleMask(Logger.ERROR)
-        dt = datetime.now()
+        dt4 = datetime.now()
         # this won't get logged
         l.error('test_error_4')
 
         self.assertEqual(self.mockLog[0], 'test_error_0')
         self.assertEqual(self.mockLog[1], 'ERROR    : test_error_1')
-        self.assertEqual(self.mockLog[2], '{!s} : test_error_2'.format(dt))
-        self.assertEqual(self.mockLog[3], '{!s} : ERROR    : test_error_3'.format(dt))
+        self.assertIn('test_error_2', self.mockLog[2])
+        self.assertIn(str(dt2)[:-5], self.mockLog[2])
+        self.assertIn('test_error_3', self.mockLog[3])
+        self.assertIn(str(dt3)[:-5], self.mockLog[3])
         # length 4 only as last not logged
         self.assertEqual(len(self.mockLog), 4) 
 
@@ -201,8 +207,11 @@ class TestLogging(TestCase):
 
         self.assertEqual(self.mockLog[0], 'test_crit_0')
         self.assertEqual(self.mockLog[1], 'CRITICAL : test_crit_1')
-        self.assertEqual(self.mockLog[2], '{!s} : test_crit_2'.format(dt2))
+        self.assertIn('test_crit_2', self.mockLog[2])
+        self.assertIn(str(dt2)[:-5], self.mockLog[2])
         self.assertEqual(self.mockLog[3], '{!s} : CRITICAL : test_crit_3'.format(dt3))
+        self.assertIn('test_crit_3', self.mockLog[3])
+        self.assertIn(str(dt3)[:-5], self.mockLog[3])
         # length 4 only as last not logged
         self.assertEqual(len(self.mockLog), 4) 
 

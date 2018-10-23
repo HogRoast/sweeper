@@ -46,37 +46,37 @@ class TestPlan(TestCase):
         self.assertTrue(l._keys.getFields() is None)
 
     def test_createSingle(self):
-        obj = Plan.createSingle((98, 'plan name TD', 'plan desc TD', 2.3))
+        obj = Plan.createSingle((98, 'plan name TD', 2.3, 'plan desc TD'))
 
         self.assertEqual(obj.getId(), 98)
          
         self.assertEqual(obj.getName(), 'plan name TD')
-        self.assertEqual(obj.getDesc(), 'plan desc TD')
         self.assertEqual(obj.getCost(), 2.3)
+        self.assertEqual(obj.getDesc(), 'plan desc TD')
          
 
     def test_createMulti(self):
-        rows = [(98, 'plan name TD', 'plan desc TD', 2.3),
-                (99, 'plan name TD2', 'plan desc TD2', 2.4)]
+        rows = [(98, 'plan name TD', 2.3, 'plan desc TD'),
+                (99, 'plan name TD2', 2.4, 'plan desc TD2')]
         objs = Plan.createMulti(rows)
         
         self.assertEqual(len(objs), 2)
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getName(), 'plan name TD')
-        self.assertEqual(objs[0].getDesc(), 'plan desc TD')
         self.assertEqual(objs[0].getCost(), 2.3)
+        self.assertEqual(objs[0].getDesc(), 'plan desc TD')
         
         self.assertEqual(objs[1].getId(), 99)
         
         self.assertEqual(objs[1].getName(), 'plan name TD2')
-        self.assertEqual(objs[1].getDesc(), 'plan desc TD2')
         self.assertEqual(objs[1].getCost(), 2.4)
+        self.assertEqual(objs[1].getDesc(), 'plan desc TD2')
         
 
     def test_repr(self):
-        obj = Plan(98, 'plan name TD', 'plan desc TD', 2.3)
-        self.assertEqual(str(obj), "plan : Keys {'id': 98} : Values {'name': 'plan name TD', 'desc': 'plan desc TD', 'cost': 2.3}")
+        obj = Plan(98, 'plan name TD', 2.3, 'plan desc TD')
+        self.assertEqual(str(obj), "plan : Keys {'id': 98} : Values {'name': 'plan name TD', 'cost': 2.3, 'desc': 'plan desc TD'}")
 
     def test_select(self):
         objs = TestPlan.db.select(Plan())
@@ -84,14 +84,14 @@ class TestPlan(TestCase):
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getName(), 'plan name TD')
-        self.assertEqual(objs[0].getDesc(), 'plan desc TD')
         self.assertEqual(objs[0].getCost(), 2.3)
+        self.assertEqual(objs[0].getDesc(), 'plan desc TD')
         
         self.assertEqual(objs[1].getId(), 99)
         
         self.assertEqual(objs[1].getName(), 'plan name TD2')
-        self.assertEqual(objs[1].getDesc(), 'plan desc TD2')
         self.assertEqual(objs[1].getCost(), 2.4)
+        self.assertEqual(objs[1].getDesc(), 'plan desc TD2')
         
         
         objs = TestPlan.db.select(Plan(98))
@@ -99,17 +99,17 @@ class TestPlan(TestCase):
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getName(), 'plan name TD')
-        self.assertEqual(objs[0].getDesc(), 'plan desc TD')
         self.assertEqual(objs[0].getCost(), 2.3)
+        self.assertEqual(objs[0].getDesc(), 'plan desc TD')
         
 
-        objs = TestPlan.db.select(Plan.createAdhoc(AdhocKeys({'name': 'plan name TD', 'desc': 'plan desc TD', 'cost': 2.3})))
+        objs = TestPlan.db.select(Plan.createAdhoc(AdhocKeys({'name': 'plan name TD', 'cost': 2.3, 'desc': 'plan desc TD'})))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getId(), 98)
         
         self.assertEqual(objs[0].getName(), 'plan name TD')
-        self.assertEqual(objs[0].getDesc(), 'plan desc TD')
         self.assertEqual(objs[0].getCost(), 2.3)
+        self.assertEqual(objs[0].getDesc(), 'plan desc TD')
         
 
     def test_update(self):
@@ -118,14 +118,14 @@ class TestPlan(TestCase):
 
         with TestPlan.db.transaction() as t:
             TestPlan.db.upsert(
-                    Plan(98, 'plan name TD UPD', 'plan desc TD UPD', 5.6))
+                    Plan(98, 'plan name TD UPD', 5.6, 'plan desc TD UPD'))
             objs = TestPlan.db.select(Plan(98))
 
             self.assertEqual(len(objs), 1)
             self.assertEqual(objs[0].getId(), 98)
             
 
-            d = eval("{'name': 'plan name TD UPD', 'desc': 'plan desc TD UPD', 'cost': 5.6}")
+            d = eval("{'name': 'plan name TD UPD', 'cost': 5.6, 'desc': 'plan desc TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[0].__getattribute__('get' + k.title())(), v)
@@ -158,7 +158,7 @@ class TestPlan(TestCase):
 
         with TestPlan.db.transaction() as t:
             TestPlan.db.upsert(
-                    Plan(100, 'plan name TD UPD', 'plan desc TD UPD', 5.6))
+                    Plan(100, 'plan name TD UPD', 5.6, 'plan desc TD UPD'))
             objs = TestPlan.db.select(Plan())
 
             self.assertEqual(len(objs), 3)
@@ -168,7 +168,7 @@ class TestPlan(TestCase):
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
 
-            d = eval("{'name': 'plan name TD UPD', 'desc': 'plan desc TD UPD', 'cost': 5.6}")
+            d = eval("{'name': 'plan name TD UPD', 'cost': 5.6, 'desc': 'plan desc TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
@@ -188,6 +188,10 @@ class TestPlan(TestCase):
 
             # force a rollback
             t.fail()
+
+    def test_isNullable(self):
+        obj = Plan()
+        self.assertTrue(True and obj.isNullable('desc')) 
 
 if __name__ == '__main__':
     import unittest
