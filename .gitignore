@@ -2,6 +2,7 @@
 Data/
 Analysis/
 excel/Gambling.*.xlsx
+excel/Wins.*.xlsx
 footy.ini
 
 # gvim backup ignores
