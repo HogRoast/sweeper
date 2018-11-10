@@ -1,14 +1,14 @@
 ---
 swagger: "2.0"
 info:
-  description: "An API that sits on top of the Footy analysis software, allows for\
+  description: "An API that sits on top of the Sweeper analysis software, allows for\
     \ presentation via HTML"
   version: "1.0"
-  title: "Footy REST API specification"
+  title: "Sweeper REST API specification"
 host: "localhost:8080"
-basePath: "/footy/v1/"
+basePath: "/sweeper/v1/"
 tags:
-- name: "Footy Bridge"
+- name: "Sweeper Bridge"
   description: ""
 schemes:
 - "https"
@@ -20,7 +20,7 @@ paths:
   /authorize:
     post:
       tags:
-      - "Footy Bridge"
+      - "Sweeper Bridge"
       description: "Oauth2 Password authorization."
       operationId: "authorize_post"
       parameters:
@@ -36,15 +36,15 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Access Token. Footy will set Authorization header to 'Bearer\
+          description: "Access Token. Sweeper will set Authorization header to 'Bearer\
             \ ' + access_token for all requests with authorization."
           schema:
             $ref: "#/definitions/inline_response_200"
-      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+      x-swagger-router-controller: "swagger_server.controllers.sweeper_bridge_controller"
   /accounts/{accountId}:
     get:
       tags:
-      - "Footy Bridge"
+      - "Sweeper Bridge"
       description: "Get account information."
       operationId: "accounts_account_id_get"
       parameters:
@@ -60,11 +60,11 @@ paths:
             $ref: "#/definitions/inline_response_200_1"
       security:
       - oauth: []
-      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+      x-swagger-router-controller: "swagger_server.controllers.sweeper_bridge_controller"
   /accounts/{accountId}/fixtures:
     get:
       tags:
-      - "Footy Bridge"
+      - "Sweeper Bridge"
       description: "Get next fixture lists available to this account"
       operationId: "accounts_account_id_fixtures_get"
       parameters:
@@ -80,11 +80,11 @@ paths:
             $ref: "#/definitions/inline_response_200_2"
       security:
       - oauth: []
-      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+      x-swagger-router-controller: "swagger_server.controllers.sweeper_bridge_controller"
   /accounts/{accountId}/fixtureHistory:
     get:
       tags:
-      - "Footy Bridge"
+      - "Sweeper Bridge"
       description: "Get fixture history available to this account."
       operationId: "accounts_account_id_fixture_history_get"
       parameters:
@@ -105,11 +105,11 @@ paths:
             $ref: "#/definitions/inline_response_200_2"
       security:
       - oauth: []
-      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+      x-swagger-router-controller: "swagger_server.controllers.sweeper_bridge_controller"
   /accounts/{accountId}/algos:
     get:
       tags:
-      - "Footy Bridge"
+      - "Sweeper Bridge"
       description: "Get available algos for this account"
       operationId: "accounts_account_id_algos_get"
       parameters:
@@ -125,11 +125,11 @@ paths:
             $ref: "#/definitions/inline_response_200_3"
       security:
       - oauth: []
-      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+      x-swagger-router-controller: "swagger_server.controllers.sweeper_bridge_controller"
   /accounts/{accountId}/statistics/{leagueId}/{algoId}:
     get:
       tags:
-      - "Footy Bridge"
+      - "Sweeper Bridge"
       description: "Get the statistics for the specified league and algo"
       operationId: "accounts_account_id_statistics_league_id_algo_id_get"
       parameters:
@@ -155,11 +155,11 @@ paths:
             $ref: "#/definitions/inline_response_200_4"
       security:
       - oauth: []
-      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+      x-swagger-router-controller: "swagger_server.controllers.sweeper_bridge_controller"
   /accounts/{accountId}/statistics/{algoId}:
     get:
       tags:
-      - "Footy Bridge"
+      - "Sweeper Bridge"
       description: "Get the statistics for the specified algo across all the leagues\
         \ available to this account"
       operationId: "accounts_account_id_statistics_algo_id_get"
@@ -181,11 +181,11 @@ paths:
             $ref: "#/definitions/inline_response_200_5"
       security:
       - oauth: []
-      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+      x-swagger-router-controller: "swagger_server.controllers.sweeper_bridge_controller"
   /accounts/{accountId}/analysis/{algoId}:
     get:
       tags:
-      - "Footy Bridge"
+      - "Sweeper Bridge"
       description: "Run the analysis for the specified algo across all fixtures available\
         \ to this account"
       operationId: "accounts_account_id_analysis_algo_id_get"
@@ -207,11 +207,11 @@ paths:
             $ref: "#/definitions/inline_response_200_6"
       security:
       - oauth: []
-      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+      x-swagger-router-controller: "swagger_server.controllers.sweeper_bridge_controller"
   /accounts/{accountId}/leagues:
     get:
       tags:
-      - "Footy Bridge"
+      - "Sweeper Bridge"
       description: "Get a list of leagues available to this account."
       operationId: "accounts_account_id_leagues_get"
       parameters:
@@ -227,11 +227,11 @@ paths:
             $ref: "#/definitions/inline_response_200_7"
       security:
       - oauth: []
-      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+      x-swagger-router-controller: "swagger_server.controllers.sweeper_bridge_controller"
   /leagues:
     get:
       tags:
-      - "Footy Bridge"
+      - "Sweeper Bridge"
       description: "Get a list of all available leagues."
       operationId: "leagues_get"
       parameters: []
@@ -242,10 +242,10 @@ paths:
             $ref: "#/definitions/inline_response_200_7"
       security:
       - oauth: []
-      x-swagger-router-controller: "swagger_server.controllers.footy_bridge_controller"
+      x-swagger-router-controller: "swagger_server.controllers.sweeper_bridge_controller"
 securityDefinitions:
   oauth:
-    description: "Look for more request details in /authorize request. Footy  will\
+    description: "Look for more request details in /authorize request. Sweeper  will\
       \ set Authorization header to 'Bearer ' + access_token for all requests with\
       \ authorization."
     type: "oauth2"

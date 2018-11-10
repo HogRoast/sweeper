@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Footy REST API specification</title>
+    <title>Sweeper REST API specification</title>
     <style type="text/css">
       body {
 	font-family: Trebuchet MS, sans-serif;
@@ -179,12 +179,12 @@ font-style: italic;
     </style>
   </head>
   <body>
-  <h1>Footy REST API specification</h1>
-    <div class="app-desc">An API that sits on top of the Footy analysis software, allows for presentation via HTML</div>
+  <h1>Sweeper REST API specification</h1>
+    <div class="app-desc">An API that sits on top of the Sweeper analysis software, allows for presentation via HTML</div>
     <div class="app-desc">More information: <a href="https://helloreverb.com">https://helloreverb.com</a></div>
     <div class="app-desc">Contact Info: <a href="hello@helloreverb.com">hello@helloreverb.com</a></div>
     <div class="app-desc">Version: 1.0</div>
-    <div class="app-desc">BasePath:/footy/v1/</div>
+    <div class="app-desc">BasePath:/sweeper/v1/</div>
     <div class="license-info">All rights reserved</div>
     <div class="license-url">http://apache.org/licenses/LICENSE-2.0.html</div>
   <h2>Access</h2>
@@ -197,7 +197,7 @@ font-style: italic;
 
   <h3>Table of Contents </h3>
   <div class="method-summary"></div>
-  <h4><a href="#FootyBridge">FootyBridge</a></h4>
+  <h4><a href="#SweeperBridge">SweeperBridge</a></h4>
   <ul>
   <li><a href="#accountsAccountIdAlgosGet"><code><span class="http-method">get</span> /accounts/{accountId}/algos</code></a></li>
   <li><a href="#accountsAccountIdAnalysisAlgoIdGet"><code><span class="http-method">get</span> /accounts/{accountId}/analysis/{algoId}</code></a></li>
@@ -211,7 +211,7 @@ font-style: italic;
   <li><a href="#leaguesGet"><code><span class="http-method">get</span> /leagues</code></a></li>
   </ul>
 
-  <h1><a name="FootyBridge">FootyBridge</a></h1>
+  <h1><a name="SweeperBridge">SweeperBridge</a></h1>
   <div class="method"><a name="accountsAccountIdAlgosGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -842,7 +842,7 @@ font-style: italic;
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
-    Access Token. Footy will set Authorization header to 'Bearer ' + access_token for all requests with authorization.
+    Access Token. Sweeper will set Authorization header to 'Bearer ' + access_token for all requests with authorization.
         <a href="#inline_response_200">inline_response_200</a>
   </div> <!-- method -->
   <hr/>
