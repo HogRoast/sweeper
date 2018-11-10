@@ -1,6 +1,8 @@
 # Footy specific ignores
 Data/
 Analysis/
+database/footy.db
+database/insert_sources.sql
 excel/Gambling.*.xlsx
 excel/Wins.*.xlsx
 footy.ini
@@ -9,7 +11,9 @@ footy.ini
 .*~
 *.*~
 *.*swp
+*.*swo
 .*swp
+.*swo
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

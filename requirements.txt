@@ -1,4 +1,6 @@
+connexion == 1.1.15
 python_dateutil == 2.6.0
 setuptools >= 21.0.0
-numpy == 1.15.1
+numpy == 1.15.2
 scipy == 1.1.0
+shimbase >= 1.0.6
