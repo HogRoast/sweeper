@@ -8,3 +8,4 @@ INSERT INTO league values
     ('F1', 'French 1', 'The French Ligue 1'),
     ('SP1', 'Spanish La Liga', 'The Spanish La Liga (Primera Division)');
 
+INSERT INTO algo values (1, 'GoalsScoredSupremacy', 'Home team total goals scored - away team total goals scored over last 6 matches');

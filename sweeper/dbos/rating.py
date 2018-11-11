@@ -6,17 +6,19 @@ class RatingKeys(DatabaseKeys):
     '''
     rating database object primary key representation
     '''
-    match_oid:int
+    match_id:int
+    algo_id:int
     
 
-    def __init__(self, match_oid:int):
+    def __init__(self, match_id:int, algo_id:int):
         '''
         Construct the object from the provided primary key fields
         
         :param ...: typed primary key fields
         '''
         # Need to use setattr as the class is Frozen (immutable)
-        object.__setattr__(self, 'match_oid', match_oid)
+        object.__setattr__(self, 'match_id', match_id)
+        object.__setattr__(self, 'algo_id', algo_id)
         
         super().__init__(self.getFields())
 
@@ -26,21 +28,20 @@ class RatingKeys(DatabaseKeys):
         
         :returns: a dictionary of all RatingKeys fields
         '''
-        fields = {} if not (self.match_oid) else {'match_oid' : self.match_oid}
+        fields = {} if not (self.match_id and self.algo_id) else {'match_id' : self.match_id, 'algo_id' : self.algo_id}
         return fields
         
 class RatingValues(DatabaseValues):
     '''
     rating database object values representation
     '''
-    def __init__(self, algo_id:int, rank:int):
+    def __init__(self, mark:int):
         '''
         Construct the object from the provided value fields
         
         :param ...: typed value fields
         '''
-        object.__setattr__(self, 'algo_id', algo_id)
-        object.__setattr__(self, 'rank', rank)
+        object.__setattr__(self, 'mark', mark)
         
         super().__init__(self.getFields())
 
@@ -50,7 +51,7 @@ class RatingValues(DatabaseValues):
         
         :returns: a dictionary of all RatingValues fields
         '''
-        fields = {'algo_id' : self.algo_id, 'rank' : self.rank}
+        fields = {'mark' : self.mark}
         return fields
         
 class Rating(DatabaseObject):
@@ -93,8 +94,8 @@ class Rating(DatabaseObject):
         :param row: a list of values representing the objects key and values
         :returns: a Rating object constructed from row
         '''
-        match_oid, algo_id, rank = row
-        return Rating(match_oid, algo_id, rank)
+        match_id, algo_id, mark = row
+        return Rating(match_id, algo_id, mark)
 
     def _create(self, row:tuple):
         '''
@@ -106,7 +107,7 @@ class Rating(DatabaseObject):
         '''
         return Rating.create(row)
 
-    def __init__(self, match_oid:int = None, algo_id:int = None, rank:int = None):
+    def __init__(self, match_id:int = None, algo_id:int = None, mark:int = None):
         '''
         Construct the object from the provided key and value fields
         
@@ -114,30 +115,27 @@ class Rating(DatabaseObject):
         :returns: N/A
         :raises: None
         '''
-        keys = RatingKeys(match_oid)
-        vals = RatingValues(algo_id, rank)
+        keys = RatingKeys(match_id, algo_id)
+        vals = RatingValues(mark)
 
         super().__init__('rating', keys, vals)
 
     def getTable(self):
         return self._table
 
-    def getMatch_Oid(self):
-        return self._keys.match_oid
-    
+    def getMatch_Id(self):
+        return self._keys.match_id
     
     def getAlgo_Id(self):
-        return self._vals.algo_id
-    
-    def getRank(self):
-        return self._vals.rank
+        return self._keys.algo_id
     
     
-    def setAlgo_Id(self, algo_id:int):
-       self._vals.algo_id = algo_id
+    def getMark(self):
+        return self._vals.mark
     
-    def setRank(self, rank:int):
-       self._vals.rank = rank
+    
+    def setMark(self, mark:int):
+       self._vals.mark = mark
     
     
 

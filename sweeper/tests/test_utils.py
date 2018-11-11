@@ -21,8 +21,8 @@ class TestUtils(TestCase):
         opts._set(SweeperOptions.CURRENT_SEASON_ONLY)
         self.assertTrue(opts.test(SweeperOptions.CURRENT_SEASON_ONLY))
 
-        opts._set(0b00001000)
-        self.assertFalse(opts.test(0b00001000))
+        opts._set(0b10000000)
+        self.assertFalse(opts.test(0b10000000))
 
     def test_getSweeperOptions(self):
         logger = MagicMock()
@@ -43,6 +43,26 @@ class TestUtils(TestCase):
             nonlocal exitCalled 
             exitCalled = True
         sys.exit = mockExit
+        sopts = getSweeperOptions(logger, opts)
+        self.assertTrue(exitCalled)
+
+        opts = ['test', '-a', '1']
+        sopts = getSweeperOptions(logger, opts)
+        self.assertTrue(sopts.test(SweeperOptions.ALGO))
+        self.assertEquals(sopts.algoId, 1)
+
+        opts = ['test', '-a']
+        exitCalled = False
+        sopts = getSweeperOptions(logger, opts)
+        self.assertTrue(exitCalled)
+
+        opts = ['test', '-l', 'league mnemonic TD']
+        sopts = getSweeperOptions(logger, opts)
+        self.assertTrue(sopts.test(SweeperOptions.LEAGUE))
+        self.assertEquals(sopts.leagueMnemonic, 'league mnemonic TD')
+
+        opts = ['test', '-l']
+        exitCalled = False
         sopts = getSweeperOptions(logger, opts)
         self.assertTrue(exitCalled)
         sys.exit = exitFn

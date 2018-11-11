@@ -2,9 +2,9 @@ import sys
 from datetime import datetime
 from shimbase.database import Database, AdhocKeys
 from shimbase.sqlite3impl import SQLite3Impl
+
 from sweeper.logging import Logger
-from sweeper.utils import getSweeperOptions, getSweeperConfig, \
-        SweeperArgsError, newCSVFile, readCSVFileAsDict, SweeperOptions
+from sweeper.utils import getSweeperConfig, readCSVFileAsDict
 from sweeper.dbos.source import Source
 from sweeper.dbos.source_season_map import Source_Season_Map
 from sweeper.dbos.source_league_map import Source_League_Map
@@ -64,6 +64,7 @@ def getBestOdds(log, row):
             bestA = iwA
     except BaseException:
         log.debug('No IW data - skipping : {} {} {}'.format(date, ht, at))
+    '''
     try:
         lbH = float(row['LBH'])
         lbD = float(row['LBD'])
@@ -76,6 +77,7 @@ def getBestOdds(log, row):
             bestA = lbA
     except BaseException:
         log.debug('No LB data - skipping : {} {} {}'.format(date, ht, at))
+    '''
     try:
         whH = float(row['WHH'])
         whD = float(row['WHD'])
@@ -103,15 +105,14 @@ def getBestOdds(log, row):
 
     return (bestH, bestD, bestA)
 
-def sourceData(target, opts=sys.argv):
+def sourceData(log:Logger, target:str, currentSeason:bool):
     '''
     Obtain historical match data
 
+    :param log: a logging object
     :param target: the name of match data source
-    :param opts: a list of options
+    :param currentSeason: True if only interested in the current season's data
     '''
-    log = Logger()
-    sopts = getSweeperOptions(log, opts)
     log.info('Downloading data from source: {}'.format(target))
 
     config = getSweeperConfig()
@@ -119,28 +120,28 @@ def sourceData(target, opts=sys.argv):
     log.debug('Opening database: {}'.format(dbName))
 
     with Database(dbName, SQLite3Impl()) as db, db.transaction() as t:     
-        keys = {'name' : 'Football-Data'}
+        keys = {'name' : target}
         source = db.select(Source.createAdhoc(keys))
-        if len(source):
+        if source:
             source = source[0]
         else:
-            sys.exit('Football-Data source not in database')
-        log.debug('Source: {}'.format(source))
+            sys.exit('{} source not in database'.format(target))
+        log.debug('{}'.format(source))
 
         keys = {'source_id': source.getId(), 'active' : 1}
-        if sopts.test(SweeperOptions.CURRENT_SEASON_ONLY):
+        if currentSeason:
             seasonMap = db.select(
                     Source_Season_Map.createAdhoc(keys, ('>season',)))[0:1]
         else:
             seasonMap = db.select(Source_Season_Map.createAdhoc(keys))
-        log.debug('Source_Season_Map: {}'.format(seasonMap))
+        log.debug('{}'.format(seasonMap))
 
         keys = {'source_id': source.getId()}
         leagueMap = db.select(Source_League_Map.createAdhoc(keys))
-        log.debug('Source_League_Map: {}'.format(leagueMap))
+        log.debug('{}'.format(leagueMap))
         
         teams = db.select(Team())
-        log.debug('Teams: {}'.format(teams))
+        log.debug('{}'.format(teams))
 
         for l in leagueMap:
             for s in seasonMap:
@@ -158,24 +159,28 @@ def sourceData(target, opts=sys.argv):
                         keys = {'source_id' : source.getId(), 'moniker' : ht}
                         teamMap = db.select(
                                 Source_Team_Map.createAdhoc(keys))
-                        if teamMap:
-                            ht = teamMap[0].getTeam()
+                        if teamMap: ht = teamMap[0].getTeam()
                         db.upsert(Team(ht, l.getLeague()))
 
                         at = row['AwayTeam']
                         keys = {'source_id' : source.getId(), 'moniker' : at}
                         teamMap = db.select(
                                 Source_Team_Map.createAdhoc(keys))
-                        if teamMap:
-                            at = teamMap[0].getTeam()
+                        if teamMap: at = teamMap[0].getTeam()
                         db.upsert(Team(at, l.getLeague()))
 
                         bestH, bestD, bestA = getBestOdds(log, row)
-                        match = Match(str(dt.date()), l.getLeague(), ht, at, \
-                                row['FTR'], bestH, bestD, bestA, row['FTHG'], \
-                                row['FTAG'])
+                        matchId = int('{}{}{}1'.format( \
+                                dt.year, dt.month, dt.day))
+                        match = Match(matchId, str(dt.date()), l.getLeague(), 
+                                ht, at, row['FTR'], bestH, bestD, bestA, \
+                                row['FTHG'], row['FTAG'])
                         db.upsert(match)
         
 if __name__ == '__main__':
+    from sweeper.utils import getSweeperOptions, SweeperOptions
+
+    log = Logger()
+    sopts = getSweeperOptions(log, opts)
     target = 'Football-Data'
-    sourceData(target, sys.argv)
+    sourceData(log, target, sopts.test(SweeperOptions.CURRENT_SEASON_ONLY))

@@ -8,6 +8,7 @@ CREATE TABLE team (
 
 DROP TABLE match;
 CREATE TABLE match (
+    id integer not null,
     date text not null, 
     league varchar(4) not null, 
     home_team varchar(64) not null, 
@@ -23,7 +24,7 @@ CREATE TABLE match (
     foreign key (league) references league(mnemonic), 
     foreign key (home_team) references team(name), 
     foreign key (away_team) references team(name),
-    primary key (date, league, home_team, away_team)
+    primary key (id)
 );
 
 DROP TABLE algo;
@@ -98,11 +99,12 @@ CREATE TABLE season (
 
 DROP TABLE rating;
 CREATE TABLE rating (
-    match_oid integer not null,
+    match_id integer not null,
     algo_id integer not null,
-    rank integer not null,
+    mark integer not null,
+    foreign key (match_id) references match(id),
     foreign key (algo_id) references algo(id),
-    primary key (match_oid)
+    primary key (match_id, algo_id)
 );
 
 DROP TABLE source;

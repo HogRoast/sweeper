@@ -9,14 +9,20 @@ class SweeperArgsError(Exception):
 class SweeperOptions:
     DEBUG_LOGGING       = 0b00000001
     CURRENT_SEASON_ONLY = 0b00000010
+    ALGO                = 0b00000100
+    LEAGUE              = 0b00001000
 
     validOpts = [
             DEBUG_LOGGING,
-            CURRENT_SEASON_ONLY
+            CURRENT_SEASON_ONLY,
+            ALGO,
+            LEAGUE
             ]
 
     def __init__(self):
         self._mask = 0b0000000
+        self.algoId = None
+        self.leagueMnemonic = None
 
     def _set(self, opt):
         '''
@@ -44,19 +50,42 @@ def getSweeperOptions(log, opts):
     :param opts: a list of options
     :returns: a SweeperOptions object with the appropriate opts set
     '''
+    def showHelpAndExit():
+        print('Sweeper help (* indicates mandatory param)...\n' \
+                '   general\n' \
+                '         -d : enable debug logging\n' \
+                '         -h : display help\n' \
+                '   sourcedata\n' \
+                '         -c : apply to current season only\n' \
+                '   analysematches\n' \
+                '       * -a <id>        : algo to apply\n '
+                '       * -l <mnemonic>  : league to analyse\n ')
+        sys.exit(0)
+
     sopts = SweeperOptions()
     if len(opts) > 1:
         # -h first as the application will exit on help
         if '-h' in opts:
-            print('Sweeper help...\n\t-c : apply Sweeper function to current '\
-                    'season only\n\t-d : enable debug logging\n\t-h : display '\
-                    'help')
-            sys.exit(0)
+            showHelpAndExit()
         if '-d' in opts: 
             log.toggleMask(Logger.DEBUG | Logger.TIME | Logger.TYPE)
             sopts._set(SweeperOptions.DEBUG_LOGGING)
         if '-c' in opts:
             sopts._set(SweeperOptions.CURRENT_SEASON_ONLY)
+        try:
+            if '-a' in opts:
+                idx = opts.index('-a')
+                algoId = int(opts[idx + 1])
+                sopts._set(SweeperOptions.ALGO)
+                sopts.algoId = algoId
+            if '-l' in opts:
+                idx = opts.index('-l')
+                mnemonic = opts[idx + 1]
+                sopts._set(SweeperOptions.LEAGUE)
+                sopts.leagueMnemonic = mnemonic
+        except:
+            showHelpAndExit()
+
     return sopts
 
 def getSweeperConfig():
