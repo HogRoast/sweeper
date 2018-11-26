@@ -157,30 +157,30 @@ def sourceData(log:Logger, target:str, currentSeason:bool):
 
                         ht = row['HomeTeam']
                         keys = {'source_id' : source.getId(), 'moniker' : ht}
-                        teamMap = db.select(
-                                Source_Team_Map.createAdhoc(keys))
+                        teamMap = db.select(Source_Team_Map.createAdhoc(keys))
                         if teamMap: ht = teamMap[0].getTeam()
                         db.upsert(Team(ht, l.getLeague()))
 
                         at = row['AwayTeam']
                         keys = {'source_id' : source.getId(), 'moniker' : at}
-                        teamMap = db.select(
-                                Source_Team_Map.createAdhoc(keys))
+                        teamMap = db.select(Source_Team_Map.createAdhoc(keys))
                         if teamMap: at = teamMap[0].getTeam()
                         db.upsert(Team(at, l.getLeague()))
-
+                    
                         bestH, bestD, bestA = getBestOdds(log, row)
-                        matchId = int('{}{}{}1'.format( \
-                                dt.year, dt.month, dt.day))
-                        match = Match(matchId, str(dt.date()), l.getLeague(), 
+                        matchId = hash('{:4}{:02}{:02}{}{}{}'.format( \
+                                dt.year, dt.month, dt.day, \
+                                l.getLeague(), ht, at))
+                        match = Match(matchId, str(dt.date()), l.getLeague(), \
                                 ht, at, row['FTR'], bestH, bestD, bestA, \
                                 row['FTHG'], row['FTAG'])
+                        log.debug(match)
                         db.upsert(match)
         
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions
 
     log = Logger()
-    sopts = getSweeperOptions(log, opts)
+    sopts = getSweeperOptions(log, sys.argv)
     target = 'Football-Data'
     sourceData(log, target, sopts.test(SweeperOptions.CURRENT_SEASON_ONLY))

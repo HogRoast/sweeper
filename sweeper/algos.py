@@ -14,13 +14,14 @@ class BaseModel:
                 awayTeam = row['AwayTeam']
             except KeyError:
                 break
-            if matchDate == '' or homeTeam is None or awayTeam is None or matchDate is None:
+            if matchDate == '' or None in (homeTeam, awayTeam, matchDate):
                 break
             matchDate = matchDate.strip()
             homeTeam = homeTeam.strip()
             awayTeam = awayTeam.strip()
           
-            matchData = visitingMethod(matchData, row, matchDate, homeTeam, awayTeam)
+            matchData = visitingMethod(
+                    matchData, row, matchDate, homeTeam, awayTeam)
         return matchData
 
     def markMatch(self, matchData, matchDate, homeTeam, awayTeam):
@@ -28,7 +29,8 @@ class BaseModel:
         if isinstance(homeTeam, str): homeTeam = homeTeam.strip()
         if isinstance(awayTeam, str): awayTeam = awayTeam.strip()
 
-        if matchDate == '' or matchData is None or matchDate is None or homeTeam is None or awayTeam is None:
+        if matchDate == '' or \
+                None in (matchData, matchDate, homeTeam, awayTeam):
             return (matchDate, homeTeam, awayTeam, None, None, None)
 
         try:
@@ -37,7 +39,7 @@ class BaseModel:
         except KeyError:
             return (matchDate, homeTeam, awayTeam, None, None, None)
 
-        ''' Find match date, assumes the matchData is sorted by date asc! '''
+        # Find match date, assumes the matchData is sorted by date asc!
         homeTeamQ = collections.deque()
         for match in homeTeamMatchData:
             d1 = strToDate(match[0])
@@ -64,7 +66,7 @@ class BaseModel:
         if len(awayTeamQ) < numMatches:
             return(matchDate, homeTeam, awayTeam, None, None, None)
 
-        ''' sum the team Qs '''
+        # sum the team Qs 
         homeTeamScore = 0
         homeTeamForm = ''
         for i in homeTeamQ:
@@ -77,13 +79,16 @@ class BaseModel:
             awayTeamScore += i[0]
             awayTeamForm += i[1] + ' '
 
-        return(matchDate, homeTeam, awayTeam, (homeTeamScore - awayTeamScore), homeTeamForm.strip(), awayTeamForm.strip())
+        return(matchDate, homeTeam, awayTeam, (homeTeamScore - awayTeamScore), 
+                homeTeamForm.strip(), awayTeamForm.strip())
 
 class GoalsScoredSupremacy(BaseModel):
     def processMatches(self, results):
-        return BaseModel.processMatches(self, results, self.calculateGoalsScored)
+        return BaseModel.processMatches(
+                self, results, self.calculateGoalsScored)
 
-    def calculateGoalsScored(self, matchData, row, matchDate, homeTeam, awayTeam):
+    def calculateGoalsScored(
+            self, matchData, row, matchDate, homeTeam, awayTeam):
         if row['FTHG'] == '' or row['FTAG'] == '' or row['FTR'] == '':
             return matchData
         fthg = int(row['FTHG'].strip())

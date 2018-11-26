@@ -53,13 +53,14 @@ def analyseMatches(log:Logger, algoId:int, league:str):
 
         chunkSz = algo.numMatches 
         for i in range(0, len(matches)-chunkSz+1):
-            print(matches[i:i+chunkSz])
+            # print(matches[i:i+chunkSz])
+            algo.processMatches(matches[i:i+chunkSz])
         
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions
 
     log = Logger()
-    sopts = getSweeperOptions(log, opts)
+    sopts = getSweeperOptions(log, sys.argv)
     if not sopts.test(SweeperOptions.ALGO):
         print('ERROR: No algo id provided, python analysematches -h for help')
         sys.exit(1)

@@ -51,15 +51,18 @@ def getSweeperOptions(log, opts):
     :returns: a SweeperOptions object with the appropriate opts set
     '''
     def showHelpAndExit():
-        print('Sweeper help (* indicates mandatory param)...\n' \
+        print(  'Sweeper help...\n' \
+                '\n' \
                 '   general\n' \
                 '         -d : enable debug logging\n' \
                 '         -h : display help\n' \
                 '   sourcedata\n' \
                 '         -c : apply to current season only\n' \
                 '   analysematches\n' \
-                '       * -a <id>        : algo to apply\n '
-                '       * -l <mnemonic>  : league to analyse\n ')
+                '       * -a <id>        : algo to apply\n' \
+                '       * -l <mnemonic>  : league to analyse\n' \
+                '\n' \
+                '   * indicates mandatory param')
         sys.exit(0)
 
     sopts = SweeperOptions()
@@ -178,4 +181,43 @@ def readCSVFileAsDict(filename):
 
     return FileReader(_file, _reader)
 
-
+#class NumberFountains:
+#    _numberFountains = {}
+#    _datedFountains = {}
+#
+#    @classmethod
+#    def next(cls, f:str):
+#        '''
+#        Get the next number from the appropriate fountain
+#
+#        :param f: a fountain name string
+#        :returns: the next integer from the fountain
+#        '''
+#        try:
+#            n = cls._numberFountains[f]
+#        except KeyError:
+#            n = 0
+#        n += 1
+#        cls._numberFountains[f]
+#        return n
+#
+#    @classmethod
+#    def nextByDate(cls, dt:datetime.date, f:str):
+#        '''
+#        Get the next number from the appropriate dated fountain
+#
+#        :param dt: a date
+#        :param f: a fountain name string
+#        :returns: the next integer from the fountain at the given date
+#        '''
+#        n = 0
+#        if dt not in cls._datedFountains:
+#            cls._datedFountains[dt] = {f : n}
+#        elif f not in cls._datedFountains[dt]:
+#            cls._datedFountains[dt][f] = n
+#        else:
+#            n = cls._datedFountains[dt][f]
+#
+#        n += 1
+#        cls._datedFountains[dt][f] = n
+#        return n
