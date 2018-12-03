@@ -6,7 +6,7 @@ class Account_PermsKeys(DatabaseKeys):
     '''
     account_perms database object primary key representation
     '''
-    id:int
+    id:int = None
     
 
     def __init__(self, id:int):
@@ -26,7 +26,7 @@ class Account_PermsKeys(DatabaseKeys):
         
         :returns: a dictionary of all Account_PermsKeys fields
         '''
-        fields = {} if not (self.id) else {'id' : self.id}
+        fields = {} if None in (self.id,) else {'id' : self.id}
         return fields
         
 class Account_PermsValues(DatabaseValues):

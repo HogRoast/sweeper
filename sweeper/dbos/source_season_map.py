@@ -6,8 +6,8 @@ class Source_Season_MapKeys(DatabaseKeys):
     '''
     source_season_map database object primary key representation
     '''
-    source_id:int
-    season:str
+    source_id:int = None
+    season:str = None
     
 
     def __init__(self, source_id:int, season:str):
@@ -28,7 +28,7 @@ class Source_Season_MapKeys(DatabaseKeys):
         
         :returns: a dictionary of all Source_Season_MapKeys fields
         '''
-        fields = {} if not (self.source_id and self.season) else {'source_id' : self.source_id, 'season' : self.season}
+        fields = {} if None in (self.source_id, self.season,) else {'source_id' : self.source_id, 'season' : self.season}
         return fields
         
 class Source_Season_MapValues(DatabaseValues):

@@ -6,8 +6,8 @@ class Source_Team_MapKeys(DatabaseKeys):
     '''
     source_team_map database object primary key representation
     '''
-    source_id:int
-    moniker:str
+    source_id:int = None
+    moniker:str = None
     
 
     def __init__(self, source_id:int, moniker:str):
@@ -28,7 +28,7 @@ class Source_Team_MapKeys(DatabaseKeys):
         
         :returns: a dictionary of all Source_Team_MapKeys fields
         '''
-        fields = {} if not (self.source_id and self.moniker) else {'source_id' : self.source_id, 'moniker' : self.moniker}
+        fields = {} if None in (self.source_id, self.moniker,) else {'source_id' : self.source_id, 'moniker' : self.moniker}
         return fields
         
 class Source_Team_MapValues(DatabaseValues):

@@ -86,7 +86,7 @@ CREATE TABLE statistics (
     draw_freq integer not null, 
     foreign key (algo_id) references algo(id), 
     foreign key (league) references league(mnemonic),
-    primary key (generation_date, algo_id, league)
+    primary key (generation_date, algo_id, league, mark)
 );
 
 DROP TABLE season;

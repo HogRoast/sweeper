@@ -6,7 +6,7 @@ class MatchKeys(DatabaseKeys):
     '''
     match database object primary key representation
     '''
-    id:int
+    id:int = None
     
 
     def __init__(self, id:int):
@@ -26,7 +26,7 @@ class MatchKeys(DatabaseKeys):
         
         :returns: a dictionary of all MatchKeys fields
         '''
-        fields = {} if not (self.id) else {'id' : self.id}
+        fields = {} if None in (self.id,) else {'id' : self.id}
         return fields
         
 class MatchValues(DatabaseValues):

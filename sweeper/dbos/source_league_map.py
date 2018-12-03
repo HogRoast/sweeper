@@ -6,8 +6,8 @@ class Source_League_MapKeys(DatabaseKeys):
     '''
     source_league_map database object primary key representation
     '''
-    source_id:int
-    league:str
+    source_id:int = None
+    league:str = None
     
 
     def __init__(self, source_id:int, league:str):
@@ -28,7 +28,7 @@ class Source_League_MapKeys(DatabaseKeys):
         
         :returns: a dictionary of all Source_League_MapKeys fields
         '''
-        fields = {} if not (self.source_id and self.league) else {'source_id' : self.source_id, 'league' : self.league}
+        fields = {} if None in (self.source_id, self.league,) else {'source_id' : self.source_id, 'league' : self.league}
         return fields
         
 class Source_League_MapValues(DatabaseValues):

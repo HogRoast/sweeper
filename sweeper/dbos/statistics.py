@@ -6,12 +6,13 @@ class StatisticsKeys(DatabaseKeys):
     '''
     statistics database object primary key representation
     '''
-    generation_date:str
-    algo_id:int
-    league:str
+    generation_date:str = None
+    algo_id:int = None
+    league:str = None
+    mark:int = None
     
 
-    def __init__(self, generation_date:str, algo_id:int, league:str):
+    def __init__(self, generation_date:str, algo_id:int, league:str, mark:int):
         '''
         Construct the object from the provided primary key fields
         
@@ -21,6 +22,7 @@ class StatisticsKeys(DatabaseKeys):
         object.__setattr__(self, 'generation_date', generation_date)
         object.__setattr__(self, 'algo_id', algo_id)
         object.__setattr__(self, 'league', league)
+        object.__setattr__(self, 'mark', mark)
         
         super().__init__(self.getFields())
 
@@ -30,20 +32,19 @@ class StatisticsKeys(DatabaseKeys):
         
         :returns: a dictionary of all StatisticsKeys fields
         '''
-        fields = {} if not (self.generation_date and self.algo_id and self.league) else {'generation_date' : self.generation_date, 'algo_id' : self.algo_id, 'league' : self.league}
+        fields = {} if None in (self.generation_date, self.algo_id, self.league, self.mark,) else {'generation_date' : self.generation_date, 'algo_id' : self.algo_id, 'league' : self.league, 'mark' : self.mark}
         return fields
         
 class StatisticsValues(DatabaseValues):
     '''
     statistics database object values representation
     '''
-    def __init__(self, mark:int, mark_freq:int, home_freq:int, away_freq:int, draw_freq:int):
+    def __init__(self, mark_freq:int, home_freq:int, away_freq:int, draw_freq:int):
         '''
         Construct the object from the provided value fields
         
         :param ...: typed value fields
         '''
-        object.__setattr__(self, 'mark', mark)
         object.__setattr__(self, 'mark_freq', mark_freq)
         object.__setattr__(self, 'home_freq', home_freq)
         object.__setattr__(self, 'away_freq', away_freq)
@@ -57,7 +58,7 @@ class StatisticsValues(DatabaseValues):
         
         :returns: a dictionary of all StatisticsValues fields
         '''
-        fields = {'mark' : self.mark, 'mark_freq' : self.mark_freq, 'home_freq' : self.home_freq, 'away_freq' : self.away_freq, 'draw_freq' : self.draw_freq}
+        fields = {'mark_freq' : self.mark_freq, 'home_freq' : self.home_freq, 'away_freq' : self.away_freq, 'draw_freq' : self.draw_freq}
         return fields
         
 class Statistics(DatabaseObject):
@@ -121,8 +122,8 @@ class Statistics(DatabaseObject):
         :returns: N/A
         :raises: None
         '''
-        keys = StatisticsKeys(generation_date, algo_id, league)
-        vals = StatisticsValues(mark, mark_freq, home_freq, away_freq, draw_freq)
+        keys = StatisticsKeys(generation_date, algo_id, league, mark)
+        vals = StatisticsValues(mark_freq, home_freq, away_freq, draw_freq)
 
         super().__init__('statistics', keys, vals)
 
@@ -138,9 +139,9 @@ class Statistics(DatabaseObject):
     def getLeague(self):
         return self._keys.league
     
-    
     def getMark(self):
-        return self._vals.mark
+        return self._keys.mark
+    
     
     def getMark_Freq(self):
         return self._vals.mark_freq
@@ -154,9 +155,6 @@ class Statistics(DatabaseObject):
     def getDraw_Freq(self):
         return self._vals.draw_freq
     
-    
-    def setMark(self, mark:int):
-       self._vals.mark = mark
     
     def setMark_Freq(self, mark_freq:int):
        self._vals.mark_freq = mark_freq

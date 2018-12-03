@@ -6,7 +6,7 @@ class TeamKeys(DatabaseKeys):
     '''
     team database object primary key representation
     '''
-    name:str
+    name:str = None
     
 
     def __init__(self, name:str):
@@ -26,7 +26,7 @@ class TeamKeys(DatabaseKeys):
         
         :returns: a dictionary of all TeamKeys fields
         '''
-        fields = {} if not (self.name) else {'name' : self.name}
+        fields = {} if None in (self.name,) else {'name' : self.name}
         return fields
         
 class TeamValues(DatabaseValues):

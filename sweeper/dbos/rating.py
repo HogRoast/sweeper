@@ -6,8 +6,8 @@ class RatingKeys(DatabaseKeys):
     '''
     rating database object primary key representation
     '''
-    match_id:int
-    algo_id:int
+    match_id:int = None
+    algo_id:int = None
     
 
     def __init__(self, match_id:int, algo_id:int):
@@ -28,7 +28,7 @@ class RatingKeys(DatabaseKeys):
         
         :returns: a dictionary of all RatingKeys fields
         '''
-        fields = {} if not (self.match_id and self.algo_id) else {'match_id' : self.match_id, 'algo_id' : self.algo_id}
+        fields = {} if None in (self.match_id, self.algo_id,) else {'match_id' : self.match_id, 'algo_id' : self.algo_id}
         return fields
         
 class RatingValues(DatabaseValues):

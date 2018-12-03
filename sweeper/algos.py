@@ -2,132 +2,63 @@ import collections
 import datetime
 import inspect
 
+from abc import ABC, abstractmethod
+from sweeper.dbos.match import Match
+
 class BaseModel:
-    numMatches = 6
+    numMatches = 5
 
-    def processMatches(self, results, visitingMethod):
-        matchData = {}
-        for row in results:
-            try:
-                matchDate = row['Date']
-                homeTeam = row['HomeTeam']
-                awayTeam = row['AwayTeam']
-            except KeyError:
-                break
-            if matchDate == '' or None in (homeTeam, awayTeam, matchDate):
-                break
-            matchDate = matchDate.strip()
-            homeTeam = homeTeam.strip()
-            awayTeam = awayTeam.strip()
-          
-            matchData = visitingMethod(
-                    matchData, row, matchDate, homeTeam, awayTeam)
-        return matchData
+    @abstractmethod
+    def markMatch(self, match:Match, homePrev:list, awayPrev:list):
+        '''
+        Mark the match according to the data from the prior matches,
+        assumes prior matches are sorted by date descending.
 
-    def markMatch(self, matchData, matchDate, homeTeam, awayTeam):
-        if isinstance(matchDate, str): matchDate = matchDate.strip()
-        if isinstance(homeTeam, str): homeTeam = homeTeam.strip()
-        if isinstance(awayTeam, str): awayTeam = awayTeam.strip()
-
-        if matchDate == '' or \
-                None in (matchData, matchDate, homeTeam, awayTeam):
-            return (matchDate, homeTeam, awayTeam, None, None, None)
-
-        try:
-            homeTeamMatchData = matchData[homeTeam]
-            awayTeamMatchData = matchData[awayTeam]
-        except KeyError:
-            return (matchDate, homeTeam, awayTeam, None, None, None)
-
-        # Find match date, assumes the matchData is sorted by date asc!
-        homeTeamQ = collections.deque()
-        for match in homeTeamMatchData:
-            d1 = strToDate(match[0])
-            d2 = strToDate(matchDate)
-            if d1 > d2:
-               break 
-            if len(homeTeamQ) >= numMatches:
-                homeTeamQ.popleft()
-            homeTeamQ.append((match[1], match[2]))
-
-        if len(homeTeamQ) < numMatches:
-            return(matchDate, homeTeam, awayTeam, None, None, None)
-
-        awayTeamQ = collections.deque()
-        for match in awayTeamMatchData:
-            d1 = strToDate(match[0])
-            d2 = strToDate(matchDate)
-            if d1 > d2:
-               break 
-            if len(awayTeamQ) >= numMatches:
-                awayTeamQ.popleft()
-            awayTeamQ.append((match[1], match[2]))
-
-        if len(awayTeamQ) < numMatches:
-            return(matchDate, homeTeam, awayTeam, None, None, None)
-
-        # sum the team Qs 
-        homeTeamScore = 0
-        homeTeamForm = ''
-        for i in homeTeamQ:
-            homeTeamScore += i[0]
-            homeTeamForm += i[1] + ' '
-            
-        awayTeamScore = 0
-        awayTeamForm = ''
-        for i in awayTeamQ:
-            awayTeamScore += i[0]
-            awayTeamForm += i[1] + ' '
-
-        return(matchDate, homeTeam, awayTeam, (homeTeamScore - awayTeamScore), 
-                homeTeamForm.strip(), awayTeamForm.strip())
+        :param match: the subject match to be marked
+        :param homePrev: the previous matches for the home team
+        :param awayPrev: the previous matches for the away team
+        :returns: an integer representing the match mark
+        '''
+        pass
 
 class GoalsScoredSupremacy(BaseModel):
-    def processMatches(self, results):
-        return BaseModel.processMatches(
-                self, results, self.calculateGoalsScored)
+    def sumGoals(self, team:str, matches:list):
+        '''
+        Add the goals scored by the team in the previous matches
 
-    def calculateGoalsScored(
-            self, matchData, row, matchDate, homeTeam, awayTeam):
-        if row['FTHG'] == '' or row['FTAG'] == '' or row['FTR'] == '':
-            return matchData
-        fthg = int(row['FTHG'].strip())
-        ftag = int(row['FTAG'].strip())
-        ftRes = row['FTR']
-        resStr = ''
-        if homeTeam in matchData:
-            if ftRes == 'H':
-                resStr = '{}:{}v{}'.format('W', fthg, ftag)
-            elif ftRes == 'D':
-                resStr = '{}:{}v{}'.format('D', fthg, ftag)
-            else: 
-                resStr = '{}:{}v{}'.format('L', fthg, ftag)
-            matchData[homeTeam].append((matchDate, fthg, resStr))
-        else:
-            if ftRes == 'H':
-                resStr = '{}:{}v{}'.format('W', fthg, ftag)
-            elif ftRes == 'D':
-                resStr = '{}:{}v{}'.format('D', fthg, ftag)
-            else: 
-                resStr = '{}:{}v{}'.format('L', fthg, ftag)
-            matchData[homeTeam] = [(matchDate, fthg, resStr)]
-        if awayTeam in matchData:
-            if ftRes == 'A':
-                resStr = '{}:{}v{}'.format('W', fthg, ftag)
-            elif ftRes == 'D':
-                resStr = '{}:{}v{}'.format('D', fthg, ftag)
-            else: 
-                resStr = '{}:{}v{}'.format('L', fthg, ftag)
-            matchData[awayTeam].append((matchDate, ftag, resStr))
-        else:
-            if ftRes == 'A':
-                resStr = '{}:{}v{}'.format('W', fthg, ftag)
-            elif ftRes == 'D':
-                resStr = '{}:{}v{}'.format('D', fthg, ftag)
-            else: 
-                resStr = '{}:{}v{}'.format('L', fthg, ftag)
-            matchData[awayTeam] = [(matchDate, ftag, resStr)]
-        return matchData
+        :param team: the team whose goals we wish to sum
+        :matches: a list of historical matches
+        :returns: the number of goals scored by team in matches
+        '''
+        return  sum([m.getHome_Goals() for m in matches[:self.numMatches] \
+                    if team == m.getHome_Team()]) \
+                + \
+                sum([m.getAway_Goals() for m in matches[:self.numMatches] \
+                    if team == m.getAway_Team()])
+
+    def markMatch(self, match:Match, homePrev:list, awayPrev:list):
+        '''
+        Mark the match according to the data from the prior matches,
+        assumes prior matches are sorted by date descending.
+
+        :param match: the subject match to be marked
+        :param homePrev: the previous matches for the home team
+        :param awayPrev: the previous matches for the away team
+        :returns: an integer representing the match mark or None if insufficient
+        matches to make the calculation
+        '''
+        if len(homePrev) < self.numMatches or len(awayPrev) < self.numMatches:
+            return None
+        '''
+        print(match)
+        print(homePrev[:self.numMatches])
+        print(awayPrev[:self.numMatches])
+        '''
+        hTeamGoals = self.sumGoals(match.getHome_Team(), \
+                homePrev[:self.numMatches]) 
+        aTeamGoals = self.sumGoals(match.getAway_Team(), \
+                awayPrev[:self.numMatches]) 
+        return hTeamGoals - aTeamGoals
 
 class AlgoFactory:
     algos = {
@@ -135,5 +66,5 @@ class AlgoFactory:
             }
 
     @classmethod
-    def create(cls, algoName):
+    def create(cls, algoName:str):
         return cls.algos[algoName]() 

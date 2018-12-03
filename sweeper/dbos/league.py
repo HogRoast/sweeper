@@ -6,7 +6,7 @@ class LeagueKeys(DatabaseKeys):
     '''
     league database object primary key representation
     '''
-    mnemonic:str
+    mnemonic:str = None
     
 
     def __init__(self, mnemonic:str):
@@ -26,7 +26,7 @@ class LeagueKeys(DatabaseKeys):
         
         :returns: a dictionary of all LeagueKeys fields
         '''
-        fields = {} if not (self.mnemonic) else {'mnemonic' : self.mnemonic}
+        fields = {} if None in (self.mnemonic,) else {'mnemonic' : self.mnemonic}
         return fields
         
 class LeagueValues(DatabaseValues):

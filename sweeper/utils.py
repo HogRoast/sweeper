@@ -11,12 +11,14 @@ class SweeperOptions:
     CURRENT_SEASON_ONLY = 0b00000010
     ALGO                = 0b00000100
     LEAGUE              = 0b00001000
+    SEASON              = 0b00010000
 
     validOpts = [
             DEBUG_LOGGING,
             CURRENT_SEASON_ONLY,
             ALGO,
-            LEAGUE
+            LEAGUE,
+            SEASON
             ]
 
     def __init__(self):
@@ -61,6 +63,10 @@ def getSweeperOptions(log, opts):
                 '   analysematches\n' \
                 '       * -a <id>        : algo to apply\n' \
                 '       * -l <mnemonic>  : league to analyse\n' \
+                '       * -s <season>    : season to analyse\n' \
+                '   generatestats\n' \
+                '       * -a <id>        : algo to apply\n' \
+                '       * -l <mnemonic>  : league to analyse\n' \
                 '\n' \
                 '   * indicates mandatory param')
         sys.exit(0)
@@ -86,6 +92,11 @@ def getSweeperOptions(log, opts):
                 mnemonic = opts[idx + 1]
                 sopts._set(SweeperOptions.LEAGUE)
                 sopts.leagueMnemonic = mnemonic
+            if '-s' in opts:
+                idx = opts.index('-s')
+                season = opts[idx + 1]
+                sopts._set(SweeperOptions.SEASON)
+                sopts.season = season
         except:
             showHelpAndExit()
 

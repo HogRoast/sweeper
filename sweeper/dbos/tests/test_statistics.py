@@ -33,12 +33,13 @@ class TestStatistics(TestCase):
         pass
 
     def test_keys_Immutablility(self):
-        keys =StatisticsKeys('statistics generation_date TD', 98, 'league mnemonic TD')
+        keys =StatisticsKeys('statistics generation_date TD', 98, 'league mnemonic TD', 98)
 
         with self.assertRaises(FrozenInstanceError) as cm:
             keys.generation_date = 'Something New'
             keys.algo_id = 75
             keys.league = 'Something New'
+            keys.mark = 75
             
         self.assertIn('cannot assign to field', cm.exception.args[0])
 
@@ -53,8 +54,8 @@ class TestStatistics(TestCase):
         self.assertEqual(obj.getGeneration_Date(), 'statistics generation_date TD')
         self.assertEqual(obj.getAlgo_Id(), 98)
         self.assertEqual(obj.getLeague(), 'league mnemonic TD')
-         
         self.assertEqual(obj.getMark(), 98)
+         
         self.assertEqual(obj.getMark_Freq(), 98)
         self.assertEqual(obj.getHome_Freq(), 98)
         self.assertEqual(obj.getAway_Freq(), 98)
@@ -63,7 +64,7 @@ class TestStatistics(TestCase):
 
     def test_repr(self):
         obj = Statistics('statistics generation_date TD', 98, 'league mnemonic TD', 98, 98, 98, 98, 98)
-        self.assertEqual(str(obj), "statistics : Keys {'generation_date': 'statistics generation_date TD', 'algo_id': 98, 'league': 'league mnemonic TD'} : Values {'mark': 98, 'mark_freq': 98, 'home_freq': 98, 'away_freq': 98, 'draw_freq': 98}")
+        self.assertEqual(str(obj), "statistics : Keys {'generation_date': 'statistics generation_date TD', 'algo_id': 98, 'league': 'league mnemonic TD', 'mark': 98} : Values {'mark_freq': 98, 'home_freq': 98, 'away_freq': 98, 'draw_freq': 98}")
 
     def test_select(self):
         objs = TestStatistics.db.select(Statistics())
@@ -71,8 +72,8 @@ class TestStatistics(TestCase):
         self.assertEqual(objs[0].getGeneration_Date(), 'statistics generation_date TD')
         self.assertEqual(objs[0].getAlgo_Id(), 98)
         self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
-        
         self.assertEqual(objs[0].getMark(), 98)
+        
         self.assertEqual(objs[0].getMark_Freq(), 98)
         self.assertEqual(objs[0].getHome_Freq(), 98)
         self.assertEqual(objs[0].getAway_Freq(), 98)
@@ -81,34 +82,34 @@ class TestStatistics(TestCase):
         self.assertEqual(objs[1].getGeneration_Date(), 'statistics generation_date TD2')
         self.assertEqual(objs[1].getAlgo_Id(), 99)
         self.assertEqual(objs[1].getLeague(), 'league mnemonic TD2')
-        
         self.assertEqual(objs[1].getMark(), 99)
+        
         self.assertEqual(objs[1].getMark_Freq(), 99)
         self.assertEqual(objs[1].getHome_Freq(), 99)
         self.assertEqual(objs[1].getAway_Freq(), 99)
         self.assertEqual(objs[1].getDraw_Freq(), 99)
         
         
-        objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league mnemonic TD'))
+        objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league mnemonic TD', 98))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getGeneration_Date(), 'statistics generation_date TD')
         self.assertEqual(objs[0].getAlgo_Id(), 98)
         self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
-        
         self.assertEqual(objs[0].getMark(), 98)
+        
         self.assertEqual(objs[0].getMark_Freq(), 98)
         self.assertEqual(objs[0].getHome_Freq(), 98)
         self.assertEqual(objs[0].getAway_Freq(), 98)
         self.assertEqual(objs[0].getDraw_Freq(), 98)
         
 
-        objs = TestStatistics.db.select(Statistics.createAdhoc({'mark': 98, 'mark_freq': 98, 'home_freq': 98, 'away_freq': 98, 'draw_freq': 98}))
+        objs = TestStatistics.db.select(Statistics.createAdhoc({'mark_freq': 98, 'home_freq': 98, 'away_freq': 98, 'draw_freq': 98}))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getGeneration_Date(), 'statistics generation_date TD')
         self.assertEqual(objs[0].getAlgo_Id(), 98)
         self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
-        
         self.assertEqual(objs[0].getMark(), 98)
+        
         self.assertEqual(objs[0].getMark_Freq(), 98)
         self.assertEqual(objs[0].getHome_Freq(), 98)
         self.assertEqual(objs[0].getAway_Freq(), 98)
@@ -121,16 +122,17 @@ class TestStatistics(TestCase):
 
         with TestStatistics.db.transaction() as t:
             TestStatistics.db.upsert(
-                    Statistics('statistics generation_date TD', 98, 'league mnemonic TD', 100, 100, 100, 100, 100))
-            objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league mnemonic TD'))
+                    Statistics('statistics generation_date TD', 98, 'league mnemonic TD', 98, 100, 100, 100, 100))
+            objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league mnemonic TD', 98))
 
             self.assertEqual(len(objs), 1)
             self.assertEqual(objs[0].getGeneration_Date(), 'statistics generation_date TD')
             self.assertEqual(objs[0].getAlgo_Id(), 98)
             self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
+            self.assertEqual(objs[0].getMark(), 98)
             
 
-            d = eval("{'mark': 100, 'mark_freq': 100, 'home_freq': 100, 'away_freq': 100, 'draw_freq': 100}")
+            d = eval("{'mark_freq': 100, 'home_freq': 100, 'away_freq': 100, 'draw_freq': 100}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[0].__getattribute__('get' + k.title())(), v)
@@ -139,17 +141,18 @@ class TestStatistics(TestCase):
             t.fail()
 
         with TestStatistics.db.transaction() as t:
-            statistics = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league mnemonic TD'))[0]
+            statistics = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league mnemonic TD', 98))[0]
             for k, v in d.items():
                 statistics.__getattribute__('set' + k.title())(v)
 
             TestStatistics.db.upsert(statistics)
 
-            objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league mnemonic TD'))
+            objs = TestStatistics.db.select(Statistics('statistics generation_date TD', 98, 'league mnemonic TD', 98))
             self.assertEqual(len(objs), 1)
             self.assertEqual(objs[0].getGeneration_Date(), 'statistics generation_date TD')
             self.assertEqual(objs[0].getAlgo_Id(), 98)
             self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
+            self.assertEqual(objs[0].getMark(), 98)
             
 
             for k, v in d.items():
@@ -170,12 +173,12 @@ class TestStatistics(TestCase):
 
             self.assertEqual(len(objs), 3)
 
-            d = eval("{'generation_date': 'statistics generation_date TD INS', 'algo_id': 100, 'league': 'league mnemonic TD INS'}")
+            d = eval("{'generation_date': 'statistics generation_date TD INS', 'algo_id': 100, 'league': 'league mnemonic TD INS', 'mark': 100}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
 
-            d = eval("{'mark': 100, 'mark_freq': 100, 'home_freq': 100, 'away_freq': 100, 'draw_freq': 100}")
+            d = eval("{'mark_freq': 100, 'home_freq': 100, 'away_freq': 100, 'draw_freq': 100}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
@@ -188,7 +191,7 @@ class TestStatistics(TestCase):
         TestStatistics.db.disableForeignKeys()
 
         with TestStatistics.db.transaction() as t:
-            TestStatistics.db.delete(Statistics('statistics generation_date TD', 98, 'league mnemonic TD'))
+            TestStatistics.db.delete(Statistics('statistics generation_date TD', 98, 'league mnemonic TD', 98))
 
             objs = TestStatistics.db.select(Statistics())
             self.assertEqual(len(objs), 1)
