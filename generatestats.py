@@ -1,6 +1,4 @@
-import sys, inspect
-import numpy
-from scipy import stats
+import sys
 from datetime import datetime
 from shimbase.database import Database, AdhocKeys
 from shimbase.sqlite3impl import SQLite3Impl
@@ -63,22 +61,7 @@ def generateStats(log:Logger, algoId:int, league:str):
             db.upsert(Statistics(str(datetime.now().date()), algoId, \
                     league.getMnemonic(), mark, totRatings, len(hRatings), \
                     len(aRatings), len(dRatings)))
-        """
-        slope, intercept, r, p, stderr = stats.linregress(marks, hFreqs)
-        r2 = r**2
-        log.info('Home: {:>4.2f} {:>4.2f} {:>4.2} {:>4.2f} {:>4.2f} ' \
-                    '{:>4.2}'.format(slope, intercept, p, r, r2, stderr))
-
-        slope, intercept, r, p, stderr = stats.linregress(marks, dFreqs)
-        r2 = r**2
-        log.info('Draw: {:>4.2f} {:>4.2f} {:>4.2} {:>4.2f} {:>4.2f} ' \
-                    '{:>4.2}'.format(slope, intercept, p, r, r2, stderr))
         
-        slope, intercept, r, p, stderr = stats.linregress(marks, aFreqs)
-        r2 = r**2
-        log.info('Away: {:>4.2f} {:>4.2f} {:>4.2} {:>4.2f} {:>4.2f} ' \
-                    '{:>4.2}'.format(slope, intercept, p, r, r2, stderr))
-        """
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions
 

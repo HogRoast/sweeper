@@ -12,13 +12,17 @@ class SweeperOptions:
     ALGO                = 0b00000100
     LEAGUE              = 0b00001000
     SEASON              = 0b00010000
+    LOWER_BOUND         = 0b00100000
+    UPPER_BOUND         = 0b01000000
 
     validOpts = [
             DEBUG_LOGGING,
             CURRENT_SEASON_ONLY,
             ALGO,
             LEAGUE,
-            SEASON
+            SEASON,
+            LOWER_BOUND,
+            UPPER_BOUND
             ]
 
     def __init__(self):
@@ -53,20 +57,26 @@ def getSweeperOptions(log, opts):
     :returns: a SweeperOptions object with the appropriate opts set
     '''
     def showHelpAndExit():
-        print(  'Sweeper help...\n' \
+        print(  '\n' \
+                'Sweeper help...\n' \
                 '\n' \
-                '   general\n' \
-                '         -d : enable debug logging\n' \
-                '         -h : display help\n' \
-                '   sourcedata\n' \
-                '         -c : apply to current season only\n' \
+                '   ALL\n'\
+                '         -d             : enable debug logging\n' \
+                '         -h             : display help\n' \
                 '   analysematches\n' \
-                '       * -a <id>        : algo to apply\n' \
-                '       * -l <mnemonic>  : league to analyse\n' \
-                '       * -s <season>    : season to analyse\n' \
+                '       * -a  <id>       : algo to apply\n' \
+                '       * -l  <mnemonic> : league to analyse\n' \
+                '       * -s  <season>   : season to analyse\n' \
+                '   analysestatistics\n' \
+                '       * -a  <id>       : algo to apply\n' \
+                '       * -l  <mnemonic> : league to analyse\n' \
+                '         -lb <int>      : lower bound mark\n' \
+                '         -ub <int>      : upper bound mark\n' \
                 '   generatestats\n' \
-                '       * -a <id>        : algo to apply\n' \
-                '       * -l <mnemonic>  : league to analyse\n' \
+                '       * -a  <id>       : algo to apply\n' \
+                '       * -l  <mnemonic> : league to analyse\n' \
+                '   sourcedata\n' \
+                '         -c             : apply to current season only\n' \
                 '\n' \
                 '   * indicates mandatory param')
         sys.exit(0)
@@ -97,6 +107,16 @@ def getSweeperOptions(log, opts):
                 season = opts[idx + 1]
                 sopts._set(SweeperOptions.SEASON)
                 sopts.season = season
+            if '-lb' in opts:
+                idx = opts.index('-lb')
+                lbnd = opts[idx + 1]
+                sopts._set(SweeperOptions.LOWER_BOUND)
+                sopts.lowerBound = lbnd
+            if '-ub' in opts:
+                idx = opts.index('-ub')
+                ubnd = opts[idx + 1]
+                sopts._set(SweeperOptions.UPPER_BOUND)
+                sopts.upperBound = ubnd
         except:
             showHelpAndExit()
 
