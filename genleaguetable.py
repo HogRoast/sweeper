@@ -59,9 +59,9 @@ def genLeagueTable(log:Logger, league:str, season:str, date:str=None):
             points = 0
             
             def __repr__(self):
-               return 'played {}, won {}, drawn {}, lost {}, for {}, ' \
-                       'against {}, diff {}, points {}'.format( \
-                       self.played, self.won, self.drawn, self.lost, \
+                return 'played {:>2}, won {:>2}, drawn {:>2}, lost {:>2}, ' \
+                        'for {:>3}, against {:>3}, diff {:>4}, points {:>3}' \
+                        .format(self.played, self.won, self.drawn, self.lost, \
                        self.glfor, self.glagn, self.gldif, self.points)
             
         table = {} 
@@ -90,9 +90,10 @@ def genLeagueTable(log:Logger, league:str, season:str, date:str=None):
             else:
                 raise Exception("Empty result, wasn't expecting that")
 
-        log.info(sorted(sorted(table.items(), key=itemgetter(0)), \
+        [log.info('{:<16} {}'.format(row[0], row[1])) for row in \
+                sorted(sorted(table.items(), key=itemgetter(0)), \
                 key=lambda x : (x[1].points, x[1].gldif, x[1].glfor), \
-                reverse=True))
+                reverse=True)]
 
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions

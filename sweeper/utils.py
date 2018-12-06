@@ -77,7 +77,7 @@ def getSweeperOptions(log, opts):
                 '         -lb <int>      : lower bound mark\n' \
                 '         -ub <int>      : upper bound mark\n' \
                 '   genform\n' \
-                '       * -dt <date>     : match date YYYY-MM-DD\n' \
+                '       * -dt <date>     : search date YYYY-MM-DD\n' \
                 '       * -t  <team>     : subject team\n' \
                 '   genleaguetable\n' \
                 '       * -l  <mnemonic> : subject league\n' \

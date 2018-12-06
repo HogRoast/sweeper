@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from shimbase.database import Database, AdhocKeys
 from shimbase.sqlite3impl import SQLite3Impl
 
@@ -14,7 +14,7 @@ def genForm(log:Logger, date:str, team:str):
     Generate form over the previous 6 matches for the team provided
 
     :param log: a logging object
-    :param date: last match date
+    :param date: search date
     :param team: the subject team
     '''
     log.info('Generating form for date <{}> and team <{}>'.format(date, team))
@@ -24,28 +24,20 @@ def genForm(log:Logger, date:str, team:str):
     log.debug('Opening database: {}'.format(dbName))
 
     with Database(dbName, SQLite3Impl()) as db, db.transaction() as t:     
+        dt = datetime.strptime(date, '%Y-%m-%d') + timedelta(days=1)
         try:
-            keys = {'date' : date, 'home_team' : team}
-            match = db.select(Match.createAdhoc(keys))[0]
+            keys = {'<date' : dt.strftime('%Y-%m-%d'), 'home_team' : team, \
+                    '!result' : ''}
+            order = {'>date'}
+            matches1 = [m for m in db.select(Match.createAdhoc(keys, order))]
+            del keys['home_team']
+            keys['away_team'] = team
+            matches2 = [m for m in db.select(Match.createAdhoc(keys, order))]
         except:
-            try:
-                keys = {'date' : date, 'away_team' : team}
-                match = db.select(Match.createAdhoc(keys))[0]
-            except:
-                log.critical('No match exists for the team and date provided')
-                sys.exit(3)
+            log.critical("Couldn't find matches for team and date provided")
+            sys.exit(3)
 
-        keys = {'league' : match.getLeague(), '<date' : date, \
-                'home_team' : team, '!result' : ''}
-        order = {'>date'}
-        matches1 = [m for m in db.select(Match.createAdhoc(keys, order))]
-        del keys['home_team']
-        keys['away_team'] = team
-        matches2 = [m for m in db.select(Match.createAdhoc(keys, order))]
-        matches = [match] + matches1 + matches2 \
-                if match.getResult() != '' else matches1 + matches2
-        matches = sorted(matches, key=lambda m : m.getDate(), reverse=True)[0:6]
-
+        matches = sorted(matches1 + matches2, key=lambda m : m.getDate(), reverse=True)[0:6]
         class Data:
             played = 0
             won = 0
@@ -90,9 +82,9 @@ def genForm(log:Logger, date:str, team:str):
                 raise Exception("Wasn't expecting that!")
 
         log.info('{} Form: {}'.format(team, form))
-        [log.debug('{:<16} ({:>2}) vs ({:>2}) {:>16}'.format(m.getHome_Team(), \
-                m.getHome_Goals(), m.getAway_Goals(), m.getAway_Team())) \
-                for m in matches]
+        [log.info('{:<12} {:<16} ({:>2}) vs ({:>2}) {:>16}'.format( \
+                m.getDate(), m.getHome_Team(), m.getHome_Goals(), \
+                m.getAway_Goals(), m.getAway_Team())) for m in matches]
     
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions
