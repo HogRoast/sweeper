@@ -1,4 +1,4 @@
-import csv, urllib.request, sys
+import csv, datetime, urllib.request, sys
 from sweeper.logging import Logger
 from configparser import ConfigParser
 
@@ -7,13 +7,15 @@ class SweeperArgsError(Exception):
         self.msg = msg
 
 class SweeperOptions:
-    DEBUG_LOGGING       = 0b00000001
-    CURRENT_SEASON_ONLY = 0b00000010
-    ALGO                = 0b00000100
-    LEAGUE              = 0b00001000
-    SEASON              = 0b00010000
-    LOWER_BOUND         = 0b00100000
-    UPPER_BOUND         = 0b01000000
+    DEBUG_LOGGING       = 0b000000001
+    CURRENT_SEASON_ONLY = 0b000000010
+    ALGO                = 0b000000100
+    LEAGUE              = 0b000001000
+    SEASON              = 0b000010000
+    LOWER_BOUND         = 0b000100000
+    UPPER_BOUND         = 0b001000000
+    DATE                = 0b010000000
+    TEAM                = 0b100000000
 
     validOpts = [
             DEBUG_LOGGING,
@@ -22,11 +24,13 @@ class SweeperOptions:
             LEAGUE,
             SEASON,
             LOWER_BOUND,
-            UPPER_BOUND
+            UPPER_BOUND,
+            DATE,
+            TEAM
             ]
 
     def __init__(self):
-        self._mask = 0b0000000
+        self._mask = 0b00000000
         self.algoId = None
         self.leagueMnemonic = None
 
@@ -72,12 +76,16 @@ def getSweeperOptions(log, opts):
                 '       * -l  <mnemonic> : subject league\n' \
                 '         -lb <int>      : lower bound mark\n' \
                 '         -ub <int>      : upper bound mark\n' \
-                '   genstats\n' \
-                '       * -a  <id>       : algo to apply\n' \
-                '       * -l  <mnemonic> : subject league\n' \
+                '   genform\n' \
+                '       * -dt <date>     : match date YYYY-MM-DD\n' \
+                '       * -t  <team>     : subject team\n' \
                 '   genleaguetable\n' \
                 '       * -l  <mnemonic> : subject league\n' \
                 '       * -s  <season>   : subject season\n' \
+                '         -dt <date>     : generate up to date YYYY-MM-DD\n' \
+                '   genstats\n' \
+                '       * -a  <id>       : algo to apply\n' \
+                '       * -l  <mnemonic> : subject league\n' \
                 '   sourcedata\n' \
                 '         -c             : apply to current season only\n' \
                 '\n' \
@@ -110,6 +118,11 @@ def getSweeperOptions(log, opts):
                 season = opts[idx + 1]
                 sopts._set(SweeperOptions.SEASON)
                 sopts.season = season
+            if '-t' in opts:
+                idx = opts.index('-t')
+                team = opts[idx + 1]
+                sopts._set(SweeperOptions.TEAM)
+                sopts.team = team
             if '-lb' in opts:
                 idx = opts.index('-lb')
                 lbnd = opts[idx + 1]
@@ -120,7 +133,14 @@ def getSweeperOptions(log, opts):
                 ubnd = opts[idx + 1]
                 sopts._set(SweeperOptions.UPPER_BOUND)
                 sopts.upperBound = ubnd
-        except:
+            if '-dt' in opts:
+                idx = opts.index('-dt')
+                date = opts[idx + 1]
+                datetime.datetime.strptime(date, '%Y-%m-%d')
+                sopts._set(SweeperOptions.DATE)
+                sopts.date = date
+        except Exception as e:
+            print(e)
             showHelpAndExit()
 
     return sopts

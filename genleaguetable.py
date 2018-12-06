@@ -10,13 +10,14 @@ from sweeper.dbos.league import League
 from sweeper.dbos.match import Match
 from sweeper.dbos.season import Season
 
-def genLeagueTable(log:Logger, league:str, season:str):
+def genLeagueTable(log:Logger, league:str, season:str, date:str=None):
     '''
     Generate a league table for the subject league and season
 
     :param log: a logging object
     :param league: the subject league
     :param season: the subject season
+    :param date: the date string up to which to generate the league YYYY-MM-DD
     '''
     log.info('Generating league table for ' \
             'league <{}> and season <{}>'.format(league, season))
@@ -37,8 +38,9 @@ def genLeagueTable(log:Logger, league:str, season:str):
             log.critical('No season matching the provided string exists')
             sys.exit(4)
 
-        keys = {'league' : league.getMnemonic(), '>date' : \
-                season.getL_Bnd_Date(), '<date' : season.getU_Bnd_Date()}
+        ubnd =  date if date is not None else season.getU_Bnd_Date()
+        keys = {'league' : league.getMnemonic(), '!result' : '', '>date' : \
+                season.getL_Bnd_Date(), '<date' : ubnd} 
         matches = [m for m in db.select(Match.createAdhoc(keys))]
         log.info('{} {} matches found'.format(len(matches), \
                 league.getMnemonic()))
@@ -104,4 +106,5 @@ if __name__ == '__main__':
         print('ERROR: No season provided, python genleaguetable -h for help')
         sys.exit(2)
 
-    genLeagueTable(log, sopts.leagueMnemonic, sopts.season)
+    date = sopts.date if sopts.test(SweeperOptions.DATE) else None
+    genLeagueTable(log, sopts.leagueMnemonic, sopts.season, date)
