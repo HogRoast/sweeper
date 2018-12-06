@@ -65,16 +65,19 @@ def getSweeperOptions(log, opts):
                 '         -h             : display help\n' \
                 '   analysematches\n' \
                 '       * -a  <id>       : algo to apply\n' \
-                '       * -l  <mnemonic> : league to analyse\n' \
-                '       * -s  <season>   : season to analyse\n' \
+                '       * -l  <mnemonic> : subject league\n' \
+                '       * -s  <season>   : subject season\n' \
                 '   analysestatistics\n' \
                 '       * -a  <id>       : algo to apply\n' \
-                '       * -l  <mnemonic> : league to analyse\n' \
+                '       * -l  <mnemonic> : subject league\n' \
                 '         -lb <int>      : lower bound mark\n' \
                 '         -ub <int>      : upper bound mark\n' \
-                '   generatestats\n' \
+                '   genstats\n' \
                 '       * -a  <id>       : algo to apply\n' \
-                '       * -l  <mnemonic> : league to analyse\n' \
+                '       * -l  <mnemonic> : subject league\n' \
+                '   genleaguetable\n' \
+                '       * -l  <mnemonic> : subject league\n' \
+                '       * -s  <season>   : subject season\n' \
                 '   sourcedata\n' \
                 '         -c             : apply to current season only\n' \
                 '\n' \

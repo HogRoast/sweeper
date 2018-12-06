@@ -33,10 +33,13 @@ class TestRating(TestCase):
         pass
 
     def test_keys_Immutablility(self):
-        keys =RatingKeys(98, 98)
+        keys =RatingKeys('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 98)
 
         with self.assertRaises(FrozenInstanceError) as cm:
-            keys.match_id = 75
+            keys.match_date = 'Something New'
+            keys.league = 'Something New'
+            keys.home_team = 'Something New'
+            keys.away_team = 'Something New'
             keys.algo_id = 75
             
         self.assertIn('cannot assign to field', cm.exception.args[0])
@@ -47,35 +50,47 @@ class TestRating(TestCase):
         self.assertTrue(l._keys.getFields() is None)
 
     def test_create(self):
-        obj = Rating.create((98, 98, 98))
+        obj = Rating.create(('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 98, 98))
 
-        self.assertEqual(obj.getMatch_Id(), 98)
+        self.assertEqual(obj.getMatch_Date(), 'match date TD')
+        self.assertEqual(obj.getLeague(), 'league mnemonic TD')
+        self.assertEqual(obj.getHome_Team(), 'team name TD')
+        self.assertEqual(obj.getAway_Team(), 'team name TD')
         self.assertEqual(obj.getAlgo_Id(), 98)
          
         self.assertEqual(obj.getMark(), 98)
          
 
     def test_repr(self):
-        obj = Rating(98, 98, 98)
-        self.assertEqual(str(obj), "rating : Keys {'match_id': 98, 'algo_id': 98} : Values {'mark': 98}")
+        obj = Rating('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 98, 98)
+        self.assertEqual(str(obj), "rating : Keys {'match_date': 'match date TD', 'league': 'league mnemonic TD', 'home_team': 'team name TD', 'away_team': 'team name TD', 'algo_id': 98} : Values {'mark': 98}")
 
     def test_select(self):
         objs = TestRating.db.select(Rating())
         self.assertEqual(len(objs), 2)
-        self.assertEqual(objs[0].getMatch_Id(), 98)
+        self.assertEqual(objs[0].getMatch_Date(), 'match date TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
+        self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+        self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         self.assertEqual(objs[0].getAlgo_Id(), 98)
         
         self.assertEqual(objs[0].getMark(), 98)
         
-        self.assertEqual(objs[1].getMatch_Id(), 99)
+        self.assertEqual(objs[1].getMatch_Date(), 'match date TD2')
+        self.assertEqual(objs[1].getLeague(), 'league mnemonic TD2')
+        self.assertEqual(objs[1].getHome_Team(), 'team name TD2')
+        self.assertEqual(objs[1].getAway_Team(), 'team name TD2')
         self.assertEqual(objs[1].getAlgo_Id(), 99)
         
         self.assertEqual(objs[1].getMark(), 99)
         
         
-        objs = TestRating.db.select(Rating(98, 98))
+        objs = TestRating.db.select(Rating('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 98))
         self.assertEqual(len(objs), 1)
-        self.assertEqual(objs[0].getMatch_Id(), 98)
+        self.assertEqual(objs[0].getMatch_Date(), 'match date TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
+        self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+        self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         self.assertEqual(objs[0].getAlgo_Id(), 98)
         
         self.assertEqual(objs[0].getMark(), 98)
@@ -83,7 +98,10 @@ class TestRating(TestCase):
 
         objs = TestRating.db.select(Rating.createAdhoc({'mark': 98}))
         self.assertEqual(len(objs), 1)
-        self.assertEqual(objs[0].getMatch_Id(), 98)
+        self.assertEqual(objs[0].getMatch_Date(), 'match date TD')
+        self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
+        self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+        self.assertEqual(objs[0].getAway_Team(), 'team name TD')
         self.assertEqual(objs[0].getAlgo_Id(), 98)
         
         self.assertEqual(objs[0].getMark(), 98)
@@ -95,11 +113,14 @@ class TestRating(TestCase):
 
         with TestRating.db.transaction() as t:
             TestRating.db.upsert(
-                    Rating(98, 98, 100))
-            objs = TestRating.db.select(Rating(98, 98))
+                    Rating('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 98, 100))
+            objs = TestRating.db.select(Rating('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 98))
 
             self.assertEqual(len(objs), 1)
-            self.assertEqual(objs[0].getMatch_Id(), 98)
+            self.assertEqual(objs[0].getMatch_Date(), 'match date TD')
+            self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
+            self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+            self.assertEqual(objs[0].getAway_Team(), 'team name TD')
             self.assertEqual(objs[0].getAlgo_Id(), 98)
             
 
@@ -112,15 +133,18 @@ class TestRating(TestCase):
             t.fail()
 
         with TestRating.db.transaction() as t:
-            rating = TestRating.db.select(Rating(98, 98))[0]
+            rating = TestRating.db.select(Rating('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 98))[0]
             for k, v in d.items():
                 rating.__getattribute__('set' + k.title())(v)
 
             TestRating.db.upsert(rating)
 
-            objs = TestRating.db.select(Rating(98, 98))
+            objs = TestRating.db.select(Rating('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 98))
             self.assertEqual(len(objs), 1)
-            self.assertEqual(objs[0].getMatch_Id(), 98)
+            self.assertEqual(objs[0].getMatch_Date(), 'match date TD')
+            self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
+            self.assertEqual(objs[0].getHome_Team(), 'team name TD')
+            self.assertEqual(objs[0].getAway_Team(), 'team name TD')
             self.assertEqual(objs[0].getAlgo_Id(), 98)
             
 
@@ -137,12 +161,12 @@ class TestRating(TestCase):
 
         with TestRating.db.transaction() as t:
             TestRating.db.upsert(
-                    Rating(100, 100, 100))
+                    Rating('match date TD INS', 'league mnemonic TD INS', 'team name TD INS', 'team name TD INS', 100, 100))
             objs = TestRating.db.select(Rating())
 
             self.assertEqual(len(objs), 3)
 
-            d = eval("{'match_id': 100, 'algo_id': 100}")
+            d = eval("{'match_date': 'match date TD INS', 'league': 'league mnemonic TD INS', 'home_team': 'team name TD INS', 'away_team': 'team name TD INS', 'algo_id': 100}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
@@ -160,7 +184,7 @@ class TestRating(TestCase):
         TestRating.db.disableForeignKeys()
 
         with TestRating.db.transaction() as t:
-            TestRating.db.delete(Rating(98, 98))
+            TestRating.db.delete(Rating('match date TD', 'league mnemonic TD', 'team name TD', 'team name TD', 98))
 
             objs = TestRating.db.select(Rating())
             self.assertEqual(len(objs), 1)

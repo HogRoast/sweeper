@@ -168,11 +168,8 @@ def sourceData(log:Logger, target:str, currentSeason:bool):
                         db.upsert(Team(at, l.getLeague()))
                     
                         bestH, bestD, bestA = getBestOdds(log, row)
-                        matchId = hash('{:4}{:02}{:02}{}{}{}'.format( \
-                                dt.year, dt.month, dt.day, \
-                                l.getLeague(), ht, at))
-                        match = Match(matchId, str(dt.date()), l.getLeague(), \
-                                ht, at, row['FTR'], bestH, bestD, bestA, \
+                        match = Match(str(dt.date()), l.getLeague(), ht, at, \
+                                row['FTR'], bestH, bestD, bestA, \
                                 row['FTHG'], row['FTAG'])
                         log.debug(match)
                         db.upsert(match)

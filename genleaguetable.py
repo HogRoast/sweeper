@@ -1,0 +1,107 @@
+import sys
+from datetime import datetime
+from shimbase.database import Database, AdhocKeys
+from shimbase.sqlite3impl import SQLite3Impl
+from operator import attrgetter, itemgetter
+
+from sweeper.logging import Logger
+from sweeper.utils import getSweeperConfig
+from sweeper.dbos.league import League
+from sweeper.dbos.match import Match
+from sweeper.dbos.season import Season
+
+def genLeagueTable(log:Logger, league:str, season:str):
+    '''
+    Generate a league table for the subject league and season
+
+    :param log: a logging object
+    :param league: the subject league
+    :param season: the subject season
+    '''
+    log.info('Generating league table for ' \
+            'league <{}> and season <{}>'.format(league, season))
+
+    config = getSweeperConfig()
+    dbName = config['dbName']
+    log.debug('Opening database: {}'.format(dbName))
+
+    with Database(dbName, SQLite3Impl()) as db, db.transaction() as t:     
+        try:
+            league = db.select(League(league))[0]
+        except:
+            log.critical('No league matching the provided mnemonic exists')
+            sys.exit(3)
+        try:
+            season = db.select(Season(season))[0]
+        except:
+            log.critical('No season matching the provided string exists')
+            sys.exit(4)
+
+        keys = {'league' : league.getMnemonic(), '>date' : \
+                season.getL_Bnd_Date(), '<date' : season.getU_Bnd_Date()}
+        matches = [m for m in db.select(Match.createAdhoc(keys))]
+        log.info('{} {} matches found'.format(len(matches), \
+                league.getMnemonic()))
+
+        teams = set([m.getHome_Team() for m in matches] + \
+                [m.getAway_Team() for m in matches])
+
+        class Data:
+            played = 0
+            won = 0
+            drawn = 0
+            lost = 0
+            glfor = 0
+            glagn = 0
+            gldif = 0
+            points = 0
+            
+            def __repr__(self):
+               return 'played {}, won {}, drawn {}, lost {}, for {}, ' \
+                       'against {}, diff {}, points {}'.format( \
+                       self.played, self.won, self.drawn, self.lost, \
+                       self.glfor, self.glagn, self.gldif, self.points)
+            
+        table = {} 
+        for m in matches:
+            table[m.getHome_Team()] = h = table.get(m.getHome_Team(), Data())
+            table[m.getAway_Team()] = a = table.get(m.getAway_Team(), Data())
+            h.played += 1
+            a.played += 1
+            h.glfor += m.getHome_Goals()
+            h.glagn += m.getAway_Goals()
+            h.gldif = h.glfor - h.glagn
+            a.glfor += m.getAway_Goals()
+            a.glagn += m.getHome_Goals()
+            a.gldif = a.glfor - a.glagn
+            if m.getResult() == 'H':
+                h.won += 1
+                h.points += 3
+            elif m.getResult() == 'D':
+                h.drawn += 1
+                h.points += 1
+                h.drawn += 1
+                a.points += 1
+            elif m.getResult() == 'A':
+                a.won += 1
+                a.points += 3
+            else:
+                raise Exception("Empty result, wasn't expecting that")
+
+        log.info(sorted(sorted(table.items(), key=itemgetter(0)), \
+                key=lambda x : (x[1].points, x[1].gldif, x[1].glfor), \
+                reverse=True))
+
+if __name__ == '__main__':
+    from sweeper.utils import getSweeperOptions, SweeperOptions
+
+    log = Logger()
+    sopts = getSweeperOptions(log, sys.argv)
+    if not sopts.test(SweeperOptions.LEAGUE):
+        print('ERROR: No league provided, python genleaguetable -h for help')
+        sys.exit(1)
+    if not sopts.test(SweeperOptions.SEASON):
+        print('ERROR: No season provided, python genleaguetable -h for help')
+        sys.exit(2)
+
+    genLeagueTable(log, sopts.leagueMnemonic, sopts.season)

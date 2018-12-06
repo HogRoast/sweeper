@@ -6,17 +6,23 @@ class MatchKeys(DatabaseKeys):
     '''
     match database object primary key representation
     '''
-    id:int = None
+    date:str = None
+    league:str = None
+    home_team:str = None
+    away_team:str = None
     
 
-    def __init__(self, id:int):
+    def __init__(self, date:str, league:str, home_team:str, away_team:str):
         '''
         Construct the object from the provided primary key fields
         
         :param ...: typed primary key fields
         '''
         # Need to use setattr as the class is Frozen (immutable)
-        object.__setattr__(self, 'id', id)
+        object.__setattr__(self, 'date', date)
+        object.__setattr__(self, 'league', league)
+        object.__setattr__(self, 'home_team', home_team)
+        object.__setattr__(self, 'away_team', away_team)
         
         super().__init__(self.getFields())
 
@@ -26,23 +32,19 @@ class MatchKeys(DatabaseKeys):
         
         :returns: a dictionary of all MatchKeys fields
         '''
-        fields = {} if None in (self.id,) else {'id' : self.id}
+        fields = {} if None in (self.date, self.league, self.home_team, self.away_team,) else {'date' : self.date, 'league' : self.league, 'home_team' : self.home_team, 'away_team' : self.away_team}
         return fields
         
 class MatchValues(DatabaseValues):
     '''
     match database object values representation
     '''
-    def __init__(self, date:str, league:str, home_team:str, away_team:str, result:str = None, best_odds_h:float = None, best_odds_d:float = None, best_odds_a:float = None, home_goals:int = None, away_goals:int = None, home_lp:int = None, away_lp:int = None):
+    def __init__(self, result:str = None, best_odds_h:float = None, best_odds_d:float = None, best_odds_a:float = None, home_goals:int = None, away_goals:int = None, home_lp:int = None, away_lp:int = None):
         '''
         Construct the object from the provided value fields
         
         :param ...: typed value fields
         '''
-        object.__setattr__(self, 'date', date)
-        object.__setattr__(self, 'league', league)
-        object.__setattr__(self, 'home_team', home_team)
-        object.__setattr__(self, 'away_team', away_team)
         object.__setattr__(self, 'result', result)
         object.__setattr__(self, 'best_odds_h', best_odds_h)
         object.__setattr__(self, 'best_odds_d', best_odds_d)
@@ -60,7 +62,7 @@ class MatchValues(DatabaseValues):
         
         :returns: a dictionary of all MatchValues fields
         '''
-        fields = {'date' : self.date, 'league' : self.league, 'home_team' : self.home_team, 'away_team' : self.away_team, 'result' : self.result, 'best_odds_h' : self.best_odds_h, 'best_odds_d' : self.best_odds_d, 'best_odds_a' : self.best_odds_a, 'home_goals' : self.home_goals, 'away_goals' : self.away_goals, 'home_lp' : self.home_lp, 'away_lp' : self.away_lp}
+        fields = {'result' : self.result, 'best_odds_h' : self.best_odds_h, 'best_odds_d' : self.best_odds_d, 'best_odds_a' : self.best_odds_a, 'home_goals' : self.home_goals, 'away_goals' : self.away_goals, 'home_lp' : self.home_lp, 'away_lp' : self.away_lp}
         return fields
         
 class Match(DatabaseObject):
@@ -103,8 +105,8 @@ class Match(DatabaseObject):
         :param row: a list of values representing the objects key and values
         :returns: a Match object constructed from row
         '''
-        id, date, league, home_team, away_team, result, best_odds_h, best_odds_d, best_odds_a, home_goals, away_goals, home_lp, away_lp = row
-        return Match(id, date, league, home_team, away_team, result, best_odds_h, best_odds_d, best_odds_a, home_goals, away_goals, home_lp, away_lp)
+        date, league, home_team, away_team, result, best_odds_h, best_odds_d, best_odds_a, home_goals, away_goals, home_lp, away_lp = row
+        return Match(date, league, home_team, away_team, result, best_odds_h, best_odds_d, best_odds_a, home_goals, away_goals, home_lp, away_lp)
 
     def _create(self, row:tuple):
         '''
@@ -116,7 +118,7 @@ class Match(DatabaseObject):
         '''
         return Match.create(row)
 
-    def __init__(self, id:int = None, date:str = None, league:str = None, home_team:str = None, away_team:str = None, result:str = None, best_odds_h:float = None, best_odds_d:float = None, best_odds_a:float = None, home_goals:int = None, away_goals:int = None, home_lp:int = None, away_lp:int = None):
+    def __init__(self, date:str = None, league:str = None, home_team:str = None, away_team:str = None, result:str = None, best_odds_h:float = None, best_odds_d:float = None, best_odds_a:float = None, home_goals:int = None, away_goals:int = None, home_lp:int = None, away_lp:int = None):
         '''
         Construct the object from the provided key and value fields
         
@@ -124,29 +126,26 @@ class Match(DatabaseObject):
         :returns: N/A
         :raises: None
         '''
-        keys = MatchKeys(id)
-        vals = MatchValues(date, league, home_team, away_team, result, best_odds_h, best_odds_d, best_odds_a, home_goals, away_goals, home_lp, away_lp)
+        keys = MatchKeys(date, league, home_team, away_team)
+        vals = MatchValues(result, best_odds_h, best_odds_d, best_odds_a, home_goals, away_goals, home_lp, away_lp)
 
         super().__init__('match', keys, vals)
 
     def getTable(self):
         return self._table
 
-    def getId(self):
-        return self._keys.id
-    
-    
     def getDate(self):
-        return self._vals.date
+        return self._keys.date
     
     def getLeague(self):
-        return self._vals.league
+        return self._keys.league
     
     def getHome_Team(self):
-        return self._vals.home_team
+        return self._keys.home_team
     
     def getAway_Team(self):
-        return self._vals.away_team
+        return self._keys.away_team
+    
     
     def getResult(self):
         return self._vals.result
@@ -172,18 +171,6 @@ class Match(DatabaseObject):
     def getAway_Lp(self):
         return self._vals.away_lp
     
-    
-    def setDate(self, date:str):
-       self._vals.date = date
-    
-    def setLeague(self, league:str):
-       self._vals.league = league
-    
-    def setHome_Team(self, home_team:str):
-       self._vals.home_team = home_team
-    
-    def setAway_Team(self, away_team:str):
-       self._vals.away_team = away_team
     
     def setResult(self, result:str):
        self._vals.result = result

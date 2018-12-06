@@ -7,7 +7,7 @@ from shimbase.sqlite3impl import SQLite3Impl
 from sweeper.logging import Logger
 from sweeper.algos import AlgoFactory
 from sweeper.utils import getSweeperConfig
-from sweeper.dbos.match import Match
+from sweeper.dbos.match import Match, MatchKeys
 from sweeper.dbos.rating import Rating
 from sweeper.dbos.algo import Algo
 from sweeper.dbos.league import League
@@ -48,15 +48,16 @@ def analyseMatches(log:Logger, algoId:int, league:str, season:str):
             sys.exit(6)
 
         ratings = db.select(Rating(algo_id=algoId))
-        ratedMatchIds = [r.getMatch_Id() for r in ratings]
-        log.info('Found {} ratings for algo {}'.format(len(ratedMatchIds), \
+        ratedMatchKeys = [MatchKeys(r.getMatch_Date(), r.getLeague(), \
+                r.getHome_Team(), r.getAway_Team()) for r in ratings]
+        log.info('Found {} ratings for algo {}'.format(len(ratedMatchKeys), \
                 algoId))
 
         keys = {'league' : league.getMnemonic(), '>date' : \
                 season.getL_Bnd_Date(), '<date' : season.getU_Bnd_Date()}
         order = {'>date'}
         matches = [m for m in db.select(Match.createAdhoc(keys, order)) \
-                if m.getId() not in ratedMatchIds]
+                if m._keys not in ratedMatchKeys]
         log.info('{} {} matches found unmarked'.format(len(matches), \
                 league.getMnemonic()))
 
@@ -68,7 +69,8 @@ def analyseMatches(log:Logger, algoId:int, league:str, season:str):
                     in (am.getHome_Team(), am.getAway_Team())]
             mark = algo.markMatch(m, hTeamMatches, aTeamMatches)
             if mark is not None:
-                db.upsert(Rating(m.getId(), algoId, mark))
+                db.upsert(Rating(m.getDate(), m.getLeague(), m.getHome_Team(), \
+                        m.getAway_Team(), algoId, mark))
 
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions

@@ -6,18 +6,24 @@ class RatingKeys(DatabaseKeys):
     '''
     rating database object primary key representation
     '''
-    match_id:int = None
+    match_date:str = None
+    league:str = None
+    home_team:str = None
+    away_team:str = None
     algo_id:int = None
     
 
-    def __init__(self, match_id:int, algo_id:int):
+    def __init__(self, match_date:str, league:str, home_team:str, away_team:str, algo_id:int):
         '''
         Construct the object from the provided primary key fields
         
         :param ...: typed primary key fields
         '''
         # Need to use setattr as the class is Frozen (immutable)
-        object.__setattr__(self, 'match_id', match_id)
+        object.__setattr__(self, 'match_date', match_date)
+        object.__setattr__(self, 'league', league)
+        object.__setattr__(self, 'home_team', home_team)
+        object.__setattr__(self, 'away_team', away_team)
         object.__setattr__(self, 'algo_id', algo_id)
         
         super().__init__(self.getFields())
@@ -28,7 +34,7 @@ class RatingKeys(DatabaseKeys):
         
         :returns: a dictionary of all RatingKeys fields
         '''
-        fields = {} if None in (self.match_id, self.algo_id,) else {'match_id' : self.match_id, 'algo_id' : self.algo_id}
+        fields = {} if None in (self.match_date, self.league, self.home_team, self.away_team, self.algo_id,) else {'match_date' : self.match_date, 'league' : self.league, 'home_team' : self.home_team, 'away_team' : self.away_team, 'algo_id' : self.algo_id}
         return fields
         
 class RatingValues(DatabaseValues):
@@ -94,8 +100,8 @@ class Rating(DatabaseObject):
         :param row: a list of values representing the objects key and values
         :returns: a Rating object constructed from row
         '''
-        match_id, algo_id, mark = row
-        return Rating(match_id, algo_id, mark)
+        match_date, league, home_team, away_team, algo_id, mark = row
+        return Rating(match_date, league, home_team, away_team, algo_id, mark)
 
     def _create(self, row:tuple):
         '''
@@ -107,7 +113,7 @@ class Rating(DatabaseObject):
         '''
         return Rating.create(row)
 
-    def __init__(self, match_id:int = None, algo_id:int = None, mark:int = None):
+    def __init__(self, match_date:str = None, league:str = None, home_team:str = None, away_team:str = None, algo_id:int = None, mark:int = None):
         '''
         Construct the object from the provided key and value fields
         
@@ -115,7 +121,7 @@ class Rating(DatabaseObject):
         :returns: N/A
         :raises: None
         '''
-        keys = RatingKeys(match_id, algo_id)
+        keys = RatingKeys(match_date, league, home_team, away_team, algo_id)
         vals = RatingValues(mark)
 
         super().__init__('rating', keys, vals)
@@ -123,8 +129,17 @@ class Rating(DatabaseObject):
     def getTable(self):
         return self._table
 
-    def getMatch_Id(self):
-        return self._keys.match_id
+    def getMatch_Date(self):
+        return self._keys.match_date
+    
+    def getLeague(self):
+        return self._keys.league
+    
+    def getHome_Team(self):
+        return self._keys.home_team
+    
+    def getAway_Team(self):
+        return self._keys.away_team
     
     def getAlgo_Id(self):
         return self._keys.algo_id
