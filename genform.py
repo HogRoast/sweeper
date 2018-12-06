@@ -49,9 +49,9 @@ def genForm(log:Logger, date:str, team:str):
             points = 0
             
             def __repr__(self):
-               return 'played {}, won {}, drawn {}, lost {}, for {}, ' \
-                       'against {}, diff {}, points {}'.format( \
-                       self.played, self.won, self.drawn, self.lost, \
+               return 'P {:>2}, W {:>2}, D {:>2}, L {:>2}, ' \
+                        'F {:>3}, A {:>3}, GD {:>3}, PTS {:>3}' \
+                       .format(self.played, self.won, self.drawn, self.lost, \
                        self.glfor, self.glagn, self.gldif, self.points)
         form = Data()
         for m in matches:
@@ -82,7 +82,7 @@ def genForm(log:Logger, date:str, team:str):
                 raise Exception("Wasn't expecting that!")
 
         log.info('{} Form: {}'.format(team, form))
-        [log.info('{:<12} {:<16} ({:>2}) vs ({:>2}) {:>16}'.format( \
+        [log.info('{:<12} {:<20} ({:>2}) vs ({:>2}) {:>20}'.format( \
                 m.getDate(), m.getHome_Team(), m.getHome_Goals(), \
                 m.getAway_Goals(), m.getAway_Team())) for m in matches]
     

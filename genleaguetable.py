@@ -59,8 +59,8 @@ def genLeagueTable(log:Logger, league:str, season:str, date:str=None):
             points = 0
             
             def __repr__(self):
-                return 'played {:>2}, won {:>2}, drawn {:>2}, lost {:>2}, ' \
-                        'for {:>3}, against {:>3}, diff {:>4}, points {:>3}' \
+                return 'P {:>2}, W {:>2}, D {:>2}, L {:>2}, ' \
+                        'F {:>3}, A {:>3}, GD {:>3}, PTS {:>3}' \
                         .format(self.played, self.won, self.drawn, self.lost, \
                        self.glfor, self.glagn, self.gldif, self.points)
             
@@ -90,7 +90,7 @@ def genLeagueTable(log:Logger, league:str, season:str, date:str=None):
             else:
                 raise Exception("Empty result, wasn't expecting that")
 
-        [log.info('{:<16} {}'.format(row[0], row[1])) for row in \
+        [log.info('{:<20} {}'.format(row[0], row[1])) for row in \
                 sorted(sorted(table.items(), key=itemgetter(0)), \
                 key=lambda x : (x[1].points, x[1].gldif, x[1].glfor), \
                 reverse=True)]
