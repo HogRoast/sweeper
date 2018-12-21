@@ -79,14 +79,16 @@ def genLeagueTable(log:Logger, league:str, season:str, date:str=None):
             if m.getResult() == 'H':
                 h.won += 1
                 h.points += 3
+                a.lost += 1
             elif m.getResult() == 'D':
                 h.drawn += 1
                 h.points += 1
-                h.drawn += 1
+                a.drawn += 1
                 a.points += 1
             elif m.getResult() == 'A':
                 a.won += 1
                 a.points += 3
+                h.lost += 1
             else:
                 raise Exception("Empty result, wasn't expecting that")
 

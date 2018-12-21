@@ -152,8 +152,13 @@ def sourceData(log:Logger, target:str, currentSeason:bool):
                     for row in resultsReader:
                         try:
                             dt = datetime.strptime(row['Date'], '%d/%m/%y')
-                        except Exception:
-                            continue
+                        except Exception as e:
+                            try:
+                                dt = datetime.strptime(row['Date'], '%d/%m/%Y')
+                            except:
+                                log.debug(
+                                        'Date conversion failed: {}'.format(e))
+                                continue
 
                         ht = row['HomeTeam']
                         keys = {'source_id' : source.getId(), 'moniker' : ht}
