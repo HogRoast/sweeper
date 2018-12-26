@@ -105,6 +105,47 @@ def getBestOdds(log, row):
 
     return (bestH, bestD, bestA)
 
+def processMatchData(log, db, url, sourceId, leagueMap=None):
+    log.info('Downloading...' + url)
+
+    with readCSVFileAsDict(url) as resultsReader:
+        for row in resultsReader:
+            try:
+                dt = datetime.strptime(row['Date'], '%d/%m/%y')
+            except Exception as e:
+                try:
+                    dt = datetime.strptime(row['Date'], '%d/%m/%Y')
+                except:
+                    log.debug(
+                            'Date conversion failed: {}'.format(e))
+                    continue
+            try:
+                lge = row["b'Div"]
+            except:
+                lge = row['b"Div']
+
+            if leagueMap and lge not in [l.getLeague() for l in leagueMap]:
+                continue
+
+            ht = row['HomeTeam']
+            keys = {'source_id' : sourceId, 'moniker' : ht}
+            teamMap = db.select(Source_Team_Map.createAdhoc(keys))
+            if teamMap: ht = teamMap[0].getTeam()
+            db.upsert(Team(ht, lge))
+
+            at = row['AwayTeam']
+            keys = {'source_id' : sourceId, 'moniker' : at}
+            teamMap = db.select(Source_Team_Map.createAdhoc(keys))
+            if teamMap: at = teamMap[0].getTeam()
+            db.upsert(Team(at, lge))
+        
+            bestH, bestD, bestA = getBestOdds(log, row)
+            match = Match(str(dt.date()), lge, ht, at, \
+                    row['FTR'], bestH, bestD, bestA, \
+                    row['FTHG'], row['FTAG'])
+            log.debug(match)
+            db.upsert(match)
+
 def sourceData(log:Logger, target:str, currentSeason:bool):
     '''
     Obtain historical match data
@@ -128,7 +169,8 @@ def sourceData(log:Logger, target:str, currentSeason:bool):
             sys.exit('{} source not in database'.format(target))
         log.debug('{}'.format(source))
 
-        keys = {'source_id': source.getId(), 'active' : 1}
+        sourceId = source.getId()
+        keys = {'source_id': sourceId, 'active' : 1}
         if currentSeason:
             seasonMap = db.select(
                     Source_Season_Map.createAdhoc(keys, ('>season',)))[0:1]
@@ -136,49 +178,22 @@ def sourceData(log:Logger, target:str, currentSeason:bool):
             seasonMap = db.select(Source_Season_Map.createAdhoc(keys))
         log.debug('{}'.format(seasonMap))
 
-        keys = {'source_id': source.getId()}
+        keys = {'source_id': sourceId}
         leagueMap = db.select(Source_League_Map.createAdhoc(keys))
         log.debug('{}'.format(leagueMap))
         
         teams = db.select(Team())
         log.debug('{}'.format(teams))
 
+        # Process the historical data...
         for l in leagueMap:
             for s in seasonMap:
-                resultsURL = s.getData_Url().format(l.getLeague())
-                log.info('Downloading...' + resultsURL)
-    
-                with readCSVFileAsDict(resultsURL) as resultsReader:
-                    for row in resultsReader:
-                        try:
-                            dt = datetime.strptime(row['Date'], '%d/%m/%y')
-                        except Exception as e:
-                            try:
-                                dt = datetime.strptime(row['Date'], '%d/%m/%Y')
-                            except:
-                                log.debug(
-                                        'Date conversion failed: {}'.format(e))
-                                continue
+                url = s.getData_Url().format(l.getLeague())
+                processMatchData(log, db, url, sourceId)
 
-                        ht = row['HomeTeam']
-                        keys = {'source_id' : source.getId(), 'moniker' : ht}
-                        teamMap = db.select(Source_Team_Map.createAdhoc(keys))
-                        if teamMap: ht = teamMap[0].getTeam()
-                        db.upsert(Team(ht, l.getLeague()))
+        # Get the upcoming fixtures too...
+        processMatchData(log, db, source.getUrl(), sourceId, leagueMap)
 
-                        at = row['AwayTeam']
-                        keys = {'source_id' : source.getId(), 'moniker' : at}
-                        teamMap = db.select(Source_Team_Map.createAdhoc(keys))
-                        if teamMap: at = teamMap[0].getTeam()
-                        db.upsert(Team(at, l.getLeague()))
-                    
-                        bestH, bestD, bestA = getBestOdds(log, row)
-                        match = Match(str(dt.date()), l.getLeague(), ht, at, \
-                                row['FTR'], bestH, bestD, bestA, \
-                                row['FTHG'], row['FTAG'])
-                        log.debug(match)
-                        db.upsert(match)
-        
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions
 
