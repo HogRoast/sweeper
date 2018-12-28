@@ -86,6 +86,10 @@ def getSweeperOptions(log, opts):
                 '   genstats\n' \
                 '       * -a  <id>       : algo to apply\n' \
                 '       * -l  <mnemonic> : subject league\n' \
+                '   presentfixtures\n' \
+                '       * -a  <id>       : algo ratings to present\n' \
+                '       * -dt <date>     : fixtures date onward YYYY-MM-DD\n' \
+                '         -l  <mnemonic> : subject league, all if unset\n' \
                 '   sourcedata\n' \
                 '         -c             : apply to current season only\n' \
                 '\n' \

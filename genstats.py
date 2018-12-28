@@ -41,7 +41,7 @@ def genStats(log:Logger, algoId:int, league:str):
             sys.exit(4)
 
         keys = {'league' : league.getMnemonic()}
-        order = {'>date'}
+        order = ['>date']
         matches = db.select(Match.createAdhoc(keys, order))
         hMatchKeys = [m._keys for m in matches if m.getResult() == 'H']
         dMatchKeys = [m._keys for m in matches if m.getResult() == 'D']
