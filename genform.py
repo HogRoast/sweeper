@@ -3,19 +3,22 @@ from datetime import datetime, timedelta
 from shimbase.database import Database, AdhocKeys
 from shimbase.sqlite3impl import SQLite3Impl
 
+from sweeper.form import Form
 from sweeper.logging import Logger
+from sweeper.table import Table
 from sweeper.utils import getSweeperConfig
 from sweeper.dbos.league import League
 from sweeper.dbos.match import Match
 from sweeper.dbos.season import Season
 
-def genForm(log:Logger, date:str, team:str):
+def genForm(log:Logger, date:str, team:str, show:bool=False):
     '''
     Generate form over the previous 6 matches for the team provided
 
     :param log: a logging object
     :param date: search date
     :param team: the subject team
+    :param show: displays any tables as HTML when True
     '''
     log.info('Generating form for date <{}> and team <{}>'.format(date, team))
 
@@ -38,22 +41,8 @@ def genForm(log:Logger, date:str, team:str):
             sys.exit(3)
 
         matches = sorted(matches1 + matches2, key=lambda m : m.getDate(), reverse=True)[0:6]
-        class Data:
-            played = 0
-            won = 0
-            drawn = 0
-            lost = 0
-            glfor = 0
-            glagn = 0
-            gldif = 0
-            points = 0
-            
-            def __repr__(self):
-               return 'P {:>2}, W {:>2}, D {:>2}, L {:>2}, ' \
-                        'F {:>3}, A {:>3}, GD {:>3}, PTS {:>3}' \
-                       .format(self.played, self.won, self.drawn, self.lost, \
-                       self.glfor, self.glagn, self.gldif, self.points)
-        form = Data()
+
+        form = Form()
         for m in matches:
             form.played += 1
             if m.getHome_Team() == team:
@@ -81,11 +70,24 @@ def genForm(log:Logger, date:str, team:str):
             else:
                 raise Exception("Wasn't expecting that!")
 
-        log.info('{} Form: {}'.format(team, form))
-        [log.info('{:<12} {:<20} ({:>2}) vs ({:>2}) {:>20}'.format( \
-                m.getDate(), m.getHome_Team(), m.getHome_Goals(), \
-                m.getAway_Goals(), m.getAway_Team())) for m in matches]
-    
+        headers = ['Team', 'P', 'W', 'D', 'L', 'F', 'A', 'GD', 'PTS']
+        schema = ['{:<20}', '{:>3}', '{:>3}', '{:>3}', '{:>3}', '{:>3}', \
+                '{:>3}', '{:>4}', '{:>4}']
+        t = Table(headers=headers, schema=schema)
+        t.append([[team, *form.asList()]])
+        log.info(t)
+
+        if show: t.asHTML(show)
+
+        headers = ['Date', 'Home Team', 'HTG', 'ATG', 'Away Team']
+        schema = ['{:<12}', '{:<20}', '{:>3}', '{:>3}', '{:>20}']
+        t = Table(headers=headers, schema=schema)
+        t.append([[m.getDate(), m.getHome_Team(), m.getHome_Goals(), \
+                m.getAway_Goals(), m.getAway_Team()] for m in matches])
+        log.info(t)
+
+        if show: t.asHTML(show)    
+
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions
 
@@ -98,4 +100,4 @@ if __name__ == '__main__':
         print('ERROR: No team provided, python genform -h for help')
         sys.exit(2)
 
-    genForm(log, sopts.date, sopts.team)
+    genForm(log, sopts.date, sopts.team, sopts.test(SweeperOptions.SHOW))

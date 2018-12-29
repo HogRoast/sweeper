@@ -4,18 +4,21 @@ from shimbase.database import Database, AdhocKeys
 from shimbase.sqlite3impl import SQLite3Impl
 
 from sweeper.logging import Logger
+from sweeper.table import Table
 from sweeper.utils import getSweeperConfig
 from sweeper.dbos.match import Match
 from sweeper.dbos.rating import Rating
 from sweeper.dbos.statistics import Statistics
 
-def presentFixtures(log:Logger, algoId:int, date:str, league:str=None):
+def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
+        show:bool=False):
     '''
     Present the latest set of fixtures with all the appropriate ratings.
 
     :param log: a logging object
     :param date: include all fixtures from this date and onward
-    :param team: the subject league, None signifies all available leagues 
+    :param league: the subject league, None signifies all available leagues 
+    :param show: displays any tables as HTML when True
     '''
     log.info('Presenting fixtures for algo <{}>, date <{}> and league <{}>\
             '.format(algoId, date, league if league else 'ALL'))
@@ -79,10 +82,17 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None):
                 and r.getLeague() == s.getLeague()], ratings)
         presentation = zip(fixtures, analytics)
 
-        [log.info('{:<12} {:<20} vs {:>20} {:>3} {:>4} {:>4} {:>4.3}% {:>4.3}'\
-                ''.format(f.getDate(), f.getHome_Team(), f.getAway_Team(), \
-                r.getMark(), mf, hf, hp, ho)) \
-                for f, [(r, (mf, hf, hp, ho))] in presentation]
+        headers = ['Date', 'Home Team', 'Away Team', 'Mark', 'M#', 'H#', \
+                'H%', 'HO']
+        schema = ['{:<12}', '{:<20}', '{:>20}', '{:>4}', '{:>4}', \
+                '{:>4}', '{:>5.3}', '{:>5.3}']
+        t = Table(headers=headers, schema=schema)
+        t.append([[f.getDate(), f.getHome_Team(), f.getAway_Team(), \
+                r.getMark(), mf, hf, hp, ho] \
+                for f, [(r, (mf, hf, hp, ho))] in presentation])
+        log.info(t)
+
+        if show: t.asHTML(show)
     
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions
@@ -96,6 +106,9 @@ if __name__ == '__main__':
         print('ERROR: No fixture date provided, python presentfixtures ' \
                 '-h for help')
         sys.exit(2)
+
     league = None
     if sopts.test(SweeperOptions.LEAGUE): league = sopts.leagueMnemonic
-    presentFixtures(log, sopts.algoId, sopts.date, league)
+
+    presentFixtures(log, sopts.algoId, sopts.date, league, \
+            sopts.test(SweeperOptions.SHOW))

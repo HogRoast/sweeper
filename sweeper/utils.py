@@ -7,15 +7,16 @@ class SweeperArgsError(Exception):
         self.msg = msg
 
 class SweeperOptions:
-    DEBUG_LOGGING       = 0b000000001
-    CURRENT_SEASON_ONLY = 0b000000010
-    ALGO                = 0b000000100
-    LEAGUE              = 0b000001000
-    SEASON              = 0b000010000
-    LOWER_BOUND         = 0b000100000
-    UPPER_BOUND         = 0b001000000
-    DATE                = 0b010000000
-    TEAM                = 0b100000000
+    DEBUG_LOGGING       = 0b0000000001
+    CURRENT_SEASON_ONLY = 0b0000000010
+    ALGO                = 0b0000000100
+    LEAGUE              = 0b0000001000
+    SEASON              = 0b0000010000
+    LOWER_BOUND         = 0b0000100000
+    UPPER_BOUND         = 0b0001000000
+    DATE                = 0b0010000000
+    TEAM                = 0b0100000000
+    SHOW                = 0b1000000000
 
     validOpts = [
             DEBUG_LOGGING,
@@ -26,7 +27,8 @@ class SweeperOptions:
             LOWER_BOUND,
             UPPER_BOUND,
             DATE,
-            TEAM
+            TEAM,
+            SHOW
             ]
 
     def __init__(self):
@@ -67,6 +69,7 @@ def getSweeperOptions(log, opts):
                 '   ALL\n'\
                 '         -d             : enable debug logging\n' \
                 '         -h             : display help\n' \
+                '         --show         : show any tables as html\n' \
                 '   analysematches\n' \
                 '       * -a  <id>       : algo to apply\n' \
                 '       * -l  <mnemonic> : subject league\n' \
@@ -106,6 +109,8 @@ def getSweeperOptions(log, opts):
             sopts._set(SweeperOptions.DEBUG_LOGGING)
         if '-c' in opts:
             sopts._set(SweeperOptions.CURRENT_SEASON_ONLY)
+        if '--show' in opts:
+            sopts._set(SweeperOptions.SHOW)
         try:
             if '-a' in opts:
                 idx = opts.index('-a')
