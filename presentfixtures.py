@@ -67,17 +67,22 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None):
             log.critical('Because...{}'.format(e))
             sys.exit(5)
 
-        analytics = map(lambda r : [(r, s) for s in stats \
+        def statsSummary(s:Statistics):
+            homeF = s.getHome_Freq()
+            markF = s.getMark_Freq()
+            homeP = (homeF / markF) * 100.0
+            homeO = 100.0 / homeP
+            return markF, homeF, homeP, homeO
+
+        analytics = map(lambda r : [(r, statsSummary(s)) for s in stats \
                 if r.getMark() == s.getMark() \
                 and r.getLeague() == s.getLeague()], ratings)
         presentation = zip(fixtures, analytics)
 
-        def statsSummary(s:Statistics):
-            homeWins = s.getMark_Freq() * (s.getHome_Freq() / 100.0)
-        [log.info('{:<12} {:<20} vs {:>20} {:>3} {:>4} {:>4.3}%'.format( \
-                f.getDate(), f.getHome_Team(), f.getAway_Team(), \
-                r.getMark(), statsSummary(s))) \
-                for f, [(r, s)] in presentation]
+        [log.info('{:<12} {:<20} vs {:>20} {:>3} {:>4} {:>4} {:>4.3}% {:>4.3}'\
+                ''.format(f.getDate(), f.getHome_Team(), f.getAway_Team(), \
+                r.getMark(), mf, hf, hp, ho)) \
+                for f, [(r, (mf, hf, hp, ho))] in presentation]
     
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions

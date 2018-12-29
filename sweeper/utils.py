@@ -70,7 +70,7 @@ def getSweeperOptions(log, opts):
                 '   analysematches\n' \
                 '       * -a  <id>       : algo to apply\n' \
                 '       * -l  <mnemonic> : subject league\n' \
-                '       * -s  <season>   : subject season\n' \
+                '         -s  <season>   : subject season, all if unset\n' \
                 '   analysestatistics\n' \
                 '       * -a  <id>       : algo to apply\n' \
                 '       * -l  <mnemonic> : subject league\n' \

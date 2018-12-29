@@ -13,17 +13,17 @@ from sweeper.dbos.algo import Algo
 from sweeper.dbos.league import League
 from sweeper.dbos.season import Season
 
-def analyseMatches(log:Logger, algoId:int, league:str, season:str):
+def analyseMatches(log:Logger, algoId:int, league:str, season:str=None):
     '''
     Mark all unmarked matches
 
     :param log: a logging object
     :param algoId: the algo to apply
     :param league: the league to apply the algo over
-    :param season: the season to apply the algo over
+    :param season: the season to apply the algo over, None means ALL
     '''
     log.info('Analysing matches for league <{}>, season <{}> with algo <{}>'\
-            .format(league, season, algoId))
+            .format(league, season if season else 'ALL', algoId))
 
     config = getSweeperConfig()
     dbName = config['dbName']
@@ -42,7 +42,7 @@ def analyseMatches(log:Logger, algoId:int, league:str, season:str):
             log.critical('No league matching the provided mnemonic exists')
             sys.exit(5)
         try:
-            season = db.select(Season(season))[0]
+            if season: season = db.select(Season(season))[0]
         except:
             log.critical('No season matching the provided season exists')
             sys.exit(6)
@@ -53,8 +53,11 @@ def analyseMatches(log:Logger, algoId:int, league:str, season:str):
         log.info('Found {} ratings for algo {}'.format(len(ratedMatchKeys), \
                 algoId))
 
-        keys = {'league' : league.getMnemonic(), '>date' : \
-                season.getL_Bnd_Date(), '<date' : season.getU_Bnd_Date()}
+        if season:
+            keys = {'league' : league.getMnemonic(), '>date' : \
+                    season.getL_Bnd_Date(), '<date' : season.getU_Bnd_Date()}
+        else:
+            keys = {'league' : league.getMnemonic()}
         order = {'>date'}
         matches = [m for m in db.select(Match.createAdhoc(keys, order)) \
                 if m._keys not in ratedMatchKeys]
@@ -83,8 +86,8 @@ if __name__ == '__main__':
     if not sopts.test(SweeperOptions.LEAGUE):
         print('ERROR: No league provided, python analysematches -h for help')
         sys.exit(2)
-    if not sopts.test(SweeperOptions.SEASON):
-        print('ERROR: No season provided, python analysematches -h for help')
-        sys.exit(3)
+    season = None
+    if sopts.test(SweeperOptions.SEASON):
+        season = sopts.season
 
-    analyseMatches(log, sopts.algoId, sopts.leagueMnemonic, sopts.season)
+    analyseMatches(log, sopts.algoId, sopts.leagueMnemonic, season)
