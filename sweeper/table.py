@@ -6,6 +6,20 @@ class InvTableDefn(Exception):
     pass
     
 class Table:
+    STYLE = '<html>'\
+            '<head>'\
+            '<style>'\
+            'table, th, td {'\
+            '  border: 1px solid black;'\
+            '  border-collapse: collapse;'\
+            '}'\
+            'th, td {'\
+            '  padding: 2px;'\
+            '}'\
+            '</style>'\
+            '</head>'\
+            '<body>'
+
     def __init__(self, headers:list=None, schema:list=None, rows:list=None):
         self._headers = headers
         self._schema = schema
@@ -50,9 +64,13 @@ class Table:
         if self._headers:
             s += ss.format(*self._headers)
             s = s.replace('td>', 'th>')
+        # if schema has alignment formatting then convert this to HTML but only
+        # for data cells
+        ss = ss.replace('<td>{:>', '<td align="right">{:>')
+        ss = ss.replace('<td>{:<', '<td align="left">{:<')
         for r in self._rows:
             s += ss.format(*r)
-        s = '<table border=3>{}</table>'.format(s)
+        s = '{}<table>{}</table>'.format(Table.STYLE, s)
 
         if show:
             fd, name = tempfile.mkstemp(suffix='.html', text=True)
