@@ -84,6 +84,7 @@ def genForm(log:Logger, date:str, team:str, show:bool=False):
         t = Table(headers=headers, schema=schema)
         t.append([[m.getDate(), m.getHome_Team(), m.getHome_Goals(), \
                 m.getAway_Goals(), m.getAway_Team()] for m in matches])
+        t.addHighlight((team, False))
         log.info(t)
 
         if show: t.asHTML(show)    

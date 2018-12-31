@@ -20,10 +20,12 @@ class Table:
             '</head>'\
             '<body>'
 
-    def __init__(self, headers:list=None, schema:list=None, rows:list=None):
+    def __init__(self, headers:list=None, schema:list=None, rows:list=None,\
+            highlights:list=None):
         self._headers = headers
         self._schema = schema
         self._rows = rows if rows else []
+        self._highlights = self.setHighlights(highlights) if highlights else []
         self._validate()
 
     def _validate(self):
@@ -69,7 +71,14 @@ class Table:
         ss = ss.replace('<td>{:>', '<td align="right">{:>')
         ss = ss.replace('<td>{:<', '<td align="left">{:<')
         for r in self._rows:
-            s += ss.format(*r)
+            sss = ss.format(*r)
+            for (text, wholeRow) in self._highlights:
+                if wholeRow:
+                    sss = sss.replace('<tr>', '<tr bgcolor="yellow">')
+                else:
+                    sss = sss.replace(text, '<span style="background-color'\
+                            ':yellow">{}</span>'.format(text))
+            s += sss
         s = '{}<table>{}</table>'.format(Table.STYLE, s)
 
         if show:
@@ -102,6 +111,16 @@ class Table:
         self._rows = rows
         self._validate()
 
+    def addHighlight(self, highlight):
+        if len(highlight) == 2:
+            self._highlights.append(highlight)
+
+    def setHighlights(self, highlights):
+        [self.addHighlight(hl) for hl in highlights]
+
+    def getHighlights(self):
+        return self._highlights
+
     def getColumns(self):
         if not self._rows: return []
         return [[r[i] for r in self._rows] for i in range(len(self._rows[0]))]
@@ -119,7 +138,14 @@ class Table:
             s += '\n' + ('-' * len(s)) + '\n'
         ss += '\n'
         for r in self._rows:
-            s += ss.format(*r)
+            sss = ss.format(*r)
+            for (text, wholeRow) in self._highlights:
+                if wholeRow:
+                    sss = '\033[1m{}\033[0m'.format(sss)
+                else:
+                    sss = sss.replace(text, '\033[1m{}\033[0m'.format(text))
+            s += sss
+
         return s
 
 if __name__ == '__main__':
