@@ -13,17 +13,18 @@ from sweeper.dbos.algo import Algo
 from sweeper.dbos.league import League
 from sweeper.dbos.season import Season
 
-def analyseMatches(log:Logger, algoId:int, league:str, season:str=None):
+def analyseMatches(log:Logger, algoId:int, league:str=None, season:str=None):
     '''
     Mark all unmarked matches
 
     :param log: a logging object
     :param algoId: the algo to apply
-    :param league: the league to apply the algo over
+    :param league: the league to apply the algo over, None means ALL
     :param season: the season to apply the algo over, None means ALL
     '''
     log.info('Analysing matches for league <{}>, season <{}> with algo <{}>'\
-            .format(league, season if season else 'ALL', algoId))
+            .format(league if league else 'ALL', season if season else 'ALL',\
+            algoId))
 
     config = getSweeperConfig()
     dbName = config['dbName']
@@ -35,17 +36,20 @@ def analyseMatches(log:Logger, algoId:int, league:str, season:str=None):
             algo = AlgoFactory.create(algo.getName())
         except:
             log.critical('No algo matching the provided id exists')
-            sys.exit(4)
+            sys.exit(2)
         try:
-            league = db.select(League(league))[0]
+            if league: 
+                leagues = db.select(League(league))
+            else:
+                leagues = db.select(League())
         except:
             log.critical('No league matching the provided mnemonic exists')
-            sys.exit(5)
+            sys.exit(3)
         try:
             if season: season = db.select(Season(season))[0]
         except:
             log.critical('No season matching the provided season exists')
-            sys.exit(6)
+            sys.exit(4)
 
         ratings = db.select(Rating(algo_id=algoId))
         ratedMatchKeys = [MatchKeys(r.getMatch_Date(), r.getLeague(), \
@@ -53,27 +57,29 @@ def analyseMatches(log:Logger, algoId:int, league:str, season:str=None):
         log.info('Found {} ratings for algo {}'.format(len(ratedMatchKeys), \
                 algoId))
 
-        if season:
-            keys = {'league' : league.getMnemonic(), '>date' : \
-                    season.getL_Bnd_Date(), '<date' : season.getU_Bnd_Date()}
-        else:
-            keys = {'league' : league.getMnemonic()}
-        order = {'>date'}
-        matches = [m for m in db.select(Match.createAdhoc(keys, order)) \
-                if m._keys not in ratedMatchKeys]
-        log.info('{} {} matches found unmarked'.format(len(matches), \
-                league.getMnemonic()))
+        for league in leagues:
+            if season:
+                keys = {'league' : league.getMnemonic(), \
+                        '>date' : season.getL_Bnd_Date(), \
+                        '<date' : season.getU_Bnd_Date()}
+            else:
+                keys = {'league' : league.getMnemonic()}
+            order = {'>date'}
+            matches = [m for m in db.select(Match.createAdhoc(keys, order)) \
+                    if m._keys not in ratedMatchKeys]
+            log.info('{} {} matches found unmarked'.format(len(matches), \
+                    league.getMnemonic()))
 
-        for i in range(len(matches)):
-            m = matches[i]
-            hTeamMatches = [hm for hm in matches[i+1:] if m.getHome_Team() \
-                    in (hm.getHome_Team(), hm.getAway_Team())]
-            aTeamMatches = [am for am in matches[i+1:] if m.getAway_Team() \
-                    in (am.getHome_Team(), am.getAway_Team())]
-            mark = algo.markMatch(m, hTeamMatches, aTeamMatches)
-            if mark is not None:
-                db.upsert(Rating(m.getDate(), m.getLeague(), m.getHome_Team(), \
-                        m.getAway_Team(), algoId, mark))
+            for i in range(len(matches)):
+                m = matches[i]
+                hTeamMatches = [hm for hm in matches[i+1:] if m.getHome_Team() \
+                        in (hm.getHome_Team(), hm.getAway_Team())]
+                aTeamMatches = [am for am in matches[i+1:] if m.getAway_Team() \
+                        in (am.getHome_Team(), am.getAway_Team())]
+                mark = algo.markMatch(m, hTeamMatches, aTeamMatches)
+                if mark is not None:
+                    db.upsert(Rating(m.getDate(), m.getLeague(), \
+                            m.getHome_Team(), m.getAway_Team(), algoId, mark))
 
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions
@@ -83,11 +89,6 @@ if __name__ == '__main__':
     if not sopts.test(SweeperOptions.ALGO):
         print('ERROR: No algo id provided, python analysematches -h for help')
         sys.exit(1)
-    if not sopts.test(SweeperOptions.LEAGUE):
-        print('ERROR: No league provided, python analysematches -h for help')
-        sys.exit(2)
-    season = None
-    if sopts.test(SweeperOptions.SEASON):
-        season = sopts.season
-
-    analyseMatches(log, sopts.algoId, sopts.leagueMnemonic, season)
+    league = sopts.leagueMnemonic if sopts.test(SweeperOptions.LEAGUE) else None
+    season = sopts.season if sopts.test(SweeperOptions.SEASON) else None
+    analyseMatches(log, sopts.algoId, league, season)

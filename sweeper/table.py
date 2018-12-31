@@ -52,7 +52,7 @@ class Table:
             s = s.replace('td>', 'th>')
         for r in self._rows:
             s += ss.format(*r)
-        s = '<table border=3>' + s
+        s = '<table border=3>{}</table>'.format(s)
 
         if show:
             fd, name = tempfile.mkstemp(suffix='.html', text=True)

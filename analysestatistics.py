@@ -1,3 +1,4 @@
+import itertools
 import matplotlib.pyplot as plt
 import sys
 from scipy import stats
@@ -19,16 +20,18 @@ def createPlot(
     plt.show()
 
 def analyseStatistics(
-        log:Logger, algoId:int, league:str, lbnd:int=None, ubnd:int=None):
+        log:Logger, algoId:int, league:str=None, lbnd:int=None, ubnd:int=None):
     '''
     Analyse statistics for the algo and league combination
 
     :param log: a logging object
     :param algoId: the algo subject
-    :param league: the league subject
+    :param league: the league subject, all if unset
+    :param lbnd: include marks above this value
+    :param ubnd: include marks below this value
     '''
-    log.info('Analysing statistics for ' \
-            'league <{}> with algo <{}>'.format(league, algoId))
+    log.info('Analysing statistics for league <{}> with algo <{}>'\
+            .format(league if league else 'ALL', algoId))
 
     config = getSweeperConfig()
     dbName = config['dbName']
@@ -36,42 +39,52 @@ def analyseStatistics(
 
     with Database(dbName, SQLite3Impl()) as db, db.transaction() as t:     
         try:
-            if None in (lbnd, ubnd):
-                keys = {'algo_id' : algoId, 'league' : league}
-            else:
-                keys = {'algo_id' : algoId, 'league' : league, '>mark' : lbnd, \
-                        '<mark' : ubnd}
-            statistics = db.select(Statistics.createAdhoc(keys)) 
+            keys = {'algo_id' : algoId}
+            order = None
+            if league: 
+                keys.update({'league' : league})
+                order = ['>league']
+            if lbnd and ubnd: keys.update({'>mark' : lbnd, '<mark' : ubnd})
+            statistics = db.select(Statistics.createAdhoc(keys, order)) 
         except:
             log.critical('No statistics matching the provided algo and ' \
                     'league exists')
-            sys.exit(3)
+            sys.exit(2)
 
-        x = [s.getMark() for s in statistics]
-        hY = [s.getHome_Freq() / s.getMark_Freq() * 100 for s in statistics]
-        hF = [s.getHome_Freq() for s in statistics]
-        dY = [s.getDraw_Freq() / s.getMark_Freq() * 100 for s in statistics]
-        dF = [s.getDraw_Freq() for s in statistics]
-        aY = [s.getAway_Freq() / s.getMark_Freq() * 100 for s in statistics]
-        aF = [s.getAway_Freq() for s in statistics]
+        for league, group in itertools.groupby(\
+                statistics, lambda x : x.getLeague()):
+            statsGrp = list(group)
+            x = [s.getMark() for s in statsGrp if s.getMark_Freq() > 0]
+            hY = [s.getHome_Freq() / s.getMark_Freq() * 100 \
+                    for s in statsGrp if s.getMark_Freq() > 0]
+            hF = [s.getHome_Freq() for s in statsGrp if s.getMark_Freq() > 0]
+            dY = [s.getDraw_Freq() / s.getMark_Freq() * 100 \
+                    for s in statsGrp if s.getMark_Freq() > 0]
+            dF = [s.getDraw_Freq() for s in statsGrp if s.getMark_Freq() > 0]
+            aY = [s.getAway_Freq() / s.getMark_Freq() * 100 \
+                    for s in statsGrp if s.getMark_Freq() > 0]
+            aF = [s.getAway_Freq() for s in statsGrp if s.getMark_Freq() > 0]
+         
+            slope, intercept, r, p, stderr = stats.linregress(x, hY)
+            r2 = r**2
+            log.info('{:>4} Home: {:>4.2f} {:>4.2f} {:>4.2} {:>4.2f} ' \
+                    '{:>4.2f} {:>4.2}'.format(league, slope, intercept, p, \
+                    r, r2, stderr))
+            createPlot(x, hY, hF, intercept, slope, league + ' home')
 
-        slope, intercept, r, p, stderr = stats.linregress(x, hY)
-        r2 = r**2
-        log.info('Home: {:>4.2f} {:>4.2f} {:>4.2} {:>4.2f} {:>4.2f} ' \
-                    '{:>4.2}'.format(slope, intercept, p, r, r2, stderr))
-        createPlot(x, hY, hF, intercept, slope, 'home')
-
-        slope, intercept, r, p, stderr = stats.linregress(x, dY)
-        r2 = r**2
-        log.info('Draw: {:>4.2f} {:>4.2f} {:>4.2} {:>4.2f} {:>4.2f} ' \
-                    '{:>4.2}'.format(slope, intercept, p, r, r2, stderr))
-        createPlot(x, dY, dF, intercept, slope, 'draw')
-        
-        slope, intercept, r, p, stderr = stats.linregress(x, aY)
-        r2 = r**2
-        log.info('Away: {:>4.2f} {:>4.2f} {:>4.2} {:>4.2f} {:>4.2f} ' \
-                    '{:>4.2}'.format(slope, intercept, p, r, r2, stderr))
-        createPlot(x, aY, aF, intercept, slope, 'away')
+            slope, intercept, r, p, stderr = stats.linregress(x, dY)
+            r2 = r**2
+            log.info('{:>4} Draw: {:>4.2f} {:>4.2f} {:>4.2} {:>4.2f} ' \
+                    '{:>4.2f} {:>4.2}'.format(league, slope, intercept, p, \
+                    r, r2, stderr))
+            createPlot(x, dY, dF, intercept, slope, league + ' draw')
+            
+            slope, intercept, r, p, stderr = stats.linregress(x, aY)
+            r2 = r**2
+            log.info('{:>4} Away: {:>4.2f} {:>4.2f} {:>4.2} {:>4.2f} ' \
+                    '{:>4.2f} {:>4.2}'.format(league, slope, intercept, p, \
+                    r, r2, stderr))
+            createPlot(x, aY, aF, intercept, slope, league + ' away')
 
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions
@@ -82,10 +95,8 @@ if __name__ == '__main__':
         print('ERROR: No algo id provided, python analysestatistics ' \
                 '-h for help')
         sys.exit(1)
-    if not sopts.test(SweeperOptions.LEAGUE):
-        print('ERROR: No league provided, python analysestatistics -h for help')
-        sys.exit(2)
-
+    league = sopts.leagueMnemonic if sopts.test(SweeperOptions.LEAGUE) else None
     lbnd = sopts.lowerBound if sopts.test(SweeperOptions.LOWER_BOUND) else None
     ubnd = sopts.upperBound if sopts.test(SweeperOptions.UPPER_BOUND) else None
-    analyseStatistics(log, sopts.algoId, sopts.leagueMnemonic, lbnd, ubnd)
+
+    analyseStatistics(log, sopts.algoId, league, lbnd, ubnd)

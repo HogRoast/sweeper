@@ -72,11 +72,11 @@ def getSweeperOptions(log, opts):
                 '         --show         : show any tables as html\n' \
                 '   analysematches\n' \
                 '       * -a  <id>       : algo to apply\n' \
-                '       * -l  <mnemonic> : subject league\n' \
+                '         -l  <mnemonic> : subject league, all if unset\n' \
                 '         -s  <season>   : subject season, all if unset\n' \
                 '   analysestatistics\n' \
                 '       * -a  <id>       : algo to apply\n' \
-                '       * -l  <mnemonic> : subject league\n' \
+                '         -l  <mnemonic> : subject league, all if unset\n' \
                 '         -lb <int>      : lower bound mark\n' \
                 '         -ub <int>      : upper bound mark\n' \
                 '   genform\n' \
@@ -88,7 +88,7 @@ def getSweeperOptions(log, opts):
                 '         -dt <date>     : generate up to date YYYY-MM-DD\n' \
                 '   genstats\n' \
                 '       * -a  <id>       : algo to apply\n' \
-                '       * -l  <mnemonic> : subject league\n' \
+                '         -l  <mnemonic> : subject league, all if unset\n' \
                 '   presentfixtures\n' \
                 '       * -a  <id>       : algo ratings to present\n' \
                 '       * -dt <date>     : fixtures date onward YYYY-MM-DD\n' \
