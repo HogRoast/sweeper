@@ -30,10 +30,10 @@ class GoalsScoredSupremacy(BaseModel):
         :matches: a list of historical matches
         :returns: the number of goals scored by team in matches
         '''
-        return  sum([m.getHome_Goals() for m in matches[:self.numMatches] \
+        return  sum([m.getHome_Goals() for m in matches \
                     if team == m.getHome_Team()]) \
                 + \
-                sum([m.getAway_Goals() for m in matches[:self.numMatches] \
+                sum([m.getAway_Goals() for m in matches \
                     if team == m.getAway_Team()])
 
     def markMatch(self, match:Match, homePrev:list, awayPrev:list):

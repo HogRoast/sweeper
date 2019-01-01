@@ -1,3 +1,4 @@
+import itertools
 import sys
 from datetime import datetime, timedelta
 from shimbase.database import Database, AdhocKeys
@@ -6,6 +7,7 @@ from shimbase.sqlite3impl import SQLite3Impl
 from sweeper.logging import Logger
 from sweeper.table import Table
 from sweeper.utils import getSweeperConfig
+from sweeper.dbos.algo_config import Algo_Config
 from sweeper.dbos.match import Match
 from sweeper.dbos.rating import Rating
 from sweeper.dbos.statistics import Statistics
@@ -32,7 +34,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
         try:
             keys = {'>date' : dt.strftime('%Y-%m-%d'), 'result' : ''}
             if league: keys.update({'league' : league})
-            order = ['<date']
+            order = ['<league', '<date']
             fixtures = db.select(Match.createAdhoc(keys, order))
             if not fixtures: raise Exception('No fixtures')
         except Exception as e:
@@ -45,7 +47,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             del keys['result']
             keys.update({'>match_date' : keys.pop('>date')})
             keys.update({'algo_id' : algoId})
-            order = ['<match_date']
+            order = ['<league', '<match_date']
             ratings = db.select(Rating.createAdhoc(keys, order))
             log.debug('Num fixtures {}, ratings {}'.format(len(fixtures), \
                     len(ratings)))
@@ -71,28 +73,51 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             sys.exit(5)
 
         def statsSummary(s:Statistics):
-            homeF = s.getHome_Freq()
             markF = s.getMark_Freq()
+            homeF = s.getHome_Freq()
             homeP = (homeF / markF) * 100.0
             homeO = 100.0 / homeP
-            return markF, homeF, homeP, homeO
+            drawF = s.getDraw_Freq()
+            drawP = (drawF / markF) * 100.0
+            drawO = 100.0 / drawP
+            awayF = s.getAway_Freq()
+            awayP = (awayF / markF) * 100.0
+            awayO = 100.0 / awayP
+            return markF, homeF, homeP, homeO, drawF, drawP, drawO, awayF, \
+                    awayP, awayO
 
         analytics = map(lambda r : [(r, statsSummary(s)) for s in stats \
                 if r.getMark() == s.getMark() \
                 and r.getLeague() == s.getLeague()], ratings)
         presentation = zip(fixtures, analytics)
 
-        headers = ['Date', 'Home Team', 'Away Team', 'Mark', 'M#', 'H#', \
-                'H%', 'HO']
-        schema = ['{:<12}', '{:<20}', '{:>20}', '{:>4}', '{:>4}', \
-                '{:>4}', '{:>5.3}', '{:>5.3}']
-        t = Table(headers=headers, schema=schema)
-        t.append([[f.getDate(), f.getHome_Team(), f.getAway_Team(), \
-                r.getMark(), mf, hf, hp, ho] \
-                for f, [(r, (mf, hf, hp, ho))] in presentation])
-        log.info(t)
+        for league, group in itertools.groupby(presentation, \
+                lambda x : x[0].getLeague()):
+            try:
+                keys = {'league' : league}
+                order = ['>config_date']
+                algoCfg = db.select(Algo_Config.createAdhoc(keys, order))[0]
+            except Exception as e:
+                log.critical("Couldn't find algo config for league")
+                log.critical('Because...{}'.format(e))
+                sys.exit(6)
+            presGrp = list(group)
+            headers = ['Date', 'Lge', 'Home Team', 'Away Team', 'Mark', 'M#', \
+                    'H#', 'H%', 'HO', 'D#', 'D%', 'D0', 'A#', 'A%', 'A0']
+            schema = ['{:<12}', '{:>4}', '{:<20}', '{:>20}', '{:>4}', '{:>4}', \
+                    '{:>4}', '{:>5.3}', '{:>5.3}', '{:>4}', '{:>5.3}', \
+                    '{:>5.3}', '{:>4}', '{:>5.3}', '{:>5.3}']
+            t = Table(headers=headers, schema=schema)
+            t.append([[f.getDate(), league, f.getHome_Team(), \
+                    f.getAway_Team(), r.getMark(), *a] \
+                    for f, [(r, a)] in presGrp])
+            t.setHighlights([[f.getHome_Team(), True] \
+                    for f, [(r, a)] in presGrp \
+                    if r.getMark() > algoCfg.getL_Bnd_Mark() \
+                    and r.getMark() < algoCfg.getU_Bnd_Mark()])
+            log.info(t)
 
-        if show: t.asHTML(show)
+            if show: t.asHTML(show)
     
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions

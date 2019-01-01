@@ -64,18 +64,18 @@ def analyseMatches(log:Logger, algoId:int, league:str=None, season:str=None):
                         '<date' : season.getU_Bnd_Date()}
             else:
                 keys = {'league' : league.getMnemonic()}
-            order = {'>date'}
-            matches = [m for m in db.select(Match.createAdhoc(keys, order)) \
-                    if m._keys not in ratedMatchKeys]
-            log.info('{} {} matches found unmarked'.format(len(matches), \
+            order = ['>league', '>date']
+            matches = db.select(Match.createAdhoc(keys, order))
+            unmarked = list(filter(lambda x : x._keys not in ratedMatchKeys, \
+                    matches))
+            results = list(filter(lambda x : x.getResult() != '', matches))
+            log.info('{} {} matches found unmarked'.format(len(unmarked), \
                     league.getMnemonic()))
-
-            for i in range(len(matches)):
-                m = matches[i]
-                hTeamMatches = [hm for hm in matches[i+1:] if m.getHome_Team() \
-                        in (hm.getHome_Team(), hm.getAway_Team())]
-                aTeamMatches = [am for am in matches[i+1:] if m.getAway_Team() \
-                        in (am.getHome_Team(), am.getAway_Team())]
+            for m in unmarked:
+                hTeamMatches = list(filter(lambda x : m.getHome_Team() in \
+                        (x.getHome_Team(), x.getAway_Team()), results))
+                aTeamMatches = list(filter(lambda x : m.getAway_Team() in \
+                        (x.getHome_Team(), x.getAway_Team()), results))
                 mark = algo.markMatch(m, hTeamMatches, aTeamMatches)
                 if mark is not None:
                     db.upsert(Rating(m.getDate(), m.getLeague(), \

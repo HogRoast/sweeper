@@ -150,3 +150,14 @@ CREATE TABLE source_season_map (
     primary key (source_id, season)
 );
 
+DROP TABLE algo_config;
+CREATE TABLE algo_config (
+    config_date text not null, 
+    algo_id integer not null, 
+    league varchar(4) not null,
+    l_bnd_mark integer not null,
+    u_bnd_mark integer not null,
+    foreign key (algo_id) references algo(id),
+    foreign key (league) references league(mnemonic),
+    primary key (config_date, algo_id, league)
+);

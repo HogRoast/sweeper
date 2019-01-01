@@ -44,29 +44,30 @@ def genStats(log:Logger, algoId:int, league:str=None):
             sys.exit(4)
 
         for league in leagues:
-            keys = {'league' : league.getMnemonic()}
-            order = ['>date']
-            matches = db.select(Match.createAdhoc(keys, order))
-            hMatchKeys = [m._keys for m in matches if m.getResult() == 'H']
-            dMatchKeys = [m._keys for m in matches if m.getResult() == 'D']
-            aMatchKeys = [m._keys for m in matches if m.getResult() == 'A']
+            stats = {}
 
-            ratings = db.select(Rating(algo_id=algoId)) 
-            for mark in set([r.getMark() for r in ratings]):
-                hRatings = [r for r in ratings if mark == r.getMark() and \
-                        MatchKeys(r.getMatch_Date(), r.getLeague(), \
-                        r.getHome_Team(), r.getAway_Team()) in hMatchKeys]
-                dRatings = [r for r in ratings if mark == r.getMark() and \
-                        MatchKeys(r.getMatch_Date(), r.getLeague(), \
-                        r.getHome_Team(), r.getAway_Team()) in dMatchKeys]
-                aRatings = [r for r in ratings if mark == r.getMark() and \
-                        MatchKeys(r.getMatch_Date(), r.getLeague(), \
-                        r.getHome_Team(), r.getAway_Team()) in aMatchKeys]
-                totRatings = len(hRatings) + len(dRatings) + len(aRatings)
+            def getStatisticsForResult(result, setfn, getfn):
+                keys = {'league' : league.getMnemonic(), 'result' : result}
+                order = ['>date']
+                for m in db.select(Match.createAdhoc(keys, order)):
+                    rating = db.select(Rating(m.getDate(), m.getLeague(), 
+                            m.getHome_Team(), m.getAway_Team(), algoId))[0]
+                    mark = rating.getMark()
+                    s = stats.get(mark, Statistics(str(datetime.now().date()), 
+                        algoId, league.getMnemonic(), mark, 0, 0, 0, 0))
+                    s.setMark_Freq(s.getMark_Freq() + 1)
+                    setfn(s, getfn(s) + 1)
+                    stats[mark] = s
 
-                db.upsert(Statistics(str(datetime.now().date()), algoId, \
-                        league.getMnemonic(), mark, totRatings, len(hRatings), \
-                        len(aRatings), len(dRatings)))
+            getStatisticsForResult('H', Statistics.setHome_Freq, 
+                    Statistics.getHome_Freq)
+            getStatisticsForResult('D', Statistics.setDraw_Freq, 
+                    Statistics.getDraw_Freq)
+            getStatisticsForResult('A', Statistics.setAway_Freq, 
+                    Statistics.getAway_Freq)
+
+            for k, v in stats.items():
+                db.upsert(v)
         
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions

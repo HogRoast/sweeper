@@ -14,7 +14,7 @@ class Table:
             '  border-collapse: collapse;'\
             '}'\
             'th, td {'\
-            '  padding: 2px;'\
+            '  padding: 5px;'\
             '}'\
             '</style>'\
             '</head>'\
@@ -73,7 +73,7 @@ class Table:
         for r in self._rows:
             sss = ss.format(*r)
             for (text, wholeRow) in self._highlights:
-                if wholeRow:
+                if wholeRow and text in sss:
                     sss = sss.replace('<tr>', '<tr bgcolor="yellow">')
                 else:
                     sss = sss.replace(text, '<span style="background-color'\
@@ -140,7 +140,7 @@ class Table:
         for r in self._rows:
             sss = ss.format(*r)
             for (text, wholeRow) in self._highlights:
-                if wholeRow:
+                if wholeRow and text in sss:
                     sss = '\033[1m{}\033[0m'.format(sss)
                 else:
                     sss = sss.replace(text, '\033[1m{}\033[0m'.format(text))
@@ -154,6 +154,7 @@ if __name__ == '__main__':
     t = Table(headers=['1st', '2nd', '3rd'], schema=['{:>4}', '{:>5}', '{:>3}'])
     t.append([[1, 2, 3], [4, 5, 6]])
     t.append([[7, 8, 'dfd']])
+    t.setHighlights([['dfd', True]])
     print(t.getRows())
     print(t.getColumns())
     print(t)

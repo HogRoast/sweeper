@@ -9,3 +9,13 @@ INSERT INTO league values
     ('SP1', 'Spanish La Liga', 'The Spanish La Liga (Primera Division)');
 
 INSERT INTO algo values (1, 'GoalsScoredSupremacy', 'Home team total goals scored - away team total goals scored over last 6 matches');
+
+INSERT INTO algo_config values 
+    ('2018-10-31', 1, 'E0', -1, 6),
+    ('2018-10-31', 1, 'E1', 0, 0),
+    ('2018-10-31', 1, 'D1', 2, 8),
+    ('2018-10-31', 1, 'B1', 0, 0),
+    ('2018-10-31', 1, 'SC0', 0, 0),
+    ('2018-10-31', 1, 'I1', 0, 0),
+    ('2018-10-31', 1, 'F1', 0, 0),
+    ('2018-10-31', 1, 'SP1', 0, 0);
