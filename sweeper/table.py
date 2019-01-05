@@ -58,13 +58,13 @@ class Table:
         if self._schema:
             ss = '<tr><td>{}</td></tr>'.format('</td><td>'.join(self._schema))
         elif self._headers:
-            ss = '<tr><td>{}</td></tr>'.format(\
-                    ('{}</td><td>' * len(self._headers))[:-9])
+            ss = '<tr><th>{}</th></tr>'.format(\
+                    ('{}</th><th>' * len(self._headers[0]))[:-9])
         elif self._rows:
             ss = '<tr><td>{}</td></tr>'.format(\
                     ('{}</td><td>' * len(self._rows[0]))[:-9])
         if self._headers:
-            s += ss.format(*self._headers)
+            s += ss.replace('f', '').format(*self._headers)
             s = s.replace('td>', 'th>')
         # if schema has alignment formatting then convert this to HTML but only
         # for data cells
@@ -72,12 +72,12 @@ class Table:
         ss = ss.replace('<td>{:<', '<td align="left">{:<')
         for r in self._rows:
             sss = ss.format(*r)
-            for (text, wholeRow) in self._highlights:
-                if wholeRow and text in sss:
+            for (data, wholeRow) in self._highlights:
+                if wholeRow and data in sss:
                     sss = sss.replace('<tr>', '<tr bgcolor="yellow">')
                 else:
-                    sss = sss.replace(text, '<span style="background-color'\
-                            ':yellow">{}</span>'.format(text))
+                    sss = sss.replace(data, '<span style="background-color'\
+                            ':yellow">{}</span>'.format(data))
             s += sss
         s = '{}<table>{}</table>'.format(Table.STYLE, s)
 
@@ -134,16 +134,16 @@ class Table:
         elif self._rows:
             ss = ('{}|' * len(self._rows[0]))[:-1]
         if self._headers:
-            s = ss.format(*self._headers)
+            s = ss.replace('f', '').format(*self._headers)
             s += '\n' + ('-' * len(s)) + '\n'
         ss += '\n'
         for r in self._rows:
             sss = ss.format(*r)
-            for (text, wholeRow) in self._highlights:
-                if wholeRow and text in sss:
+            for (data, wholeRow) in self._highlights:
+                if wholeRow and data in r:
                     sss = '\033[1m{}\033[0m'.format(sss)
                 else:
-                    sss = sss.replace(text, '\033[1m{}\033[0m'.format(text))
+                    sss = sss.replace(data, '\033[1m{}\033[0m'.format(data))
             s += sss
 
         return s
@@ -151,10 +151,11 @@ class Table:
 if __name__ == '__main__':
     #t = Table()
     #t = Table(schema=['{:>4}', '{:>5}', '{:>3}'])
-    t = Table(headers=['1st', '2nd', '3rd'], schema=['{:>4}', '{:>5}', '{:>3}'])
-    t.append([[1, 2, 3], [4, 5, 6]])
+    t = Table(headers=['1st', '2nd', '3rd'], schema=['{:>4}', '{:>5.3f}', '{:>3}'])
+    t.append([[1, 2.454, 3], [4, 5, 6]])
     t.append([[7, 8, 'dfd']])
     t.setHighlights([['dfd', True]])
+    t.addHighlight(['1', False])
     print(t.getRows())
     print(t.getColumns())
     print(t)

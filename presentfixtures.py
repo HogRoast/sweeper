@@ -45,7 +45,10 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
 
         try:
             del keys['result']
-            keys.update({'>match_date' : keys.pop('>date')})
+            del keys['>date']
+            dt = datetime.strptime(fixtures[0].getDate(), '%Y-%m-%d') \
+                    - timedelta(days=1)
+            keys.update({'>match_date' : dt.strftime('%Y-%m-%d')})
             keys.update({'algo_id' : algoId})
             order = ['<league', '<match_date']
             ratings = db.select(Rating.createAdhoc(keys, order))
@@ -105,8 +108,8 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             headers = ['Date', 'Lge', 'Home Team', 'Away Team', 'Mark', 'M#', \
                     'H#', 'H%', 'HO', 'D#', 'D%', 'D0', 'A#', 'A%', 'A0']
             schema = ['{:<12}', '{:>4}', '{:<20}', '{:>20}', '{:>4}', '{:>4}', \
-                    '{:>4}', '{:>5.3}', '{:>5.3}', '{:>4}', '{:>5.3}', \
-                    '{:>5.3}', '{:>4}', '{:>5.3}', '{:>5.3}']
+                    '{:>4}', '{:>5.2f}', '{:>5.2f}', '{:>4}', '{:>5.2f}', \
+                    '{:>5.2f}', '{:>4}', '{:>5.2f}', '{:>5.2f}']
             t = Table(headers=headers, schema=schema)
             t.append([[f.getDate(), league, f.getHome_Team(), \
                     f.getAway_Team(), r.getMark(), *a] \
