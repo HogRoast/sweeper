@@ -38,7 +38,7 @@ def genForm(log:Logger, date:str, team:str, show:bool=False):
             matches2 = [m for m in db.select(Match.createAdhoc(keys, order))]
         except:
             log.critical("Couldn't find matches for team and date provided")
-            sys.exit(3)
+            sys.exit(2)
 
         matches = sorted(matches1 + matches2, key=lambda m : m.getDate(), reverse=True)[0:6]
 
@@ -94,11 +94,9 @@ if __name__ == '__main__':
 
     log = Logger()
     sopts = getSweeperOptions(log, sys.argv)
-    if not sopts.test(SweeperOptions.DATE):
-        print('ERROR: No match date provided, python genform -h for help')
-        sys.exit(1)
     if not sopts.test(SweeperOptions.TEAM):
         print('ERROR: No team provided, python genform -h for help')
-        sys.exit(2)
-
-    genForm(log, sopts.date, sopts.team, sopts.test(SweeperOptions.SHOW))
+        sys.exit(1)
+    date = sopts.date if sopts.test(SweeperOptions.DATE) \
+            else datetime.today().strftime('%Y-%m-%d')
+    genForm(log, date, sopts.team, sopts.test(SweeperOptions.SHOW))

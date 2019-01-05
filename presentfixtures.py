@@ -41,7 +41,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             log.critical("Couldn't find fixtures for league and date " \
                     "provided, run sourcedata?")
             log.critical('Because...{}'.format(e))
-            sys.exit(3)
+            sys.exit(2)
 
         try:
             del keys['result']
@@ -60,7 +60,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             log.critical("Couldn't find algo ratings for all fixtures, " \
                     "run analysematches?")
             log.critical('Because...{}'.format(e))
-            sys.exit(4)
+            sys.exit(3)
 
         try:
             keys.update({'>generation_date' : keys.pop('>match_date')})
@@ -73,7 +73,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             log.critical("Couldn't find algo statistics for league and date, " \
                     "run genstats?")
             log.critical('Because...{}'.format(e))
-            sys.exit(5)
+            sys.exit(4)
 
         def statsSummary(s:Statistics):
             markF = s.getMark_Freq()
@@ -130,13 +130,8 @@ if __name__ == '__main__':
     if not sopts.test(SweeperOptions.ALGO):
         print('ERROR: No algo id provided, python presentfixtures -h for help')
         sys.exit(1)
-    if not sopts.test(SweeperOptions.DATE):
-        print('ERROR: No fixture date provided, python presentfixtures ' \
-                '-h for help')
-        sys.exit(2)
-
-    league = None
-    if sopts.test(SweeperOptions.LEAGUE): league = sopts.leagueMnemonic
-
-    presentFixtures(log, sopts.algoId, sopts.date, league, \
+    league = sopts.leagueMnemonic if sopts.test(SweeperOptions.LEAGUE) else None
+    date = sopts.date if sopts.test(SweeperOptions.DATE) else \
+            datetime.today().strftime('%Y-%m-%d')
+    presentFixtures(log, sopts.algoId, date, league, \
             sopts.test(SweeperOptions.SHOW))

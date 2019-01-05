@@ -80,18 +80,21 @@ def getSweeperOptions(log, opts):
                 '         -lb <int>      : lower bound mark\n' \
                 '         -ub <int>      : upper bound mark\n' \
                 '   genform\n' \
-                '       * -dt <date>     : search date YYYY-MM-DD\n' \
+                '         -dt <date>     : search date YYYY-MM-DD, today if ' \
+                'unset\n' \
                 '       * -t  <team>     : subject team\n' \
                 '   genleaguetable\n' \
+                '         -dt <date>     : generate up to date YYYY-MM-DD, ' \
+                'end of season if unset\n' \
                 '       * -l  <mnemonic> : subject league\n' \
                 '       * -s  <season>   : subject season\n' \
-                '         -dt <date>     : generate up to date YYYY-MM-DD\n' \
                 '   genstats\n' \
                 '       * -a  <id>       : algo to apply\n' \
                 '         -l  <mnemonic> : subject league, all if unset\n' \
                 '   presentfixtures\n' \
                 '       * -a  <id>       : algo ratings to present\n' \
-                '       * -dt <date>     : fixtures date onward YYYY-MM-DD\n' \
+                '         -dt <date>     : fixtures date onward YYYY-MM-DD, ' \
+                'today if unset\n' \
                 '         -l  <mnemonic> : subject league, all if unset\n' \
                 '   sourcedata\n' \
                 '         -c             : apply to current season only\n' \
