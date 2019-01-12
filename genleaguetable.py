@@ -83,7 +83,8 @@ def genLeagueTable(log:Logger, league:str, season:str, date:str=None, \
         headers = ['Team', 'P', 'W', 'D', 'L', 'F', 'A', 'GD', 'PTS']
         schema = ['{:<20}', '{:>3}', '{:>3}', '{:>3}', '{:>3}', '{:>3}', \
                 '{:>3}', '{:>4}', '{:>4}']
-        t = Table(headers=headers, schema=schema)
+        t = Table(headers=headers, schema=schema, title='{} Table'.format(\
+                league.getDesc()))
         t.append([[row[0], *row[1].asList()] for row in  \
                 sorted(sorted(table.items(), key=itemgetter(0)), \
                 key=lambda x : (x[1].points, x[1].gldif, x[1].glfor), \
@@ -91,6 +92,8 @@ def genLeagueTable(log:Logger, league:str, season:str, date:str=None, \
         log.info(t)
 
         if show: t.asHTML(show)
+
+        return t
 
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions

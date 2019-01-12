@@ -11,13 +11,13 @@ from sweeper.dbos.league import League
 from sweeper.dbos.match import Match
 from sweeper.dbos.season import Season
 
-def genForm(log:Logger, date:str, team:str, show:bool=False):
+def genForm(log:Logger, team:str, date:str=None, show:bool=False):
     '''
     Generate form over the previous 6 matches for the team provided
 
     :param log: a logging object
-    :param date: search date
     :param team: the subject team
+    :param date: search date, today if None
     :param show: displays any tables as HTML when True
     '''
     log.info('Generating form for date <{}> and team <{}>'.format(date, team))
@@ -27,7 +27,12 @@ def genForm(log:Logger, date:str, team:str, show:bool=False):
     log.debug('Opening database: {}'.format(dbName))
 
     with Database(dbName, SQLite3Impl()) as db, db.transaction() as t:     
-        dt = datetime.strptime(date, '%Y-%m-%d') + timedelta(days=1)
+        if date:
+            dt = datetime.strptime(date, '%Y-%m-%d')
+        else:
+            dt = datetime.today().date()
+        dt = dt + timedelta(days=1)
+
         try:
             keys = {'<date' : dt.strftime('%Y-%m-%d'), 'home_team' : team, \
                     '!result' : ''}
@@ -73,21 +78,23 @@ def genForm(log:Logger, date:str, team:str, show:bool=False):
         headers = ['Team', 'P', 'W', 'D', 'L', 'F', 'A', 'GD', 'PTS']
         schema = ['{:<20}', '{:>3}', '{:>3}', '{:>3}', '{:>3}', '{:>3}', \
                 '{:>3}', '{:>4}', '{:>4}']
-        t = Table(headers=headers, schema=schema)
-        t.append([[team, *form.asList()]])
-        log.info(t)
+        t1 = Table(headers=headers, schema=schema)
+        t1.append([[team, *form.asList()]])
+        log.info(t1)
 
-        if show: t.asHTML(show)
+        if show: t1.asHTML(show)
 
         headers = ['Date', 'Home Team', 'HTG', 'ATG', 'Away Team']
         schema = ['{:<12}', '{:<20}', '{:>3}', '{:>3}', '{:>20}']
-        t = Table(headers=headers, schema=schema)
-        t.append([[m.getDate(), m.getHome_Team(), m.getHome_Goals(), \
+        t2 = Table(headers=headers, schema=schema)
+        t2.append([[m.getDate(), m.getHome_Team(), m.getHome_Goals(), \
                 m.getAway_Goals(), m.getAway_Team()] for m in matches])
-        t.addHighlight((team, False))
-        log.info(t)
+        t2.addHighlight((team, False))
+        log.info(t2)
 
-        if show: t.asHTML(show)    
+        if show: t2.asHTML(show)    
+
+        return t1, t2
 
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions
@@ -99,4 +106,4 @@ if __name__ == '__main__':
         sys.exit(1)
     date = sopts.date if sopts.test(SweeperOptions.DATE) \
             else datetime.today().strftime('%Y-%m-%d')
-    genForm(log, date, sopts.team, sopts.test(SweeperOptions.SHOW))
+    genForm(log, sopts.team, date, sopts.test(SweeperOptions.SHOW))

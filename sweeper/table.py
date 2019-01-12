@@ -16,16 +16,20 @@ class Table:
             'th, td {'\
             '  padding: 5px;'\
             '}'\
+            'caption{'\
+            '  font: bold large sans-serif;'\
+            '}'\
             '</style>'\
             '</head>'\
             '<body>'
 
     def __init__(self, headers:list=None, schema:list=None, rows:list=None,\
-            highlights:list=None):
+            highlights:list=None, title:str=None):
         self._headers = headers
         self._schema = schema
         self._rows = rows if rows else []
         self._highlights = self.setHighlights(highlights) if highlights else []
+        self._title = title
         self._validate()
 
     def _validate(self):
@@ -55,6 +59,8 @@ class Table:
 
     def asHTML(self, show=False):
         s = ''
+        if self._title:
+            s = '<caption>' + self._title + '</caption>'
         if self._schema:
             ss = '<tr><td>{}</td></tr>'.format('</td><td>'.join(self._schema))
         elif self._headers:
@@ -125,8 +131,16 @@ class Table:
         if not self._rows: return []
         return [[r[i] for r in self._rows] for i in range(len(self._rows[0]))]
 
+    def getTitle(self):
+        return self._title
+
+    def setTitle(self, title):
+        self_title = title
+
     def __repr__(self):
         s = ''
+        if self._title:
+            s = '\033[1m{}\033[0m\n'.format(self._title)
         if self._schema:
             ss = '|'.join(self._schema)
         elif self._headers:
@@ -134,8 +148,9 @@ class Table:
         elif self._rows:
             ss = ('{}|' * len(self._rows[0]))[:-1]
         if self._headers:
-            s = ss.replace('f', '').format(*self._headers)
-            s += '\n' + ('-' * len(s)) + '\n'
+            lt = len(s)
+            s += ss.replace('f', '').format(*self._headers)
+            s += '\n' + ('-' * (len(s)-lt)) + '\n'
         ss += '\n'
         for r in self._rows:
             sss = ss.format(*r)
@@ -151,7 +166,7 @@ class Table:
 if __name__ == '__main__':
     #t = Table()
     #t = Table(schema=['{:>4}', '{:>5}', '{:>3}'])
-    t = Table(headers=['1st', '2nd', '3rd'], schema=['{:>4}', '{:>5.3f}', '{:>3}'])
+    t = Table(headers=['1st', '2nd', '3rd'], schema=['{:>4}', '{:>5.3f}', '{:>3}'], title='Test')
     t.append([[1, 2.454, 3], [4, 5, 6]])
     t.append([[7, 8, 'dfd']])
     t.setHighlights([['dfd', True]])

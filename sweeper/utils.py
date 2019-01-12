@@ -7,16 +7,17 @@ class SweeperArgsError(Exception):
         self.msg = msg
 
 class SweeperOptions:
-    DEBUG_LOGGING       = 0b0000000001
-    CURRENT_SEASON_ONLY = 0b0000000010
-    ALGO                = 0b0000000100
-    LEAGUE              = 0b0000001000
-    SEASON              = 0b0000010000
-    LOWER_BOUND         = 0b0000100000
-    UPPER_BOUND         = 0b0001000000
-    DATE                = 0b0010000000
-    TEAM                = 0b0100000000
-    SHOW                = 0b1000000000
+    DEBUG_LOGGING       = 0b00000000001
+    CURRENT_SEASON_ONLY = 0b00000000010
+    ALGO                = 0b00000000100
+    LEAGUE              = 0b00000001000
+    SEASON              = 0b00000010000
+    LOWER_BOUND         = 0b00000100000
+    UPPER_BOUND         = 0b00001000000
+    DATE                = 0b00010000000
+    TEAM                = 0b00100000000
+    SHOW                = 0b01000000000
+    MAIL                = 0b10000000000
 
     validOpts = [
             DEBUG_LOGGING,
@@ -28,7 +29,8 @@ class SweeperOptions:
             UPPER_BOUND,
             DATE,
             TEAM,
-            SHOW
+            SHOW,
+            MAIL
             ]
 
     def __init__(self):
@@ -83,6 +85,11 @@ def getSweeperOptions(log, opts):
                 '         -dt <date>     : search date YYYY-MM-DD, today if ' \
                 'unset\n' \
                 '       * -t  <team>     : subject team\n' \
+                '   genformtable\n' \
+                '         -dt <date>     : generate up to date YYYY-MM-DD, ' \
+                'end of season if unset\n' \
+                '       * -l  <mnemonic> : subject league\n' \
+                '       * -s  <season>   : subject season\n' \
                 '   genleaguetable\n' \
                 '         -dt <date>     : generate up to date YYYY-MM-DD, ' \
                 'end of season if unset\n' \
@@ -95,6 +102,7 @@ def getSweeperOptions(log, opts):
                 '       * -a  <id>       : algo ratings to present\n' \
                 '         -dt <date>     : fixtures date onward YYYY-MM-DD, ' \
                 'today if unset\n' \
+                '         -m             : send email\n' \
                 '         -l  <mnemonic> : subject league, all if unset\n' \
                 '   sourcedata\n' \
                 '         -c             : apply to current season only\n' \
@@ -114,6 +122,8 @@ def getSweeperOptions(log, opts):
             sopts._set(SweeperOptions.CURRENT_SEASON_ONLY)
         if '--show' in opts:
             sopts._set(SweeperOptions.SHOW)
+        if '-m' in opts:
+            sopts._set(SweeperOptions.MAIL)
         try:
             if '-a' in opts:
                 idx = opts.index('-a')
@@ -157,10 +167,12 @@ def getSweeperOptions(log, opts):
 
     return sopts
 
-def getSweeperConfig():
+def getSweeperConfig(grp:str = 'base.cfg'):
     '''
-    Get the Sweeper application's base configuration from the sweeper.ini file
+    Get the Sweeper application's configuration from the sweeper.ini file by
+    default get the base group, otherwise the group specified
 
+    :param grp: the config group to return
     :returns: A dictionary representing the base configuration
     '''
     config = ConfigParser()
@@ -168,8 +180,8 @@ def getSweeperConfig():
     config.optionxform = lambda option: option
     config.read('./config/sweeper.ini')
 
-    baseCfg = dict(zip(config.options('base.cfg'), \
-            [config.get('base.cfg', o) for o in config.options('base.cfg')]))
+    baseCfg = dict(zip(config.options(grp), \
+            [config.get(grp, o) for o in config.options(grp)]))
     return baseCfg
 
 class FileManipulator:
