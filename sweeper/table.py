@@ -84,10 +84,10 @@ class Table:
             sss = ss.format(*r)
             for (data, wholeRow) in self._highlights:
                 if wholeRow and data in sss:
-                    sss = sss.replace('<tr>', '<tr bgcolor="yellow">')
+                    sss = sss.replace('<tr>', '<tr bgcolor=rgba(124,252,0,0.5)>')
                 else:
                     sss = sss.replace(data, '<span style="background-color'\
-                            ':yellow">{}</span>'.format(data))
+                            ':rgba(124,252,0,0.5)">{}</span>'.format(data))
             s += sss
         s += '</tbody>'
 

@@ -2,12 +2,12 @@ HTML_HEAD = '''\
 <!DOCTYPE html> 
 <html> 
 <head> 
-	<title>Sweeper</title> 
-	<meta name="viewport" content="width=device-width, initial-scale=1"> 
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.0-beta.1/jquery.mobile-1.3.0-beta.1.min.css" />
-	<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
-	<script src="http://code.jquery.com/mobile/1.3.0-beta.1/jquery.mobile-1.3.0-beta.1.min.js"></script>
-
+    <title>Sweeper</title> 
+    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.0-beta.1/jquery.mobile-1.3.0-beta.1.min.css" />
+    <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.3.0-beta.1/jquery.mobile-1.3.0-beta.1.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <style>
         div.sweeper {
             background-color: black;
@@ -17,7 +17,8 @@ HTML_HEAD = '''\
             background-color: rgba(245,245,245,1)
             }
         table {   
-            font: xx-small sans-serif;
+            font: sans-serif;
+            font-size: 80%;
             table-layout: auto;
             }
         td.m {
@@ -49,9 +50,9 @@ HTML_BODY='''\
 '''
 
 COLLAPSIBLE_GROUP='''\
-            <div data-role="collapsible" data-mini="true">
+            <div data-role="collapsible" data-mini="true" data-theme="a">
                 <h3>{groupName}</h3>
-                <div data-role="collapsible" data-mini="true">
+                <div data-role="collapsible" data-mini="true" data-theme="a">
                     <h3>Fixtures and Predictions</h3>
                     <div class="table">
                         <table data-role="table" data-mode="columntoggle" class="table-stripe ui-responsive table-stroke">
@@ -59,7 +60,7 @@ COLLAPSIBLE_GROUP='''\
                         </table>
                     </div><!-- /table -->
                 </div><!-- /collapsible -->
-                <div data-role="collapsible" data-mini="true">
+                <div data-role="collapsible" data-mini="true" data-theme="a">
                     <h3>Form Table</h3>
                     <div class="table">
                         <table data-role="table" data-mode="columntoggle" class="table-stripe ui-responsive table-stroke">
@@ -67,7 +68,7 @@ COLLAPSIBLE_GROUP='''\
                         </table>
                     </div><!-- /table -->
                 </div><!-- /collapsible -->
-                <div data-role="collapsible" data-mini="true">
+                <div data-role="collapsible" data-mini="true" data-theme="a">
                     <h3>League Table</h3>
                     <div class="table">
                         <table data-role="table" data-mode="columntoggle" class="table-stripe ui-responsive table-stroke">
