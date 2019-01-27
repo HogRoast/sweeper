@@ -9,8 +9,14 @@ from swagger_server.models.inline_response2004 import InlineResponse2004  # noqa
 from swagger_server.models.inline_response2005 import InlineResponse2005  # noqa: E501
 from swagger_server.models.inline_response2006 import InlineResponse2006  # noqa: E501
 from swagger_server.models.inline_response2007 import InlineResponse2007  # noqa: E501
+from swagger_server.models.league import League
+from swagger_server.models.status import Status
 from swagger_server import util
 
+from shimbase.database import Database, AdhocKeys
+from shimbase.sqlite3impl import SQLite3Impl
+from sweeper.utils import getSweeperConfig
+from sweeper.dbos.league import League as SWPR_League
 
 def accounts_account_id_algos_get(accountId):  # noqa: E501
     """accounts_account_id_algos_get
@@ -149,4 +155,13 @@ def leagues_get():  # noqa: E501
 
     :rtype: InlineResponse2007
     """
-    return 'do some magic!'
+
+    r = InlineResponse2007(s=Status.OK)
+
+    config = getSweeperConfig()
+    dbName = config['dbName']
+    with Database(dbName, SQLite3Impl()) as db, db.transaction() as t:     
+        leagues = db.select(SWPR_League())
+        listOfLeagues = [League(l.getMnemonic(), l.getDesc()) for l in leagues]
+        r.d = listOfLeagues
+    return r

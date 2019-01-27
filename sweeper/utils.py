@@ -81,6 +81,11 @@ def getSweeperOptions(log, opts):
                 '         -l  <mnemonic> : subject league, all if unset\n' \
                 '         -lb <int>      : lower bound mark\n' \
                 '         -ub <int>      : upper bound mark\n' \
+                '   createwebpage\n'\
+                '       * -a  <id>       : algo ratings to present\n' \
+                '         -dt <date>     : fixtures date onward YYYY-MM-DD, ' \
+                'today if unset\n' \
+                '         -l  <mnemonic> : subject league, all if unset\n' \
                 '   genform\n' \
                 '         -dt <date>     : search date YYYY-MM-DD, today if ' \
                 'unset\n' \
@@ -179,7 +184,7 @@ def getSweeperConfig(grp:str = 'base.cfg'):
     # maintain case of ini file keys
     config.optionxform = lambda option: option
     config.read('./config/sweeper.ini')
-
+ 
     baseCfg = dict(zip(config.options(grp), \
             [config.get(grp, o) for o in config.options(grp)]))
     return baseCfg

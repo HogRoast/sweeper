@@ -16,9 +16,6 @@ from sweeper.dbos.rating import Rating
 from sweeper.dbos.season import Season
 from sweeper.dbos.statistics import Statistics
 
-def stripHead(html:str):
-    return html[html.index('</head>')+7:]
-
 def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
         show:bool=False, mail:bool=False):
     '''
@@ -87,13 +84,13 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             markF = s.getMark_Freq()
             homeF = s.getHome_Freq()
             homeP = (homeF / markF) * 100.0
-            homeO = 100.0 / homeP
+            homeO = 100.0 / homeP if homeP else 99.99 
             drawF = s.getDraw_Freq()
             drawP = (drawF / markF) * 100.0
-            drawO = 100.0 / drawP
+            drawO = 100.0 / drawP if drawP else 99.99
             awayF = s.getAway_Freq()
             awayP = (awayF / markF) * 100.0
-            awayO = 100.0 / awayP
+            awayO = 100.0 / awayP if awayP else 99.99
             return markF, homeF, homeP, homeO, drawF, drawP, drawO, awayF, \
                     awayP, awayO
 
@@ -102,6 +99,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
                 and r.getLeague() == s.getLeague()], ratings)
         presentation = zip(fixtures, analytics)
 
+        tables = {}
         mailText = ''
         for league, group in itertools.groupby(presentation, \
                 lambda x : x[0].getLeague()):
@@ -121,20 +119,21 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
                 sys.exit(6)
 
             presGrp = list(group)
-            headers = ['Date', 'Lge', 'Home Team', 'Away Team', 'Mark', 'M#', \
+            headers = ['Date', 'Match', 'Mark', 'M#', \
                     'H#', 'H%', 'HO', 'D#', 'D%', 'DO', 'A#', 'A%', 'AO']
-            schema = ['{:<12}', '{:>4}', '{:<20}', '{:>20}', '{:>4}', '{:>4}', \
+            schema = ['{:<12}', '{:<40}', '{:>4}', '{:>4}', \
                     '{:>4}', '{:>5.2f}', '{:>5.2f}', '{:>4}', '{:>5.2f}', \
                     '{:>5.2f}', '{:>4}', '{:>5.2f}', '{:>5.2f}']
             t = Table(headers=headers, schema=schema, \
                     title='{} Fixtures'.format(leagueDesc))
-            t.append([[f.getDate(), league, f.getHome_Team(), \
-                    f.getAway_Team(), r.getMark(), *a] \
+            t.append([[f.getDate(), '{} (vs) {}'.format(f.getHome_Team(), \
+                    f.getAway_Team()), r.getMark(), *a] \
                     for f, [(r, a)] in presGrp])
-            t.setHighlights([[f.getHome_Team(), True] \
+            t.setHighlights([[f.getHome_Team(), False] \
                     for f, [(r, a)] in presGrp \
                     if r.getMark() > algoCfg.getL_Bnd_Mark() \
                     and r.getMark() < algoCfg.getU_Bnd_Mark()])
+            t.htmlReplacements([['(vs)', '<br/>']])
 
             try:
                 keys = {'>u_bnd_date' : date, '<l_bnd_date' : date}
@@ -150,17 +149,15 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             log.info(t)
             log.info(formTable)
 
+            tables[leagueDesc] = (t, leagueTable, formTable)
+
             if show: 
                 t.asHTML(show)
                 formTable.asHTML(show)
 
             if mail: 
-                if mailText:
-                    mailText += stripHead(t.asHTML()) + '<br></br>'
-                    mailText += stripHead(formTable.asHTML()) + '<br></br>'
-                else:
-                    mailText += t.asHTML() + '<br></br>'
-                    mailText += stripHead(formTable.asHTML()) + '<br></br>'
+                mailText += t.asHTML(fullyFormed=False) + '<br></br>'
+                mailText += formTable.asHTML(fullyFormed=False) + '<br></br>'
 
         if mail:
             mailText = 'MIME-Version: 1.0\nContent-type: text/html\nSubject: Sweeper Football Predictions\n\n{}'.format(mailText)
@@ -175,6 +172,8 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             server.sendmail(fromAddr, toAddrs, mailText)
             server.quit()
             log.info('email sent to: {!s}'.format(toAddrs))
+
+        return tables
 
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions

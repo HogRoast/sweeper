@@ -20,17 +20,19 @@ class Table:
             '  font: bold large sans-serif;'\
             '}'\
             '</style>'\
-            '</head>'\
-            '<body>'
+            '</head>'
 
     def __init__(self, headers:list=None, schema:list=None, rows:list=None,\
-            highlights:list=None, title:str=None):
+            highlights:list=None, title:str=None, style:str=STYLE,\
+            htmlReplacements:list=None):
         self._headers = headers
         self._schema = schema
         self._rows = rows if rows else []
         self._highlights = self.setHighlights(highlights) if highlights else []
         self._title = title
         self._validate()
+        self._style = style
+        self._replacements = htmlReplacements
 
     def _validate(self):
         if self._rows and not all(map(\
@@ -57,10 +59,11 @@ class Table:
         [self._rows.remove(r) for r in rows]
         self._validate()
 
-    def asHTML(self, show=False):
+    def asHTML(self, show=False, fullyFormed=True):
         s = ''
         if self._title:
             s = '<caption>' + self._title + '</caption>'
+        s += '<thead>'
         if self._schema:
             ss = '<tr><td>{}</td></tr>'.format('</td><td>'.join(self._schema))
         elif self._headers:
@@ -72,6 +75,7 @@ class Table:
         if self._headers:
             s += ss.replace('f', '').format(*self._headers)
             s = s.replace('td>', 'th>')
+        s += '</thead><tbody>'
         # if schema has alignment formatting then convert this to HTML but only
         # for data cells
         ss = ss.replace('<td>{:>', '<td align="right">{:>')
@@ -85,7 +89,16 @@ class Table:
                     sss = sss.replace(data, '<span style="background-color'\
                             ':yellow">{}</span>'.format(data))
             s += sss
-        s = '{}<table>{}</table>'.format(Table.STYLE, s)
+        s += '</tbody>'
+
+        if self._replacements:
+            for r in self._replacements:
+                if len(r) == 2:
+                    s = s.replace(r[0], r[1])
+
+        s = '<table>{}</table>'.format(s)
+        if fullyFormed:
+            s = '{}<body>{}</body>'.format(self._style, s)
 
         if show:
             fd, name = tempfile.mkstemp(suffix='.html', text=True)
@@ -136,6 +149,9 @@ class Table:
 
     def setTitle(self, title):
         self_title = title
+
+    def htmlReplacements(self, replacements):
+        self._replacements = replacements
 
     def __repr__(self):
         s = ''
