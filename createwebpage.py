@@ -62,7 +62,7 @@ def createWebPage(log:Logger, algoId:int, date:str, league:str=None, \
     tables = presentFixtures(log, algoId, date, league)
     groups = ''
     for groupId, (name, (fixturesTable, leagueTable, formTable)) \
-            in enumerate(tables.items()):
+            in enumerate(sorted(tables.items(), key=lambda x : x[0])):
         collapsibleTheme = 'c' if fixturesTable.getHighlights() else 'b'
         groups += COLLAPSIBLE_GROUP.format(groupName=name, fixturesTable= \
                 addPriorities(modTable(fixturesTable.asHTML(fullyFormed=False))), \
