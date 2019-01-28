@@ -1,24 +1,70 @@
+/* general rules */
 body {
+    font: sans-serif;
     font-size: 100%;
-    }
+}
+
+/* the main content container */
 div.sweeper {
     background-color: black;
     background-image: linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)), url("../images/code.jpg")
-    }
+}
+
+/* table container */
 div.table {
     background-color: rgba(245,245,245,1);
     font-size: calc(50% + 0.5vw);
-    }
-table {   
-    font: sans-serif;
-    }
+}
+
+/* table data alignment */
 td.m {
     vertical-align: middle;
-    }
+}
+
+/* table captions */
 caption {   
     font: bold small sans-serif;
-    }
+}
+
+/* the logo image in the header */
 img.logo {
     height: 10%;
     width: 10%;
-    }
+}
+
+/* JQuery Mobile table - column priority visibility */
+/* Show priority 1 at 480px (30em x 16px) */ 
+@media screen and (min-width: 30em) {
+   .fixture-table-priority  th.ui-table-priority-1,
+   .fixture-table-priority td.ui-table-priority-1 {
+     display: table-cell;
+   }
+}
+
+/* Show priority 2 at 560px (35em x 16px) */ 
+@media screen and (min-width: 35em) {
+   .fixture-table-priority  th.ui-table-priority-2,
+   .fixture-table-priority td.ui-table-priority-2 {
+     display: table-cell;
+   }
+
+/* Show priority 3 at 640px (40em x 16px) */ 
+@media screen and (min-width: 40em) {
+   .fixture-table-priority  th.ui-table-priority-3,
+   .fixture-table-priority td.ui-table-priority-3 {
+     display: table-cell;
+   }
+}
+
+/* Manually hidden */ 
+.fixture-table-priority th.ui-table-cell-hidden,
+.fixture-table-priority td.ui-table-cell-hidden {
+  display: none;
+}
+
+/* Manually shown */
+.fixture-table-priority th.ui-table-cell-visible,
+.fixture-table-priority td.ui-table-cell-visible {
+   display: table-cell;
+}    
+

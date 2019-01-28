@@ -17,31 +17,31 @@ def addPriorities(html):
     hdrs = thead[1].split('<th>')
     for i, h in enumerate(hdrs):
         if 'Date' in h:
-            hdrs[i] = '<th data-priority="5">' + h
+            hdrs[i] = '<th data-priority="2">' + h
         elif 'Match' in h:
             hdrs[i] = '<th>' + h
         elif 'Mark' in h:
             hdrs[i] = '<th>' + h
         elif 'M#' in h:
-            hdrs[i] = '<th data-priority="4">' + h
+            hdrs[i] = '<th data-priority="3">' + h
         elif 'H#' in h:
-            hdrs[i] = '<th data-priority="3">' + h
+            hdrs[i] = '<th data-priority="1">' + h
         elif 'H%' in h:
-            hdrs[i] = '<th data-priority="3">' + h
+            hdrs[i] = '<th data-priority="1">' + h
         elif 'HO' in h:
-            hdrs[i] = '<th data-priority="2">' + h
+            hdrs[i] = '<th>' + h
         elif 'D#' in h:
-            hdrs[i] = '<th data-priority="3">' + h
+            hdrs[i] = '<th data-priority="1">' + h
         elif 'D%' in h:
-            hdrs[i] = '<th data-priority="3">' + h
+            hdrs[i] = '<th data-priority="1">' + h
         elif 'DO' in h:
-            hdrs[i] = '<th data-priority="2">' + h
+            hdrs[i] = '<th>' + h
         elif 'A#' in h:
-            hdrs[i] = '<th data-priority="3">' + h
+            hdrs[i] = '<th data-priority="1">' + h
         elif 'A%' in h:
-            hdrs[i] = '<th data-priority="3">' + h
+            hdrs[i] = '<th data-priority="1">' + h
         elif 'AO' in h:
-            hdrs[i] = '<th data-priority="2">' + h
+            hdrs[i] = '<th>' + h
     thead[1] = ''.join(hdrs)
     html = 'thead'.join(thead)
     return html
@@ -61,11 +61,14 @@ def createWebPage(log:Logger, algoId:int, date:str, league:str=None, \
 
     tables = presentFixtures(log, algoId, date, league)
     groups = ''
-    for name, (fixturesTable, leagueTable, formTable) in tables.items():
+    for groupId, (name, (fixturesTable, leagueTable, formTable)) \
+            in enumerate(tables.items()):
+        collapsibleTheme = 'c' if fixturesTable.getHighlights() else 'b'
         groups += COLLAPSIBLE_GROUP.format(groupName=name, fixturesTable= \
                 addPriorities(modTable(fixturesTable.asHTML(fullyFormed=False))), \
                 formTable=modTable(formTable.asHTML(fullyFormed=False)), \
-                leagueTable=modTable(leagueTable.asHTML(fullyFormed=False)))
+                leagueTable=modTable(leagueTable.asHTML(fullyFormed=False)),
+                groupId=groupId, collapsibleTheme=collapsibleTheme)
     html = HTML_HEAD + HTML_BODY.format(groups=groups)
 
     log.info(html)
