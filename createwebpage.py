@@ -69,12 +69,10 @@ def createWebPage(log:Logger, algoId:int, date:str, league:str=None, \
     html = HTML_HEAD + HTML_BODY.format(groups=groups)
 
     log.info(html)
-    if show:
-        fd, name = tempfile.mkstemp(suffix='.html', text=True)
-        f = os.fdopen(fd, 'w')
+    with open('web/index.html', 'w') as f:
         f.write(html)
-        f.close()
-        webbrowser.open(name)
+    if show:
+        webbrowser.open(os.getcwd() + '/web/index.html')
 
 
 if __name__ == '__main__':

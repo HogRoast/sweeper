@@ -8,30 +8,7 @@ HTML_HEAD = '''\
     <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
     <script src="http://code.jquery.com/mobile/1.3.0-beta.1/jquery.mobile-1.3.0-beta.1.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <style>
-        div.sweeper {
-            background-color: black;
-            background-image: linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)), url("images/code.jpg")
-            }
-        div.table {
-            background-color: rgba(245,245,245,1)
-            }
-        table {   
-            font: sans-serif;
-            font-size: 80%;
-            table-layout: auto;
-            }
-        td.m {
-            vertical-align: middle;
-            }
-        caption {   
-            font: bold small sans-serif;
-            }
-        img.logo {
-            height: 10%;
-            width: 10%;
-            }
-    </style>
+    <link rel="stylesheet" type="text/css" href="css/sweeper.css">
 </head> 
 '''
 
