@@ -72,10 +72,10 @@ def createWebPage(log:Logger, algoId:int, date:str, league:str=None, \
     html = HTML_HEAD + HTML_BODY.format(groups=groups)
 
     log.info(html)
-    with open('web/index.html', 'w') as f:
+    with open('web/predictions.html', 'w') as f:
         f.write(html)
     if show:
-        webbrowser.open(os.getcwd() + '/web/index.html')
+        webbrowser.open(os.getcwd() + '/web/predictions.html')
 
 
 if __name__ == '__main__':

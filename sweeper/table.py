@@ -87,7 +87,7 @@ class Table:
                     sss = sss.replace('<tr>', '<tr bgcolor=rgba(124,252,0,0.5)>')
                 else:
                     sss = sss.replace(data, '<span style="background-color'\
-                            ':rgba(124,252,0,0.5)">{}</span>'.format(data))
+                            ':lightgreen">{}</span>'.format(data))
             s += sss
         s += '</tbody>'
 

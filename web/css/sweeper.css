@@ -6,14 +6,37 @@ body {
 
 /* the main content container */
 div.sweeper {
+    width: 100%;
+    height: 100%;
     background-color: black;
-    background-image: linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)), url("../images/code.jpg")
+    background-image: linear-gradient(rgba(0,0,0,.7), rgba(0,0,0,.7)), url("../images/code.jpg");
+    font-size: calc(50% + 0.5vw);
 }
 
 /* table container */
 div.table {
     background-color: rgba(245,245,245,1);
     font-size: calc(50% + 0.5vw);
+}
+
+/* navbar link container */
+div.navbar-link {
+    height: 4vw;
+    font-size: calc(50% + 0.5vw); 
+    text-align:center; 
+    position:relative; 
+    top:1.25vw 
+}
+span.popuptext {
+    visibility: hidden;
+}
+
+span.show {
+    visibility: visible;
+}
+
+span.hide {
+    visibility: hidden;
 }
 
 /* table data alignment */
@@ -28,9 +51,23 @@ caption {
 
 /* the logo image in the header */
 img.logo {
-    height: 10%;
-    width: 10%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    height: 4vw;
 }
+
+/* the home page image */
+img.home {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 60vw;
+} 
 
 /* JQuery Mobile table - column priority visibility */
 /* Show priority 1 at 480px (30em x 16px) */ 

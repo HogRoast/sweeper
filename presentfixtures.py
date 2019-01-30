@@ -101,8 +101,8 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
 
         tables = {}
         mailText = ''
-        for league, group in itertools.groupby(presentation, \
-                lambda x : x[0].getLeague()):
+        for i, (league, group) in enumerate(itertools.groupby(presentation, \
+                lambda x : x[0].getLeague())):
             try:
                 leagueDesc = db.select(League(league))[0].getDesc()
             except Exception as e:
@@ -156,11 +156,14 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
                 formTable.asHTML(show)
 
             if mail: 
-                mailText += t.asHTML(fullyFormed=False) + '<br></br>'
-                mailText += formTable.asHTML(fullyFormed=False) + '<br></br>'
+                if not i:
+                    mailText += t.asHTML().replace('</body>', '') + '<br/>'
+                else:
+                    mailText += t.asHTML(fullyFormed=False) + '<br/>'
+                mailText += formTable.asHTML(fullyFormed=False) + '<br/>'
 
         if mail:
-            mailText = 'MIME-Version: 1.0\nContent-type: text/html\nSubject: Sweeper Football Predictions\n\n{}'.format(mailText)
+            mailText = 'MIME-Version: 1.0\nContent-type: text/html\nSubject: Sweeper Football Predictions\n\n{}</body>'.format(mailText)
             mailCfg = getSweeperConfig('mail.cfg')
             fromAddr = mailCfg['fromAddr']
             toAddrs = eval(mailCfg['toAddrs'])

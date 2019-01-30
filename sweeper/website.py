@@ -7,19 +7,24 @@ HTML_HEAD = '''\
     <link rel="stylesheet" href="css/themes/sweeper.min.css" />
     <link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
     <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
-    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/sweeper.css">
     <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
     <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/sweeper.css">
 </head> 
 '''
 
 HTML_BODY='''\
 <body> 
     <div data-role="page" class="sweeper">
-        <div data-role="header" data-theme="b">
-            <img src="images/ball and name no background.png" class="logo">
-        </div><!-- /header -->
+        <div class="ui-bar-b">
+            <div class="ui-grid-d">
+                <div class="ui-block-a"><a href="index.html"><div class="ui-bar-b"><img src="images/ball and name no background.png" class="logo"></div></a></div>
+                <div class="ui-block-b"><div class="ui-bar-b navbar-link"><a href="predictions.html" style="text-decoration:none; color:white">Predictions</a></div></div>
+                <div class="ui-block-c"><div class="ui-bar-b navbar-link"><a href="#" style="text-decoration:none; color:white">Subscribe</a></div></div>
+                <div class="ui-block-d"><div class="ui-bar-b navbar-link"><a href="#" style="text-decoration:none; color:white">Data Help</a></div></div>
+                <div class="ui-block-e"><div class="ui-bar-b navbar-link"><a href="#" style="text-decoration:none; color:white">FAQ</a></div></div>
+            </div><!-- /grid -->
+        </div><!-- /bar -->
         <div data-role="content">
             {groups}
         </div><!-- /content -->
