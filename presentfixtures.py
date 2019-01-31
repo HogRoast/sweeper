@@ -15,6 +15,7 @@ from sweeper.dbos.match import Match
 from sweeper.dbos.rating import Rating
 from sweeper.dbos.season import Season
 from sweeper.dbos.statistics import Statistics
+from sweeper.dbos.subscriber import Subscriber
 
 def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
         show:bool=False, mail:bool=False):
@@ -166,13 +167,13 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             mailText = 'MIME-Version: 1.0\nContent-type: text/html\nSubject: Sweeper Football Predictions\n\n{}</body>'.format(mailText)
             mailCfg = getSweeperConfig('mail.cfg')
             fromAddr = mailCfg['fromAddr']
-            toAddrs = eval(mailCfg['toAddrs'])
+            subs = db.select(Subscriber.createAdhoc({'include' : 1}))
+            toAddrs = [s.getEmail() for s in subs]
             server = smtplib.SMTP(mailCfg['svr'], int(mailCfg['port']))
             server.ehlo()
             server.starttls()
             server.ehlo()
             server.login(fromAddr, mailCfg['pwd'])
-            server.sendmail(fromAddr, toAddrs, mailText)
             server.quit()
             log.info('email sent to: {!s}'.format(toAddrs))
 

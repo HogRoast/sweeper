@@ -161,3 +161,12 @@ CREATE TABLE algo_config (
     foreign key (league) references league(mnemonic),
     primary key (config_date, algo_id, league)
 );
+
+DROP TABLE subscriber;
+CREATE TABLE subscriber (
+    email varchar(128) not null,
+    include integer not null,
+    first_name varchar(32),
+    second_name varchar(32),
+    primary key (email)
+);
