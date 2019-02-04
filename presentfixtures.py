@@ -84,22 +84,26 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
         def statsSummary(s:Statistics):
             markF = s.getMark_Freq()
             homeF = s.getHome_Freq()
-            homeP = (homeF / markF) * 100.0
+            homeP = (homeF / markF) * 100.0 if markF else 0.0
             homeO = 100.0 / homeP if homeP else 99.99 
             drawF = s.getDraw_Freq()
-            drawP = (drawF / markF) * 100.0
+            drawP = (drawF / markF) * 100.0 if markF else 0.0
             drawO = 100.0 / drawP if drawP else 99.99
             awayF = s.getAway_Freq()
-            awayP = (awayF / markF) * 100.0
+            awayP = (awayF / markF) * 100.0 if markF else 0.0
             awayO = 100.0 / awayP if awayP else 99.99
             return markF, homeF, homeP, homeO, drawF, drawP, drawO, awayF, \
                     awayP, awayO
 
+        for r in itertools.filterfalse(lambda r : r.getMark() in \
+                [s.getMark() for s in stats], ratings):
+            stats.append(Statistics(r.getMatch_Date(), r.getAlgo_Id(), \
+                    r.getLeague(), r.getMark(), 0, 0, 0, 0))
         analytics = map(lambda r : [(r, statsSummary(s)) for s in stats \
                 if r.getMark() == s.getMark() \
                 and r.getLeague() == s.getLeague()], ratings)
         presentation = zip(fixtures, analytics)
-
+ 
         tables = {}
         mailText = ''
         for i, (league, group) in enumerate(itertools.groupby(presentation, \

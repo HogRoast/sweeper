@@ -49,6 +49,25 @@ caption {
     font: bold small sans-serif;
 }
 
+/* help page column divs */
+.help-col-1 {
+    float: left;
+    height: inherit;
+    width: 25%;
+    font-weight: bold;
+}
+
+.help-col-2 {
+    float: left;
+    width: 75%;
+}
+
+p {
+    margin-left: 2.0vw;
+    margin-right: 2.0vw;
+    font-size: calc(50% + 0.5vw);
+}
+
 /* the logo image in the header */
 img.logo {
     display: block;

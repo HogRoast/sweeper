@@ -1,0 +1,182 @@
+<!DOCTYPE html> 
+<html> 
+<head> 
+    <title>Sweeper</title> 
+    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <link rel="stylesheet" href="css/themes/sweeper.min.css" />
+    <link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/sweeper.css">
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+</head> 
+<body> 
+
+    <div data-role="page" class="sweeper">
+        <div class="ui-bar-b">
+            <div class="ui-grid-d">
+                <div class="ui-block-a"><a href="index.html"><div class="ui-bar-b"><img src="images/ball and name no background.png" class="logo"></div></a></div>
+                <div class="ui-block-b"><div class="ui-bar-b navbar-link"><a href="predictions.html" style="text-decoration:none; color:white">Predictions</a></div></div>
+                <div class="ui-block-c"><div class="ui-bar-b navbar-link"><a href="subscribe.html" style="text-decoration:none; color:white">Subscribe</a></div></div>
+                <div class="ui-block-d"><div class="ui-bar-b navbar-link"><a href="help.html" style="text-decoration:none; color:white">Data Help</a></div></div>
+                <div class="ui-block-e"><div class="ui-bar-b navbar-link"><a href="faq.html" style="text-decoration:none; color:white">FAQ</a></div></div>
+            </div><!-- /grid -->
+        </div><!-- /bar -->
+        <div data-role="content">
+            <div class="ui-body-a">
+                <p>Sweeper data is easy to read once you know what everything stands for. So here's a quick explanation.<br/><br/>Please get in touch at the bottom of the page if you have any further questions.</p>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>Date</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>Date of the match</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>League</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>Match league</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>Home Team</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>Name of the home team.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>Away Team</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>Name of the away team.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>Mark</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>The algo rating for the match; the more positive the number the more likely a home win.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>M#</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>The number of historical matches at this mark.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>H#</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>The number of historical matches with the same Sweeper rank which have resulted in home wins.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>H%</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>The percentage of historical matches at the same Sweeper rank which resulted in a home win.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>HO</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>Minimum home odds required to make a bet statistically viable.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>D#</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>The number of historical matches with the same Sweeper rank which have resulted in draw wins.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>D%</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>The percentage of historical matches at the same Sweeper rank which resulted in a draw win.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>DO</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>Minimum draw odds required to make a bet statistically viable.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>A#</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>The number of historical matches with the same Sweeper rank which have resulted in away wins.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>A%</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>The percentage of historical matches at the same Sweeper rank which resulted in a away win.</p>
+                </div>
+            </div>
+            <div class="ui-block-a help-col-1">
+                <div class="ui-body-a">
+                    <p>AO</p>
+                </div>
+            </div>
+            <div class="ui-block-b help-col-2">
+                <div class="ui-body-a">
+                    <p>Minimum away odds required for Sweeper to function.</p>
+                </div>
+            </div>
+        </div><!-- /content -->
+    </div><!-- /page -->
+</body>
+</html>
