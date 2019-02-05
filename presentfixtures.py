@@ -96,7 +96,8 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
                     awayP, awayO
 
         for r in itertools.filterfalse(lambda r : r.getMark() in \
-                [s.getMark() for s in stats], ratings):
+                [s.getMark() for s in stats if r.getLeague() == s.getLeague()],\
+                ratings):
             stats.append(Statistics(r.getMatch_Date(), r.getAlgo_Id(), \
                     r.getLeague(), r.getMark(), 0, 0, 0, 0))
         analytics = map(lambda r : [(r, statsSummary(s)) for s in stats \
