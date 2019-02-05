@@ -20,7 +20,7 @@ HTML_BODY='''\
             <div class="ui-grid-d">
                 <div class="ui-block-a"><a href="index.html"><div class="ui-bar-b"><img src="images/ball and name no background.png" class="logo"></div></a></div>
                 <div class="ui-block-b"><div class="ui-bar-b navbar-link"><a href="predictions.html" style="text-decoration:none; color:white">Predictions</a></div></div>
-                <div class="ui-block-c"><div class="ui-bar-b navbar-link"><a href="subscribe.html" style="text-decoration:none; color:white">Subscribe</a></div></div>
+                <div class="ui-block-c"><div class="ui-bar-b navbar-link"><a href="index.html#email" data-ajax="false" style="text-decoration:none; color:white">Subscribe</a></div></div>
                 <div class="ui-block-d"><div class="ui-bar-b navbar-link"><a href="help.html" style="text-decoration:none; color:white">Data Help</a></div></div>
                 <div class="ui-block-e"><div class="ui-bar-b navbar-link"><a href="faq.html" style="text-decoration:none; color:white">FAQ</a></div></div>
             </div><!-- /grid -->

@@ -55,11 +55,34 @@ caption {
     height: inherit;
     width: 25%;
     font-weight: bold;
+    color: white;
+    text-shadow: none !important;
 }
 
 .help-col-2 {
     float: left;
     width: 75%;
+    color: white;
+    text-shadow: none !important;
+}
+
+/* email column divs */
+.email-col-1 {
+    float: left;
+    width: 74%;
+}
+
+.email-col-2 {
+    float: left;
+    width: 24%;
+}
+
+.email-input {
+    font-size: calc(50% + 0.5vw) !important; 
+}
+
+.email-button {
+    font-size: calc(50% + 0.5vw) !important; 
 }
 
 p {
@@ -87,6 +110,26 @@ img.home {
     margin-bottom: auto;
     width: 60vw;
 } 
+
+div.intro {
+    width: 60vw;
+    margin: auto;
+    font-size: calc(70% + 0.5vw);
+    text-shadow: none;
+}
+
+h1.intro {
+    text-align: center;
+    color: white;
+    text-shadow: none;
+}
+
+p.intro {
+    text-align: center;
+    color: white;
+    font-size: calc(50% + 0.5vw);
+    text-shadow: none;
+}
 
 /* JQuery Mobile table - column priority visibility */
 /* Show priority 1 at 480px (30em x 16px) */ 
