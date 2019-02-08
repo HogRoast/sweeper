@@ -1,6 +1,7 @@
 import connexion
 import six
 
+from flask import render_template
 from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
 from swagger_server.models.inline_response2001 import InlineResponse2001  # noqa: E501
 from swagger_server.models.inline_response2002 import InlineResponse2002  # noqa: E501
@@ -17,6 +18,9 @@ from shimbase.database import Database, AdhocKeys
 from shimbase.sqlite3impl import SQLite3Impl
 from sweeper.utils import getSweeperConfig
 from sweeper.dbos.league import League as SWPR_League
+
+def index():
+    return render_template('index.html')
 
 def accounts_account_id_algos_get(accountId):  # noqa: E501
     """accounts_account_id_algos_get

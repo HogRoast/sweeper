@@ -179,6 +179,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             server.starttls()
             server.ehlo()
             server.login(fromAddr, mailCfg['pwd'])
+            server.sendmail(fromAddr, toAddrs, mailText)
             server.quit()
             log.info('email sent to: {!s}'.format(toAddrs))
 

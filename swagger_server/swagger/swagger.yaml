@@ -17,6 +17,9 @@ consumes:
 produces:
 - "application/json"
 paths:
+  /:
+    get:
+      operationId: "index"
   /authorize:
     post:
       tags:
