@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
     <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
     <link rel="stylesheet" type="text/css" href="css/sweeper.css">
+    <!-- Load font awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
     <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 </head> 
@@ -26,7 +28,18 @@
             <img src="images/ball and name no background.png" class="home">
             <div class="intro">
                 <h1 class="intro">Football Prediction Algorithm</h1>
-                <p class="intro">Welcome to Sweeper, an algorithm-based football prediction service.<br/><br/>Sweeper provides the latest football tips selected by an algorithm that analyses many years' football data and recommends backing one team over another depending on the odds given. The system is tried and back-tested, and has been successfully used to deliver a profit over the course of a footballing season.<br/><br/>Connect with us via social media or subscribe below to find out more...</p>
+                <p class="intro">Welcome to Sweeper, an algorithm based football prediction service.<br/><br/>Sweeper provides the latest football tips selected by an algorithm that analyses many years' football data and recommends backing one team over another depending on the odds given. The system is tried and back-tested, and has been successfully used to deliver a profit over the course of a footballing season.<br/><br/>Connect with us via social media or subscribe below to find out more...</p>
+                <div class "intro">
+                    <div style="margin-left: 49%;"> 
+                        <a href="https://www.facebook.com/Sweeper-487744451701812/" style="color:white"><i class="fa fa-facebook"></i></a>
+                    </div>
+                    <div style="margin-left: 49%;"> 
+                        <a href="https://twitter.com/intent/tweet?screen_name=FootballSweeper&ref_src=twsrc%5Etfw" style="color:white"><i class="fa fa-twitter"></i></a>
+                    </div>
+                    <div style="margin-left:49%"> 
+                        <a href="http://www.instagram.com/SweeperFootballPredictor" style="color:white"><i class="fa fa-instagram"></i></a>
+                    </div>
+                </div>
                 <form>
                     <div class="ui-block-a email-col-1">
                         <input name="email" id="email" type="email" placeholder="Email Address" value="" data-clear-btn="false" data-shadow="false" class="email-input">
@@ -41,6 +54,7 @@
     <script>
         function onClickEmailBtn() {
             var subscriber = document.getElementById("email").value;
+            window.open("mailto:sweeperfootballpredictor£#$?subject=Subscribe".replace('£', '@').replace('#', 'gmail').replace('$', '.com'));
         }
     </script>
 </body>
