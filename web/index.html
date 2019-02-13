@@ -19,42 +19,30 @@
             <div class="ui-grid-d">
                 <div class="ui-block-a"><a href="index.html"><div class="ui-bar-b"><img src="images/ball and name no background.png" class="logo"></div></a></div>
                 <div class="ui-block-b"><div class="ui-bar-b navbar-link"><a href="predictions.html" style="text-decoration:none; color:white">Predictions</a>  <span class="popuptext" id="myPopup">Popup text...</span></div></div>
-                <div class="ui-block-c"><div class="ui-bar-b navbar-link"><a href="#email" data-ajax="false" style="text-decoration:none; color:white">Subscribe</a></div></div>
-                <div class="ui-block-d"><div class="ui-bar-b navbar-link"><a href="help.html" style="text-decoration:none; color:white">Data Help</a></div></div>
-                <div class="ui-block-e"><div class="ui-bar-b navbar-link"><a href="faq.html" style="text-decoration:none; color:white">FAQ</a></div></div>
+                <div class="ui-block-c"><div class="ui-bar-b navbar-link"><a href="help.html" style="text-decoration:none; color:white">Data Help</a></div></div>
+                <div class="ui-block-d"><div class="ui-bar-b navbar-link"><a href="faq.html" style="text-decoration:none; color:white">FAQ</a></div></div>
+                <div class="ui-block-e"><div class="ui-bar-b navbar-link"><a href="#contact" data-ajax="false" style="text-decoration:none; color:white">Contact Us</a></div></div>
             </div><!-- /grid -->
         </div><!-- /bar -->
         <div data-role="content">
             <img src="images/ball and name no background.png" class="home">
             <div class="intro">
                 <h1 class="intro">Football Prediction Algorithm</h1>
-                <p class="intro">Welcome to Sweeper, an algorithm based football prediction service.<br/><br/>Sweeper provides the latest football tips selected by an algorithm that analyses many years' football data and recommends backing one team over another depending on the odds given. The system is tried and back-tested, and has been successfully used to deliver a profit over the course of a footballing season.<br/><br/>Connect with us via social media or subscribe below to find out more...</p>
-                <div class "intro">
-                    <div style="margin-left: 49%;"> 
-                        <a href="https://www.facebook.com/Sweeper-487744451701812/" style="color:white"><i class="fa fa-facebook"></i></a>
-                    </div>
-                    <div style="margin-left: 49%;"> 
-                        <a href="https://twitter.com/intent/tweet?screen_name=FootballSweeper&ref_src=twsrc%5Etfw" style="color:white"><i class="fa fa-twitter"></i></a>
-                    </div>
-                    <div style="margin-left:49%"> 
-                        <a href="http://www.instagram.com/SweeperFootballPredictor" style="color:white"><i class="fa fa-instagram"></i></a>
+                <p class="intro">Welcome to Sweeper, an algorithm based football prediction service.<br/><br/>Sweeper provides the latest football tips selected by an algorithm that analyses many years' football data and recommends backing one team over another depending on the odds given. The system is tried and back-tested, and has been successfully used to deliver a profit over the course of a footballing season.<br/><br/>Connect with us via social media or email below to find out more...</p>
+                <div class="ui-bar-b">
+                    <div class="ui-grid-c">
+                        <div class="ui-block-a"><div class="ui-bar-b navbar-link"><a href="#" onclick="onClickEmailBtn(); return false;" style="text-decoration:none; color:white"><i class="fa fa-at"></i></div></a></div>
+                        <div class="ui-block-b"><div class="ui-bar-b navbar-link"><a href="https://www.facebook.com/Sweeper-487744451701812/" style="text-decoration:none; color:white"><i class="fa fa-facebook"></i></div></a></div>
+                        <div class="ui-block-c"><div class="ui-bar-b navbar-link"><a href="http://www.instagram.com/SweeperFootballPredictor" style="text-decoration:none; color:white"><i class="fa fa-instagram"></i></div></a></div>
+                        <div class="ui-block-d"><div class="ui-bar-b navbar-link"><a href="https://twitter.com/intent/tweet?screen_name=FootballSweeper&ref_src=twsrc%5Etfw" style="text-decoration:none; color:white"><i class="fa fa-twitter"></i></div></a></div>
                     </div>
                 </div>
-                <form>
-                    <div class="ui-block-a email-col-1">
-                        <input name="email" id="email" type="email" placeholder="Email Address" value="" data-clear-btn="false" data-shadow="false" class="email-input">
-                    </div>
-                    <div class="ui-block-b email-col-2">
-                        <a data-role="button" class="ui-btn ui-btn-b ui-corner-all email-button" onclick="onClickEmailBtn()">Subscribe</a>
-                    </div>
-                </form>
             </div>
         </div><!-- /content -->
     </div><!-- /page -->
     <script>
         function onClickEmailBtn() {
-            var subscriber = document.getElementById("email").value;
-            window.open("mailto:sweeperfootballpredictor£#$?subject=Subscribe".replace('£', '@').replace('#', 'gmail').replace('$', '.com'));
+            window.open("mailto:sweeperfootballpredictor£#$.?subject=Contact".replace('£', '@').replace('#', 'gmail').replace('$', 'com'));
         }
     </script>
 </body>
