@@ -6,6 +6,7 @@ db/insert_sources.sql
 db/insert_static.sql
 excel/Gambling.*.xlsx
 excel/Wins.*.xlsx
+excel/bet_history*.xlsx
 footy.ini
 
 # gvim backup ignores

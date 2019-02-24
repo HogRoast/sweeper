@@ -51,13 +51,15 @@ def genStats(log:Logger, algoId:int, league:str=None):
                 order = ['>date']
                 for m in db.select(Match.createAdhoc(keys, order)):
                     rating = db.select(Rating(m.getDate(), m.getLeague(), 
-                            m.getHome_Team(), m.getAway_Team(), algoId))[0]
-                    mark = rating.getMark()
-                    s = stats.get(mark, Statistics(str(datetime.now().date()), 
-                        algoId, league.getMnemonic(), mark, 0, 0, 0, 0))
-                    s.setMark_Freq(s.getMark_Freq() + 1)
-                    setfn(s, getfn(s) + 1)
-                    stats[mark] = s
+                            m.getHome_Team(), m.getAway_Team(), algoId))
+                    if rating:
+                        mark = rating[0].getMark()
+                        s = stats.get(mark, Statistics(str( \
+                                datetime.now().date()), algoId, \
+                                league.getMnemonic(), mark, 0, 0, 0, 0))
+                        s.setMark_Freq(s.getMark_Freq() + 1)
+                        setfn(s, getfn(s) + 1)
+                        stats[mark] = s
 
             getStatisticsForResult('H', Statistics.setHome_Freq, 
                     Statistics.getHome_Freq)

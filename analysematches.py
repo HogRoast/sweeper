@@ -73,9 +73,11 @@ def analyseMatches(log:Logger, algoId:int, league:str=None, season:str=None):
                     league.getMnemonic()))
             for m in unmarked:
                 hTeamMatches = list(filter(lambda x : m.getHome_Team() in \
-                        (x.getHome_Team(), x.getAway_Team()), results))
+                        (x.getHome_Team(), x.getAway_Team()) and x.getDate() \
+                        < m.getDate(), results))
                 aTeamMatches = list(filter(lambda x : m.getAway_Team() in \
-                        (x.getHome_Team(), x.getAway_Team()), results))
+                        (x.getHome_Team(), x.getAway_Team()) and x.getDate() \
+                        < m.getDate(), results))
                 mark = algo.markMatch(m, hTeamMatches, aTeamMatches)
                 if mark is not None:
                     db.upsert(Rating(m.getDate(), m.getLeague(), \
