@@ -106,7 +106,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
         presentation = zip(fixtures, analytics)
  
         tables = {}
-        mailText = ''
+        mailText = 'Visit the website for more details - http://www.sweeperfootball.com<br/><br/>'
         for i, (league, group) in enumerate(itertools.groupby(presentation, \
                 lambda x : x[0].getLeague())):
             try:
