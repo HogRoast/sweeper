@@ -40,12 +40,16 @@ def analyseStatistics(
     with Database(dbName, SQLite3Impl()) as db, db.transaction() as t:     
         try:
             keys = {'algo_id' : algoId}
-            order = None
+            order = ['>generation_date']
             if league: 
                 keys.update({'league' : league})
-                order = ['>league']
+                order.append('>league')
             if lbnd and ubnd: keys.update({'>mark' : lbnd, '<mark' : ubnd})
             statistics = db.select(Statistics.createAdhoc(keys, order)) 
+            if not statistics: raise Exception('No statistics')
+            lastGenDate = statistics[0].getGeneration_Date()
+            statistics = [s for s in statistics \
+                    if s.getGeneration_Date() == lastGenDate]            
         except:
             log.critical('No statistics matching the provided algo and ' \
                     'league exists')
