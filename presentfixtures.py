@@ -52,8 +52,8 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
         try:
             del keys['result']
             del keys['>date']
-            dt = datetime.strptime(fixtures[0].getDate(), '%Y-%m-%d') \
-                    - timedelta(days=1)
+            dt = datetime.strptime(min(f.getDate() for f in fixtures), \
+                    '%Y-%m-%d') - timedelta(days=1)
             keys.update({'>match_date' : dt.strftime('%Y-%m-%d')})
             keys.update({'algo_id' : algoId})
             order = ['<league', '<match_date']
