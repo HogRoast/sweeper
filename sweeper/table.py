@@ -187,8 +187,8 @@ class Table:
                         sss = sss.split('|')
                         sss[colIdx] = '\033[1m{}\033[0m'.format(sss[colIdx])
                         sss = '|'.join(sss)
-                if not repeat:
-                    del self._highlights[j]
+                    if not repeat:
+                        del self._highlights[j]
             s += sss.format(*r)
 
         return s

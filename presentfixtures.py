@@ -169,7 +169,9 @@ def presentFixtures(log:Logger, algoId:int, league:str=None, show:bool=False, \
             t.append([[f.getDate(), '{} (vs) {}'.format(f.getHome_Team(), \
                     f.getAway_Team()), r.getMark(), *a] \
                     for f, [(r, a)] in presGrp])
-            t.setHighlights([[1, False] for f, [(r, a)] in presGrp \
+            t.setHighlights([['Match', '{} (vs) {}'.format(f.getHome_Team(), \
+                    f.getAway_Team()), False, False] \
+                    for f, [(r, a)] in presGrp \
                     if r.getMark() > algoCfg.getL_Bnd_Mark() \
                     and r.getMark() < algoCfg.getU_Bnd_Mark()])
             t.htmlReplacements([['(vs)', '<br/>']])
