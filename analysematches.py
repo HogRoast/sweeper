@@ -13,7 +13,8 @@ from sweeper.dbos.algo import Algo
 from sweeper.dbos.league import League
 from sweeper.dbos.season import Season
 
-def analyseMatches(log:Logger, algoId:int, league:str=None, season:str=None):
+def analyseMatches(log:Logger, algoId:int, league:str=None, season:str=None, \
+        backtest:bool=False):
     '''
     Mark all unmarked matches
 
@@ -21,10 +22,11 @@ def analyseMatches(log:Logger, algoId:int, league:str=None, season:str=None):
     :param algoId: the algo to apply
     :param league: the league to apply the algo over, None means ALL
     :param season: the season to apply the algo over, None means ALL
+    :param backtest: run in backtest mode
     '''
-    log.info('Analysing matches for league <{}>, season <{}> with algo <{}>'\
-            .format(league if league else 'ALL', season if season else 'ALL',\
-            algoId))
+    log.info('Analysing matches for league <{}>, season <{}> with algo <{}> ' \
+            'and backtest <{}>'.format(league if league else 'ALL', \
+            season if season else 'ALL', algoId, backtest))
 
     config = getSweeperConfig()
     dbName = config['dbName']
@@ -34,6 +36,9 @@ def analyseMatches(log:Logger, algoId:int, league:str=None, season:str=None):
         try:
             algo = db.select(Algo(algoId))[0]
             algo = AlgoFactory.create(algo.getName())
+            # In backtest mode use the inverse algoId to retrieve config,
+            # ratings and stats
+            if backtest: algoId = -algoId
         except:
             log.critical('No algo matching the provided id exists')
             sys.exit(2)
@@ -51,7 +56,8 @@ def analyseMatches(log:Logger, algoId:int, league:str=None, season:str=None):
             log.critical('No season matching the provided season exists')
             sys.exit(4)
 
-        ratings = db.select(Rating(algo_id=algoId))
+        keys = {'algo_id' : algoId}
+        ratings = db.select(Rating.createAdhoc(keys))
         ratedMatchKeys = [MatchKeys(r.getMatch_Date(), r.getLeague(), \
                 r.getHome_Team(), r.getAway_Team()) for r in ratings]
         log.info('Found {} ratings for algo {}'.format(len(ratedMatchKeys), \
@@ -88,9 +94,11 @@ if __name__ == '__main__':
 
     log = Logger()
     sopts = getSweeperOptions(log, sys.argv)
-    if not sopts.test(SweeperOptions.ALGO):
-        print('ERROR: No algo id provided, python analysematches -h for help')
+    if not (sopts.test(SweeperOptions.ALGO) or sopts.algoId < 0):
+        print('ERROR: null/negative algo id provided, python analysematches ' \
+                '-h for help')
         sys.exit(1)
     league = sopts.leagueMnemonic if sopts.test(SweeperOptions.LEAGUE) else None
     season = sopts.season if sopts.test(SweeperOptions.SEASON) else None
-    analyseMatches(log, sopts.algoId, league, season)
+    analyseMatches(log, sopts.algoId, league, season, \
+            sopts.test(SweeperOptions.BACKTEST))

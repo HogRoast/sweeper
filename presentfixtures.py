@@ -6,9 +6,11 @@ from shimbase.database import Database, AdhocKeys
 from shimbase.sqlite3impl import SQLite3Impl
 
 from genformtable import genFormTable
+from sweeper.algos import AlgoFactory
 from sweeper.logging import Logger
 from sweeper.table import Table
 from sweeper.utils import getSweeperConfig
+from sweeper.dbos.algo import Algo
 from sweeper.dbos.algo_config import Algo_Config
 from sweeper.dbos.league import League
 from sweeper.dbos.match import Match
@@ -17,28 +19,57 @@ from sweeper.dbos.season import Season
 from sweeper.dbos.statistics import Statistics
 from sweeper.dbos.subscriber import Subscriber
 
-def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
-        show:bool=False, mail:bool=False):
+def presentFixtures(log:Logger, algoId:int, league:str=None, show:bool=False, \
+        mail:bool=False, backtest:bool=False, season:str=None):
     '''
     Present the latest set of fixtures with all the appropriate ratings.
 
     :param log: a logging object
-    :param date: include all fixtures from this date and onward
     :param league: the subject league, None signifies all available leagues 
     :param show: displays any tables as HTML when True
     :param mail: send as email
+    :param backtest: run in backtest mode
+    :param season: season to run backtest for
     '''
-    log.info('Presenting fixtures for algo <{}>, date <{}> and league <{}>\
-            '.format(algoId, date, league if league else 'ALL'))
+    log.info('Presenting fixtures for algo <{}>, league <{}> and backtest ' \
+            '<{}> for season <{}>'.format(algoId, league if league else 'ALL', \
+            backtest, season))
 
     config = getSweeperConfig()
     dbName = config['dbName']
     log.debug('Opening database: {}'.format(dbName))
 
     with Database(dbName, SQLite3Impl()) as db, db.transaction() as t:     
-        dt = datetime.strptime(date, '%Y-%m-%d') - timedelta(days=1)
+        date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
         try:
-            keys = {'>date' : dt.strftime('%Y-%m-%d'), 'result' : ''}
+            algo = db.select(Algo(algoId))[0]
+            algo = AlgoFactory.create(algo.getName())
+        except Exception as e:
+            log.critical('No algo matching the provided id exists')
+            log.critical('Because...%s' % e)
+            sys.exit(2)
+
+        if backtest:
+            # In backtest mode use the inverse algoId to retrieve config,
+            # ratings and stats and process all matches irrespective of
+            # existing results
+            algoId = -algoId
+            if season:
+                try:
+                    season = db.select(Season(season))[0]
+                except Exception as e:
+                    log.critical( \
+                            'No season matching the provided season exists')
+                    sys.exit(3)
+            else:
+                log.critical('Must specify season with backtest')
+                sys.exit(4)
+            keys = {'>date' : season.getL_Bnd_Date(), \
+                    '<date' : season.getU_Bnd_Date()}
+        else:
+            keys = {'>date' : date, 'result' : ''}
+
+        try:
             if league: keys.update({'league' : league})
             order = ['<league', '<date']
             fixtures = db.select(Match.createAdhoc(keys, order))
@@ -47,10 +78,11 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             log.critical("Couldn't find fixtures for league and date " \
                     "provided, run sourcedata?")
             log.critical('Because...{}'.format(e))
-            sys.exit(2)
+            sys.exit(5)
 
         try:
-            del keys['result']
+            if 'result' in keys: del keys['result']
+            if '<date' in keys: keys.update({'<match_date' : keys.pop('<date')})
             del keys['>date']
             dt = datetime.strptime(min(f.getDate() for f in fixtures), \
                     '%Y-%m-%d') - timedelta(days=1)
@@ -66,10 +98,12 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             log.critical("Couldn't find algo ratings for all fixtures, " \
                     "run analysematches?")
             log.critical('Because...{}'.format(e))
-            sys.exit(3)
+            sys.exit(6)
 
         try:
-            keys.update({'>generation_date' : keys.pop('>match_date')})
+            del keys['>match_date']
+            if '<match_date' in keys: del keys['<match_date']
+            keys.update({'>generation_date' : date})
             order = ['>generation_date']
             stats = db.select(Statistics.createAdhoc(keys, order))
             if not stats: raise Exception('No statistics')
@@ -79,7 +113,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             log.critical("Couldn't find algo statistics for league and date, " \
                     "run genstats?")
             log.critical('Because...{}'.format(e))
-            sys.exit(4)
+            sys.exit(7)
 
         def statsSummary(s:Statistics):
             markF = s.getMark_Freq()
@@ -106,7 +140,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
         presentation = zip(fixtures, analytics)
  
         tables = {}
-        mailText = 'Visit the website for more details - http://www.sweeperfootball.com<br/><br/>'
+        mailText = 'Visit the website for more details - http://www.sweeperfootball.com<br/><br/>The website is up to date again after a few weeks hiatus.<br/><br/>CAVEAT! Last week of the premier league season! Can\'t stand behind any of the algo predictions this week, only two teams have anything left to play for in the premiership and even that looks a foregone conclusion. There are two weeks left in the Bundesliga however. Next season the algo will be smarter and take this into account.<br/><br/>In the coming weeks Sweeper will provide an end of season summary...<br/><br/>'
         for i, (league, group) in enumerate(itertools.groupby(presentation, \
                 lambda x : x[0].getLeague())):
             try:
@@ -116,7 +150,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
                 log.critical('Because..{}'.format(e))
                 sys.exit(5)
             try:
-                keys = {'league' : league}
+                keys = {'league' : league, 'algo_id' : algoId}
                 order = ['>config_date']
                 algoCfg = db.select(Algo_Config.createAdhoc(keys, order))[0]
             except Exception as e:
@@ -135,8 +169,7 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
             t.append([[f.getDate(), '{} (vs) {}'.format(f.getHome_Team(), \
                     f.getAway_Team()), r.getMark(), *a] \
                     for f, [(r, a)] in presGrp])
-            t.setHighlights([[f.getHome_Team(), False] \
-                    for f, [(r, a)] in presGrp \
+            t.setHighlights([[1, False] for f, [(r, a)] in presGrp \
                     if r.getMark() > algoCfg.getL_Bnd_Mark() \
                     and r.getMark() < algoCfg.getU_Bnd_Mark()])
             t.htmlReplacements([['(vs)', '<br/>']])
@@ -149,9 +182,10 @@ def presentFixtures(log:Logger, algoId:int, date:str, league:str=None, \
                 log.critical('Because...{}'.format(e))
                 sys.exit(6)
 
-            log.toggleMask(Logger.INFO)
+            mask = log.getMask()
+            log.setMask(mask & ~Logger.INFO)
             leagueTable, formTable = genFormTable(log, league, season, date)
-            log.toggleMask(Logger.INFO)
+            log.setMask(mask)
             log.info(t)
             log.info(formTable)
 
@@ -190,11 +224,12 @@ if __name__ == '__main__':
 
     log = Logger()
     sopts = getSweeperOptions(log, sys.argv)
-    if not sopts.test(SweeperOptions.ALGO):
-        print('ERROR: No algo id provided, python presentfixtures -h for help')
+    if not (sopts.test(SweeperOptions.ALGO) or sopts.algoId < 0):
+        print('ERROR: null/negative algo id provided, python presentfixtures ' \
+                '-h for help')
         sys.exit(1)
     league = sopts.leagueMnemonic if sopts.test(SweeperOptions.LEAGUE) else None
-    date = sopts.date if sopts.test(SweeperOptions.DATE) else \
-            datetime.today().strftime('%Y-%m-%d')
-    presentFixtures(log, sopts.algoId, date, league, \
-            sopts.test(SweeperOptions.SHOW), sopts.test(SweeperOptions.MAIL))
+    season = sopts.season if sopts.test(SweeperOptions.SEASON) else None
+    presentFixtures(log, sopts.algoId, league, \
+            sopts.test(SweeperOptions.SHOW), sopts.test(SweeperOptions.MAIL), \
+            sopts.test(SweeperOptions.BACKTEST), season)

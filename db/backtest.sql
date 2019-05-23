@@ -26,7 +26,7 @@ with results_cte as (
             and c.algo_id = -1
         group by r.algo_id, r.league, r.mark
     )
-select m.*, r.mark, (cast(t2.mark_freq as real) / t1.res_freq) as req_odds 
+select m.*, r.mark, (cast(t2.mark_freq as real) / t1.res_freq) as req_odds, rowid as t_stk, case m.result when 'H' then m.best_odds_h else 0 end as win 
 from match m
 inner join rating r on r.match_date = m.date
                         and r.home_team = m.home_team
@@ -49,3 +49,4 @@ where s.name = '1819'
     and m.league in ('E0', 'D1')
     and m.best_odds_h >= (cast(t2.mark_freq as real) / t1.res_freq)
 order by m.date, m.home_team;
+

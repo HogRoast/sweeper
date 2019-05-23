@@ -12,16 +12,18 @@ from sweeper.dbos.match import Match, MatchKeys
 from sweeper.dbos.rating import Rating
 from sweeper.dbos.statistics import Statistics
 
-def genStats(log:Logger, algoId:int, league:str=None):
+def genStats(log:Logger, algoId:int, league:str=None, backtest:bool=False):
     '''
     Generate statistics on the marked matches
 
     :param log: a logging object
     :param algoId: the algo to apply
     :param league: the league to apply the algo over, all if unset
+    :param backtest: run in backtest mode
     '''
-    log.info('Generating statistics for league <{}> with algo <{}>'\
-            .format(league if league else 'ALL', algoId))
+    log.info('Generating statistics for league <{}> with algo <{}> and ' \
+            'backtest <{}>'.format(league if league else 'ALL', algoId, \
+            backtest))
 
     config = getSweeperConfig()
     dbName = config['dbName']
@@ -31,6 +33,9 @@ def genStats(log:Logger, algoId:int, league:str=None):
         try:
             algo = db.select(Algo(algoId))[0]
             algo = AlgoFactory.create(algo.getName())
+            # In backtest mode use the inverse algoId to retrieve config,
+            # ratings and stats:
+            if backtest: algoId = -algoId
         except:
             log.critical('No algo matching the provided id exists')
             sys.exit(3)
@@ -76,9 +81,10 @@ if __name__ == '__main__':
 
     log = Logger()
     sopts = getSweeperOptions(log, sys.argv)
-    if not sopts.test(SweeperOptions.ALGO):
-        print('ERROR: No algo id provided, python genstats -h for help')
+    if not (sopts.test(SweeperOptions.ALGO) or sopts.algoId < 0):
+        print('ERROR: null/negative algo id provided, python genstats ' \
+                '-h for help')
         sys.exit(1)
     league = sopts.leagueMnemonic if sopts.test(SweeperOptions.LEAGUE) else None
 
-    genStats(log, sopts.algoId, league)
+    genStats(log, sopts.algoId, league, sopts.test(SweeperOptions.BACKTEST))

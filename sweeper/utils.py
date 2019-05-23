@@ -7,17 +7,18 @@ class SweeperArgsError(Exception):
         self.msg = msg
 
 class SweeperOptions:
-    DEBUG_LOGGING       = 0b00000000001
-    CURRENT_SEASON_ONLY = 0b00000000010
-    ALGO                = 0b00000000100
-    LEAGUE              = 0b00000001000
-    SEASON              = 0b00000010000
-    LOWER_BOUND         = 0b00000100000
-    UPPER_BOUND         = 0b00001000000
-    DATE                = 0b00010000000
-    TEAM                = 0b00100000000
-    SHOW                = 0b01000000000
-    MAIL                = 0b10000000000
+    DEBUG_LOGGING       = 0b000000000001
+    CURRENT_SEASON_ONLY = 0b000000000010
+    ALGO                = 0b000000000100
+    LEAGUE              = 0b000000001000
+    SEASON              = 0b000000010000
+    LOWER_BOUND         = 0b000000100000
+    UPPER_BOUND         = 0b000001000000
+    DATE                = 0b000010000000
+    TEAM                = 0b000100000000
+    SHOW                = 0b001000000000
+    MAIL                = 0b010000000000
+    BACKTEST            = 0b100000000000
 
     validOpts = [
             DEBUG_LOGGING,
@@ -30,11 +31,12 @@ class SweeperOptions:
             DATE,
             TEAM,
             SHOW,
-            MAIL
+            MAIL,
+            BACKTEST
             ]
 
     def __init__(self):
-        self._mask = 0b00000000
+        self._mask = 0b0
         self.algoId = None
         self.leagueMnemonic = None
 
@@ -54,7 +56,7 @@ class SweeperOptions:
         :param opt: a Sweeper option
         :returns: True if set false otherwise
         '''
-        return self._mask & opt
+        return self._mask & opt == opt
 
 def getSweeperOptions(log, opts):
     ''' 
@@ -74,10 +76,12 @@ def getSweeperOptions(log, opts):
                 '         --show         : show any tables as html\n' \
                 '   analysematches\n' \
                 '       * -a  <id>       : algo to apply\n' \
+                '         -b             : backtest mode\n' \
                 '         -l  <mnemonic> : subject league, all if unset\n' \
                 '         -s  <season>   : subject season, all if unset\n' \
                 '   analysestatistics\n' \
                 '       * -a  <id>       : algo to apply\n' \
+                '         -b             : backtest mode\n' \
                 '         -l  <mnemonic> : subject league, all if unset\n' \
                 '         -lb <int>      : lower bound mark\n' \
                 '         -ub <int>      : upper bound mark\n' \
@@ -102,13 +106,21 @@ def getSweeperOptions(log, opts):
                 '       * -s  <season>   : subject season\n' \
                 '   genstats\n' \
                 '       * -a  <id>       : algo to apply\n' \
+                '         -b             : backtest mode\n' \
                 '         -l  <mnemonic> : subject league, all if unset\n' \
                 '   presentfixtures\n' \
                 '       * -a  <id>       : algo ratings to present\n' \
-                '         -dt <date>     : fixtures date onward YYYY-MM-DD, ' \
+                '         -b             : backtest mode\n' \
                 'today if unset\n' \
-                '         -m             : send email\n' \
                 '         -l  <mnemonic> : subject league, all if unset\n' \
+                '         -m             : send email\n' \
+                '         -s  <season>   : subject season, only applies in ' \
+                'backtest mode, current if unset\n' \
+                '   runsweeper\n' \
+                '       * -a <id>        : algo ratings to present\n' \
+                '         -l <mnemonic>  : subject league\n' \
+                '         -m             : send email\n' \
+                '         -s <season>    : subject season\n' \
                 '   sourcedata\n' \
                 '         -c             : apply to current season only\n' \
                 '\n' \
@@ -120,15 +132,17 @@ def getSweeperOptions(log, opts):
         # -h first as the application will exit on help
         if '-h' in opts:
             showHelpAndExit()
+        if '-b' in opts:
+            sopts._set(SweeperOptions.BACKTEST)
+        if '-c' in opts:
+            sopts._set(SweeperOptions.CURRENT_SEASON_ONLY)
         if '-d' in opts: 
             log.toggleMask(Logger.DEBUG | Logger.TIME | Logger.TYPE)
             sopts._set(SweeperOptions.DEBUG_LOGGING)
-        if '-c' in opts:
-            sopts._set(SweeperOptions.CURRENT_SEASON_ONLY)
-        if '--show' in opts:
-            sopts._set(SweeperOptions.SHOW)
         if '-m' in opts:
             sopts._set(SweeperOptions.MAIL)
+        if '--show' in opts:
+            sopts._set(SweeperOptions.SHOW)
         try:
             if '-a' in opts:
                 idx = opts.index('-a')

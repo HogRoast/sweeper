@@ -20,7 +20,8 @@ def createPlot(
     plt.show()
 
 def analyseStatistics(
-        log:Logger, algoId:int, league:str=None, lbnd:int=None, ubnd:int=None):
+        log:Logger, algoId:int, league:str=None, lbnd:int=None, ubnd:int=None, \
+                backtest:bool=False):
     '''
     Analyse statistics for the algo and league combination
 
@@ -29,16 +30,21 @@ def analyseStatistics(
     :param league: the league subject, all if unset
     :param lbnd: include marks above this value
     :param ubnd: include marks below this value
+    :param backtest: run in backtest mode
     '''
-    log.info('Analysing statistics for league <{}> with algo <{}>'\
-            .format(league if league else 'ALL', algoId))
+    log.info('Analysing statistics for league <{}> with algo <{}> and ' \
+            'backtest <{}>'.format(league if league else 'ALL', algoId, \
+            backtest))
 
     config = getSweeperConfig()
     dbName = config['dbName']
     log.debug('Opening database: {}'.format(dbName))
 
     with Database(dbName, SQLite3Impl()) as db, db.transaction() as t:     
-        try:
+        try
+            # In backtest mode use the inverse algoId to retrieve config,
+            # ratings and stats:
+            if backtest: algoId = -algoId
             keys = {'algo_id' : algoId}
             order = ['>generation_date']
             if league: 
@@ -95,12 +101,13 @@ if __name__ == '__main__':
 
     log = Logger()
     sopts = getSweeperOptions(log, sys.argv)
-    if not sopts.test(SweeperOptions.ALGO):
-        print('ERROR: No algo id provided, python analysestatistics ' \
+    if not (sopts.test(SweeperOptions.ALGO) or sopts.algoId < 0):
+        print('ERROR: null/negative algo id, python analysestatistics ' \
                 '-h for help')
         sys.exit(1)
     league = sopts.leagueMnemonic if sopts.test(SweeperOptions.LEAGUE) else None
     lbnd = sopts.lowerBound if sopts.test(SweeperOptions.LOWER_BOUND) else None
     ubnd = sopts.upperBound if sopts.test(SweeperOptions.UPPER_BOUND) else None
 
-    analyseStatistics(log, sopts.algoId, league, lbnd, ubnd)
+    analyseStatistics(log, sopts.algoId, league, lbnd, ubnd, \
+            sopts.test(SweeperOptions.BACKTEST))

@@ -59,7 +59,10 @@ def createWebPage(log:Logger, algoId:int, date:str, league:str=None, \
     log.info('Creating web page for algo <{}>, date <{}> and league <{}>\
             '.format(algoId, date, league if league else 'ALL'))
 
-    tables = presentFixtures(log, algoId, date, league)
+    mask = log.getMask()
+    log.setMask(mask & ~Logger.INFO) 
+    tables = presentFixtures(log, algoId, league)
+    log.setMask(mask) 
     groups = ''
     for groupId, (name, (fixturesTable, leagueTable, formTable)) \
             in enumerate(sorted(tables.items(), key=lambda x : x[0])):
@@ -71,7 +74,7 @@ def createWebPage(log:Logger, algoId:int, date:str, league:str=None, \
                 groupId=groupId, collapsibleTheme=collapsibleTheme)
     html = HTML_HEAD + HTML_BODY.format(groups=groups)
 
-    log.info(html)
+    log.debug(html)
     with open('web/predictions.html', 'w') as f:
         f.write(html)
     if show:
