@@ -24,6 +24,12 @@ class Table:
             '</style>'\
             '</head>'
 
+    class Palette:
+        DEFAULT = ['1m', 'lightgreen']
+        RED     = ['31;1m', 'lightpink']
+        GREEN   = ['32;1m', 'lightgreen']
+        COLOURS = [DEFAULT, RED, GREEN]
+
     def __init__(self, headers:list=None, schema:list=None, rows:list=None,\
             highlights:list=None, title:str=None, style:str=STYLE,\
             htmlReplacements:list=None):
@@ -76,8 +82,13 @@ class Table:
         if self._rows:
             s += '<tbody>'
             for l in lines:
-                if l[:4] == '\033[1m' and l[-4:] == '\033[0m':
-                    s += '<tr bgcolor=lightgreen><td>'
+                if l[:2] == '\033[' and l[-4:] == '\033[0m':
+                    colour = Table.Palette.DEFAULT[1]
+                    for c in Table.Palette.COLOURS:
+                        if l[2:len(c[0])+2] == c[0]:
+                            colour = c[1]
+                            break
+                    s += '<tr bgcolor={}><td>'.format(colour)
                 else:
                     s += '<tr><td>'
                 s += l.replace('|', '</td><td>')
@@ -85,7 +96,9 @@ class Table:
             s += '</tbody>'
 
         # replace any remaining highlight codes
-        s = s.replace('\033[1m', '<span style="background-color:lightgreen">')
+        for c in Table.Palette.COLOURS:
+            s = s.replace('\033[{}'.format(c[0]), \
+                    '<span style="background-color:{}">'.format(c[1]))
         s = s.replace('\033[0m', '</span>')
 
         if self._replacements:
@@ -127,18 +140,31 @@ class Table:
         self._rows = rows
         self._validate()
 
-    def addHighlight(self, col, pattern=None, wholeRow=False, repeat=True):  
+    def addHighlight(self, col, pattern=None, wholeRow=False, repeat=True, \
+            colour=Palette.DEFAULT):  
+        # want the wholerow highlights first in the list to ensure the
+        # highlight application is more efficient when printing the table,
+        # however don't want to sort everytime we add a highlight so just
+        # prepend wholerows and append the rest.
         if isinstance(col, str):
             for i, h in enumerate(self._headers):
                 if h == col:
                     col = i
-                    self._highlights.append((col, pattern, wholeRow, repeat))
+                    if wholeRow:
+                        self._highlights.insert(0, 
+                                (col, pattern, wholeRow, repeat, colour))
+                    else:
+                        self._highlights.append(
+                                (col, pattern, wholeRow, repeat, colour))
                     break
         elif isinstance(col, int):
-            self._highlights.append((col, pattern, wholeRow, repeat))
-        # sort the highlights so whole rows are managed first in the output
-        self._highlights = sorted(self._highlights, key=lambda x : x[-1], \
-            reverse=True)
+            self._highlights.append((col, pattern, wholeRow, repeat, colour))
+            if wholeRow:
+                self._highlights.insert(0, 
+                        (col, pattern, wholeRow, repeat, colour))
+            else:
+                self._highlights.append(
+                        (col, pattern, wholeRow, repeat, colour))
 
     def setHighlights(self, highlights):
         [self.addHighlight(*hl) for hl in highlights]
@@ -171,24 +197,26 @@ class Table:
             ss = ('{}|' * len(self._rows[0]))[:-1]
         if self._headers:
             lt = len(s)
-            s += ss.replace('f', '').format(*self._headers)
+            s += re.sub('\.[0-9]*?f', '', ss).format(*self._headers)
             s += '\n' + ('-' * (len(s)-lt)) + '\n'
         ss += '\n'
 
+        highlights = copy.copy(self._highlights)
         for i, r in enumerate(self._rows):
             sss = ss
-            for j, (colIdx, pattern, wholeRow, repeat) in \
-                    enumerate(self._highlights):
+            for j, (colIdx, pattern, wholeRow, repeat, colour) \
+                    in enumerate(highlights):
                 if pattern is None or pattern == r[colIdx]:
+                    if not repeat:
+                        del highlights[j]
                     if wholeRow:
-                        sss = '\033[1m{}\033[0m\n'.format(ss[:-1])
+                        sss = '\033[{}{}\033[0m\n'.format(colour[0], ss[:-1])
                         break
                     else:
                         sss = sss.split('|')
-                        sss[colIdx] = '\033[1m{}\033[0m'.format(sss[colIdx])
+                        sss[colIdx] = '\033[{}{}\033[0m'.format(colour[0], \
+                                sss[colIdx])
                         sss = '|'.join(sss)
-                    if not repeat:
-                        del self._highlights[j]
             s += sss.format(*r)
 
         return s
@@ -200,9 +228,9 @@ if __name__ == '__main__':
     t.append([[1, 2.454, 3], [4, 5, 6]])
     t.append([[7, 8, 'dfd']])
     t.setHighlights([[1]])
-    t.setHighlights([[2, 'dfd', True]])
+    t.setHighlights([[2, 'dfd', True, False, Table.Palette.GREEN]])
     t.append([[75,3, 3]])
-    t.addHighlight('3rd', 3, False, False)
+    t.addHighlight('3rd', 3, False, False, Table.Palette.RED)
     print(t.getRows())
     print(t.getColumns())
     print(t)

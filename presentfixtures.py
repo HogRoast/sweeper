@@ -140,7 +140,7 @@ def presentFixtures(log:Logger, algoId:int, league:str=None, show:bool=False, \
         presentation = zip(fixtures, analytics)
  
         tables = {}
-        mailText = 'Visit the website for more details - http://www.sweeperfootball.com<br/><br/>The website is up to date again after a few weeks hiatus.<br/><br/>CAVEAT! Last week of the premier league season! Can\'t stand behind any of the algo predictions this week, only two teams have anything left to play for in the premiership and even that looks a foregone conclusion. There are two weeks left in the Bundesliga however. Next season the algo will be smarter and take this into account.<br/><br/>In the coming weeks Sweeper will provide an end of season summary...<br/><br/>'
+        mailText = 'Visit the website for more details - http://www.sweeperfootball.com<br/><br/>'
         for i, (league, group) in enumerate(itertools.groupby(presentation, \
                 lambda x : x[0].getLeague())):
             try:
@@ -166,6 +166,16 @@ def presentFixtures(log:Logger, algoId:int, league:str=None, show:bool=False, \
                     '{:>5.2f}', '{:>4}', '{:>5.2f}', '{:>5.2f}']
             t = Table(headers=headers, schema=schema, \
                     title='{} Fixtures'.format(leagueDesc))
+
+            if backtest:
+                # if we are backtesting then only return the predictions
+                t.append([[f.getDate(), '{} (vs) {}'.format(f.getHome_Team(), \
+                        f.getAway_Team()), r.getMark(), *a] \
+                        for f, [(r, a)] in presGrp \
+                        if r.getMark() > algoCfg.getL_Bnd_Mark() \
+                        and r.getMark() < algoCfg.getU_Bnd_Mark()])
+                return t 
+
             t.append([[f.getDate(), '{} (vs) {}'.format(f.getHome_Team(), \
                     f.getAway_Team()), r.getMark(), *a] \
                     for f, [(r, a)] in presGrp])

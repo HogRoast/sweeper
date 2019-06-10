@@ -118,6 +118,7 @@ def getSweeperOptions(log, opts):
                 'backtest mode, current if unset\n' \
                 '   runsweeper\n' \
                 '       * -a <id>        : algo ratings to present\n' \
+                '         -b             : backtest mode\n' \
                 '         -l <mnemonic>  : subject league\n' \
                 '         -m             : send email\n' \
                 '         -s <season>    : subject season\n' \
