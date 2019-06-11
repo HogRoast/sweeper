@@ -28,7 +28,8 @@ class Table:
         DEFAULT = ['1m', 'lightgreen']
         RED     = ['31;1m', 'lightpink']
         GREEN   = ['32;1m', 'lightgreen']
-        COLOURS = [DEFAULT, RED, GREEN]
+        CYAN    = ['36;1m', 'lightcyan']
+        COLOURS = [DEFAULT, RED, GREEN, CYAN]
 
     def __init__(self, headers:list=None, schema:list=None, rows:list=None,\
             highlights:list=None, title:str=None, style:str=STYLE,\

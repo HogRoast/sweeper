@@ -55,7 +55,8 @@ def runSweeper(log:Logger, algoId:int, league:str=None, season:str=None, \
 
     if backtest:
         log.info('\nTesting fixtures...\n')
-        testPredictions(log=log, predictions=tables, show=show)
+        testPredictions(log=log, algoId=algoId, season=season, \
+                predictions=tables, show=show)
         log.info('\nTesting fixtures...Done\n')
         
 if __name__ == '__main__':
