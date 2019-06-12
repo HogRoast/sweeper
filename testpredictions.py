@@ -89,7 +89,7 @@ def testPredictions(log:Logger, algoId:int, season:str, predictions:Table, \
             row = [dt, fix, m, ro, ao, r]
             if incl and ao >= ro:
                 if r == 'H':
-                    pot += ao
+                    pot += ao - 1
                     row += [1, ao]
                     colour = Table.Palette.GREEN
                 else:

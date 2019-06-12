@@ -74,6 +74,7 @@ def analyseMatches(log:Logger, algoId:int, league:str=None, season:str=None, \
             matches = db.select(Match.createAdhoc(keys, order))
             unmarked = list(filter(lambda x : x._keys not in ratedMatchKeys, \
                     matches))
+            print(unmarked)
             results = list(filter(lambda x : x.getResult() != '', matches))
             log.info('{} {} matches found unmarked'.format(len(unmarked), \
                     league.getMnemonic()))
