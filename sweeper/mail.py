@@ -85,6 +85,7 @@ class Mail():
     def _addTableContent(self, content):
         if self._firstTable:
             self._addTextContent(content.asHTML().replace('</body>', ''))
+            self._firstTable = False
         else:
             self._addTextContent(content.asHTML(fullyFormed=False))
 
@@ -102,8 +103,9 @@ class Mail():
         return (self._sender, self._recipients, str(self))
 
 if __name__ == '__main__':
-    mail = Mail()
-    mail.addRecipient('abc@xyz.com')
+    log = Logger()
+    mail = Mail(log)
+    mail.addRecipient('stuartmckone@gmail.com')
     mail.addSubject('Testing, testing - 1, 2, 3')
     mail.addContent('This a test email to see if the new class works')
 
@@ -120,4 +122,4 @@ if __name__ == '__main__':
     mail.addContent(t)
 
     log.info(repr(mail))
-    #mail.send()
+    mail.send()

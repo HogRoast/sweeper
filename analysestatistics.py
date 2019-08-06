@@ -41,7 +41,7 @@ def analyseStatistics(
     log.debug('Opening database: {}'.format(dbName))
 
     with Database(dbName, SQLite3Impl()) as db, db.transaction() as t:     
-        try
+        try:
             # In backtest mode use the inverse algoId to retrieve config,
             # ratings and stats:
             if backtest: algoId = -algoId

@@ -189,7 +189,10 @@ def sourceData(log:Logger, target:str, currentSeason:bool):
         for l in leagueMap:
             for s in seasonMap:
                 url = s.getData_Url().format(l.getLeague())
-                processMatchData(log, db, url, sourceId)
+                try:
+                    processMatchData(log, db, url, sourceId)
+                except Exception as e:
+                    log.info('Cannot process %s' % url)
 
         # Get the upcoming fixtures too...
         processMatchData(log, db, source.getUrl(), sourceId, leagueMap)

@@ -44,11 +44,11 @@ class GoalsScoredSupremacy(BaseModel):
         :param match: the subject match to be marked
         :param homePrev: the previous matches for the home team
         :param awayPrev: the previous matches for the away team
-        :returns: an integer representing the match mark or None if insufficient
+        :returns: an integer representing the match mark or 99 if there are
         matches to make the calculation
         '''
         if len(homePrev) < self.numMatches or len(awayPrev) < self.numMatches:
-            return None
+            return 99
         '''
         print(match)
         print(homePrev[:self.numMatches])
