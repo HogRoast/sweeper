@@ -38,7 +38,7 @@ def testPredictions(log:Logger, algoId:int, season:str, predictions:Table, \
             '{:>3}', '{:>5}', '{:>5.2f}', '{:>5.2f}', '{:>5.2f}']   
     startPot = 20.0
     winnings = Table(headers=headers, schema=schema, 
-            title='Backtest: {}, starting pot {} units'.format( \
+            title='{}, starting pot {} units'.format( \
                     predictions.getTitle(), startPot))
 
     pot = startPot
@@ -85,7 +85,7 @@ def testPredictions(log:Logger, algoId:int, season:str, predictions:Table, \
 
             incl = not (priorHTMatches < algo.numMatches or \
                     priorATMatches < algo.numMatches)
-            colour = Table.Palette.CYAN if incl else None
+            colour = None
             row = [dt, fix, m, ro, ao, r]
             if incl and ao >= ro:
                 if r == 'H':
@@ -103,11 +103,14 @@ def testPredictions(log:Logger, algoId:int, season:str, predictions:Table, \
             if colour:
                 winnings.addHighlight(col='Match', pattern=fix, \
                         wholeRow=True, repeat=False, colour=colour)
-            winnings.append([row])
+            if incl:
+                winnings.append([row])
     log.info(winnings)
 
     if show:
         winnings.asHTML(show)
+
+    return winnings
 
 if __name__ == '__main__':
     log = Logger()

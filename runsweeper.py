@@ -55,9 +55,11 @@ def runSweeper(log:Logger, algoId:int, league:str=None, season:str=None, \
 
     if backtest:
         log.info('\nTesting fixtures...\n')
-        testPredictions(log=log, algoId=algoId, season=season, \
+        winnings = testPredictions(log=log, algoId=algoId, season=season, \
                 predictions=tables, show=show)
         log.info('\nTesting fixtures...Done\n')
+        return winnings
+    return tables
         
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions

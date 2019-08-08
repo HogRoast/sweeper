@@ -1,8 +1,9 @@
 # Footy specific ignores
 Data/
 Analysis/
+mailtext/
 db/sweeper.db
-db/archive
+db/archive/
 db/insert_sources.sql
 db/insert_static.sql
 excel/Gambling.*.xlsx

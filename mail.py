@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from shimbase.database import Database, AdhocKeys
 from shimbase.sqlite3impl import SQLite3Impl
 
+from runsweeper import runSweeper
 from sweeper.logging import Logger
 from sweeper.table import Table
 from sweeper.utils import getSweeperConfig
@@ -105,21 +106,27 @@ class Mail():
 if __name__ == '__main__':
     log = Logger()
     mail = Mail(log)
-    mail.addRecipient('stuartmckone@gmail.com')
-    mail.addSubject('Testing, testing - 1, 2, 3')
-    mail.addContent('This a test email to see if the new class works')
+    mail.addSubject('Sweeper 18/19 summary and 19/20 kick off')
+    #mail.addContent('This a test email to see if the new class works')
 
-    t = Table(headers=['1st', '2nd', '3rd'], schema=['{:>4}', '{:>5.3f}', '{:>3}'], title='Test')
-    t.append([[1, 2.454, 3], [4, 5, 6]])
-    t.append([[7, 8, 'dfd']])
-    t.setHighlights([[1]])
-    t.setHighlights([[2, 'dfd', True, False, Table.Palette.GREEN]])
-    t.append([[75,3, 3]])
-    t.addHighlight('3rd', 3, False, False, Table.Palette.RED)
+    #t = Table(headers=['1st', '2nd', '3rd'], schema=['{:>4}', '{:>5.3f}', '{:>3}'], title='Test')
+    #t.append([[1, 2.454, 3], [4, 5, 6]])
+    #t.append([[7, 8, 'dfd']])
+    #t.setHighlights([[1]])
+    #t.setHighlights([[2, 'dfd', True, False, Table.Palette.GREEN]])
+    #t.append([[75,3, 3]])
+    #t.addHighlight('3rd', 3, False, False, Table.Palette.RED)
 
-    mail.addContent(t)
-    mail.addContent('Just some more text to see what it looks like!')
-    mail.addContent(t)
+    #mail.addContent(t)
+    #mail.addContent('Just some more text to see what it looks like!')
+    #mail.addContent(t)
 
-    log.info(repr(mail))
+    #log.info(repr(mail))
+    f = open('mailtext/1819wrapup.txt', 'r')
+    mail.addContent(f)
+    f.close()
+    mail.addContent(runSweeper(\
+            log=log, algoId=1, league='E0', season='1819', backtest=True))
+    mail.addContent(runSweeper(\
+            log=log, algoId=1, league='D1', season='1819', backtest=True))
     mail.send()
