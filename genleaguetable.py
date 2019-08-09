@@ -11,6 +11,7 @@ from sweeper.utils import getSweeperConfig
 from sweeper.dbos.league import League
 from sweeper.dbos.match import Match
 from sweeper.dbos.season import Season
+from sweeper.dbos.team import Team
 
 def genLeagueTable(log:Logger, league:str, season:str, date:str=None, \
         show:bool=False):
@@ -49,10 +50,10 @@ def genLeagueTable(log:Logger, league:str, season:str, date:str=None, \
         log.info('{} {} matches found'.format(len(matches), \
                 league.getMnemonic()))
 
-        teams = set([m.getHome_Team() for m in matches] + \
-                [m.getAway_Team() for m in matches])
+        keys = {'league' : league.getMnemonic()}
+        teams = db.select(Team.createAdhoc(keys)) 
 
-        table = {} 
+        table = dict([(t.getName(), Form()) for t in teams])
         for m in matches:
             table[m.getHome_Team()] = h = table.get(m.getHome_Team(), Form())
             table[m.getAway_Team()] = a = table.get(m.getAway_Team(), Form())

@@ -116,6 +116,8 @@ def presentFixtures(log:Logger, algoId:int, league:str=None, show:bool=False, \
             sys.exit(7)
 
         def statsSummary(s:Statistics):
+            if s.getMark() == 99:
+                return  0, 0, 0.0, 0.0, 0, 0.0, 0.0, 0, 0.0, 0.0 
             markF = s.getMark_Freq()
             homeF = s.getHome_Freq()
             homeP = (homeF / markF) * 100.0 if markF else 0.0
