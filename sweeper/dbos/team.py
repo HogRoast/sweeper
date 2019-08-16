@@ -33,13 +33,14 @@ class TeamValues(DatabaseValues):
     '''
     team database object values representation
     '''
-    def __init__(self, league:str):
+    def __init__(self, league:str, season:str):
         '''
         Construct the object from the provided value fields
         
         :param ...: typed value fields
         '''
         object.__setattr__(self, 'league', league)
+        object.__setattr__(self, 'season', season)
         
         super().__init__(self.getFields())
 
@@ -49,7 +50,7 @@ class TeamValues(DatabaseValues):
         
         :returns: a dictionary of all TeamValues fields
         '''
-        fields = {'league' : self.league}
+        fields = {'league' : self.league, 'season' : self.season}
         return fields
         
 class Team(DatabaseObject):
@@ -92,8 +93,8 @@ class Team(DatabaseObject):
         :param row: a list of values representing the objects key and values
         :returns: a Team object constructed from row
         '''
-        name, league = row
-        return Team(name, league)
+        name, league, season = row
+        return Team(name, league, season)
 
     def _create(self, row:tuple):
         '''
@@ -105,7 +106,7 @@ class Team(DatabaseObject):
         '''
         return Team.create(row)
 
-    def __init__(self, name:str = None, league:str = None):
+    def __init__(self, name:str = None, league:str = None, season:str = None):
         '''
         Construct the object from the provided key and value fields
         
@@ -114,7 +115,7 @@ class Team(DatabaseObject):
         :raises: None
         '''
         keys = TeamKeys(name)
-        vals = TeamValues(league)
+        vals = TeamValues(league, season)
 
         super().__init__('team', keys, vals)
 
@@ -128,9 +129,15 @@ class Team(DatabaseObject):
     def getLeague(self):
         return self._vals.league
     
+    def getSeason(self):
+        return self._vals.season
+    
     
     def setLeague(self, league:str):
        self._vals.league = league
+    
+    def setSeason(self, season:str):
+       self._vals.season = season
     
     
 

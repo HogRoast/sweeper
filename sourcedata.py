@@ -105,7 +105,7 @@ def getBestOdds(log, row):
 
     return (bestH, bestD, bestA)
 
-def processMatchData(log, db, url, sourceId, leagueMap=None):
+def processMatchData(log, db, url, sourceId, season, leagueMap=None):
     log.info('Downloading...' + url)
 
     with readCSVFileAsDict(url) as resultsReader:
@@ -131,13 +131,13 @@ def processMatchData(log, db, url, sourceId, leagueMap=None):
             keys = {'source_id' : sourceId, 'moniker' : ht}
             teamMap = db.select(Source_Team_Map.createAdhoc(keys))
             if teamMap: ht = teamMap[0].getTeam()
-            db.upsert(Team(ht, lge))
+            db.upsert(Team(ht, lge, season))
 
             at = row['AwayTeam']
             keys = {'source_id' : sourceId, 'moniker' : at}
             teamMap = db.select(Source_Team_Map.createAdhoc(keys))
             if teamMap: at = teamMap[0].getTeam()
-            db.upsert(Team(at, lge))
+            db.upsert(Team(at, lge, season))
         
             bestH, bestD, bestA = getBestOdds(log, row)
             match = Match(str(dt.date()), lge, ht, at, \
@@ -175,7 +175,8 @@ def sourceData(log:Logger, target:str, currentSeason:bool):
             seasonMap = db.select(
                     Source_Season_Map.createAdhoc(keys, ('>season',)))[0:1]
         else:
-            seasonMap = db.select(Source_Season_Map.createAdhoc(keys))
+            seasonMap = db.select(
+                    Source_Season_Map.createAdhoc(keys, ('>season',)))
         log.debug('{}'.format(seasonMap))
 
         keys = {'source_id': sourceId}
@@ -190,12 +191,14 @@ def sourceData(log:Logger, target:str, currentSeason:bool):
             for s in seasonMap:
                 url = s.getData_Url().format(l.getLeague())
                 try:
-                    processMatchData(log, db, url, sourceId)
+                    processMatchData(log, db, url, sourceId, s.getSeason())
                 except Exception as e:
                     log.info('Cannot process %s' % url)
 
         # Get the upcoming fixtures too...
-        processMatchData(log, db, source.getUrl(), sourceId, leagueMap)
+        processMatchData(
+                log, db, source.getUrl(), sourceId, seasonMap[0].getSeason(),
+                leagueMap)
 
 if __name__ == '__main__':
     from sweeper.utils import getSweeperOptions, SweeperOptions

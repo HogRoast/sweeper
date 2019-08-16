@@ -50,7 +50,7 @@ def genLeagueTable(log:Logger, league:str, season:str, date:str=None, \
         log.info('{} {} matches found'.format(len(matches), \
                 league.getMnemonic()))
 
-        keys = {'league' : league.getMnemonic()}
+        keys = {'league' : league.getMnemonic(), 'season' : season.getName()}
         teams = db.select(Team.createAdhoc(keys)) 
 
         table = dict([(t.getName(), Form()) for t in teams])

@@ -46,16 +46,17 @@ class TestTeam(TestCase):
         self.assertTrue(l._keys.getFields() is None)
 
     def test_create(self):
-        obj = Team.create(('team name TD', 'league mnemonic TD'))
+        obj = Team.create(('team name TD', 'league mnemonic TD', 'team season TD'))
 
         self.assertEqual(obj.getName(), 'team name TD')
          
         self.assertEqual(obj.getLeague(), 'league mnemonic TD')
+        self.assertEqual(obj.getSeason(), 'team season TD')
          
 
     def test_repr(self):
-        obj = Team('team name TD', 'league mnemonic TD')
-        self.assertEqual(str(obj), "team : Keys {'name': 'team name TD'} : Values {'league': 'league mnemonic TD'}")
+        obj = Team('team name TD', 'league mnemonic TD', 'team season TD')
+        self.assertEqual(str(obj), "team : Keys {'name': 'team name TD'} : Values {'league': 'league mnemonic TD', 'season': 'team season TD'}")
 
     def test_select(self):
         objs = TestTeam.db.select(Team())
@@ -63,10 +64,12 @@ class TestTeam(TestCase):
         self.assertEqual(objs[0].getName(), 'team name TD')
         
         self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
+        self.assertEqual(objs[0].getSeason(), 'team season TD')
         
         self.assertEqual(objs[1].getName(), 'team name TD2')
         
         self.assertEqual(objs[1].getLeague(), 'league mnemonic TD2')
+        self.assertEqual(objs[1].getSeason(), 'team season TD2')
         
         
         objs = TestTeam.db.select(Team('team name TD'))
@@ -74,13 +77,15 @@ class TestTeam(TestCase):
         self.assertEqual(objs[0].getName(), 'team name TD')
         
         self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
+        self.assertEqual(objs[0].getSeason(), 'team season TD')
         
 
-        objs = TestTeam.db.select(Team.createAdhoc({'league': 'league mnemonic TD'}))
+        objs = TestTeam.db.select(Team.createAdhoc({'league': 'league mnemonic TD', 'season': 'team season TD'}))
         self.assertEqual(len(objs), 1)
         self.assertEqual(objs[0].getName(), 'team name TD')
         
         self.assertEqual(objs[0].getLeague(), 'league mnemonic TD')
+        self.assertEqual(objs[0].getSeason(), 'team season TD')
         
 
     def test_update(self):
@@ -89,14 +94,14 @@ class TestTeam(TestCase):
 
         with TestTeam.db.transaction() as t:
             TestTeam.db.upsert(
-                    Team('team name TD', 'league mnemonic TD UPD'))
+                    Team('team name TD', 'league mnemonic TD UPD', 'team season TD UPD'))
             objs = TestTeam.db.select(Team('team name TD'))
 
             self.assertEqual(len(objs), 1)
             self.assertEqual(objs[0].getName(), 'team name TD')
             
 
-            d = eval("{'league': 'league mnemonic TD UPD'}")
+            d = eval("{'league': 'league mnemonic TD UPD', 'season': 'team season TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[0].__getattribute__('get' + k.title())(), v)
@@ -129,7 +134,7 @@ class TestTeam(TestCase):
 
         with TestTeam.db.transaction() as t:
             TestTeam.db.upsert(
-                    Team('team name TD INS', 'league mnemonic TD UPD'))
+                    Team('team name TD INS', 'league mnemonic TD UPD', 'team season TD UPD'))
             objs = TestTeam.db.select(Team())
 
             self.assertEqual(len(objs), 3)
@@ -139,7 +144,7 @@ class TestTeam(TestCase):
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)
 
-            d = eval("{'league': 'league mnemonic TD UPD'}")
+            d = eval("{'league': 'league mnemonic TD UPD', 'season': 'team season TD UPD'}")
             for k, v in d.items():
                 self.assertEqual(
                         objs[2].__getattribute__('get' + k.title())(), v)

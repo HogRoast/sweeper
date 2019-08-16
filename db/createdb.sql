@@ -2,6 +2,7 @@ DROP TABLE team;
 CREATE TABLE team (
     name varchar(64) not null, 
     league varchar(4) not null,
+    season varchar(4) not null,
     foreign key(league) references league(mnemonic),
     primary key (name)
 );
