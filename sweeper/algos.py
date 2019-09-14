@@ -47,7 +47,7 @@ class GoalsScoredSupremacy(BaseModel):
         :returns: an integer representing the match mark or 99 if there are
         matches to make the calculation
         '''
-        if len(homePrev) < self.numMatches or len(awayPrev) < self.numMatches:
+        if len(homePrev) <= self.numMatches or len(awayPrev) <= self.numMatches:
             return 99
         '''
         print(match)

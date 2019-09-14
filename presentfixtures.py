@@ -72,6 +72,8 @@ def presentFixtures(log:Logger, algoId:int, league:str=None, show:bool=False, \
         try:
             if league: keys.update({'league' : league})
             order = ['<league', '<date']
+            print(keys)
+            print(order)
             fixtures = db.select(Match.createAdhoc(keys, order))
             if not fixtures: raise Exception('No fixtures')
         except Exception as e:
