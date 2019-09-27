@@ -56,7 +56,7 @@ def analyseMatches(log:Logger, algoId:int, league:str=None, season:str=None, \
             log.critical('No season matching the provided season exists')
             sys.exit(4)
 
-        keys = {'algo_id' : algoId}
+        keys = {'algo_id' : algoId, '<mark' : 99}
         ratings = db.select(Rating.createAdhoc(keys))
         ratedMatchKeys = [MatchKeys(r.getMatch_Date(), r.getLeague(), \
                 r.getHome_Team(), r.getAway_Team()) for r in ratings]

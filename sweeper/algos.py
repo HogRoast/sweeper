@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from sweeper.dbos.match import Match
 
 class BaseModel:
-    numMatches = 6
+    numMatches = 5
 
     @abstractmethod
     def markMatch(self, match:Match, homePrev:list, awayPrev:list):
@@ -49,11 +49,11 @@ class GoalsScoredSupremacy(BaseModel):
         '''
         if len(homePrev) <= self.numMatches or len(awayPrev) <= self.numMatches:
             return 99
-        '''
+        ''' 
         print(match)
         print(homePrev[:self.numMatches])
         print(awayPrev[:self.numMatches])
-        '''
+        ''' 
         hTeamGoals = self.sumGoals(match.getHome_Team(), \
                 homePrev[:self.numMatches]) 
         aTeamGoals = self.sumGoals(match.getAway_Team(), \

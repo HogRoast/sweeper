@@ -72,8 +72,6 @@ def presentFixtures(log:Logger, algoId:int, league:str=None, show:bool=False, \
         try:
             if league: keys.update({'league' : league})
             order = ['<league', '<date']
-            print(keys)
-            print(order)
             fixtures = db.select(Match.createAdhoc(keys, order))
             if not fixtures: raise Exception('No fixtures')
         except Exception as e:
@@ -220,6 +218,7 @@ def presentFixtures(log:Logger, algoId:int, league:str=None, show:bool=False, \
 
         if mail:
             mailText = 'MIME-Version: 1.0\nContent-type: text/html\nSubject: Sweeper Football Predictions\n\n{}</body>'.format(mailText)
+            #mailText = 'MIME-Version: 1.0\nContent-type: text/html\nSubject: Sweeper Football Predictions - PREDICTIONS AVAILABLE FROM THIS WEEK!\n\n{}</body>'.format(mailText)
             mailCfg = getSweeperConfig('mail.cfg')
             fromAddr = mailCfg['fromAddr']
             subs = db.select(Subscriber.createAdhoc({'include' : 1}))
