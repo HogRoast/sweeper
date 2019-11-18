@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from sweeper.dbos.match import Match
 
 class BaseModel:
-    numMatches = 5
+    numMatches = 6
 
     @abstractmethod
     def markMatch(self, match:Match, homePrev:list, awayPrev:list):
